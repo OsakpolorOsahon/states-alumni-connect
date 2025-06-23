@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -99,5 +100,42 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  h1 {
+    @apply text-4xl font-bold;
+    line-height: 1.2;
+  }
+
+  h2 {
+    @apply text-3xl font-bold;
+    line-height: 1.3;
+  }
+
+  h3 {
+    @apply text-2xl font-semibold;
+    line-height: 1.4;
+  }
+}
+
+/* Custom SMMOWCUB brand color utilities */
+@layer utilities {
+  .text-brand {
+    color: #E10600;
+  }
+  
+  .bg-brand {
+    background-color: #E10600;
+  }
+  
+  .border-brand {
+    border-color: #E10600;
+  }
+  
+  .hover\:bg-brand:hover {
+    background-color: #C10500;
   }
 }
