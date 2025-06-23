@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import History from "./pages/History";
+import Directory from "./pages/Directory";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import PendingApproval from "./pages/PendingApproval";
@@ -24,6 +25,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/history" element={<History />} />
+            <Route path="/directory" element={<Directory />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/login" element={<Login />} />
             <Route path="/pending-approval" element={<PendingApproval />} />
