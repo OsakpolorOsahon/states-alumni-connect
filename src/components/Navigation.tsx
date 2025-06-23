@@ -9,7 +9,7 @@ const Navigation = () => {
   const { theme, setTheme } = useTheme();
 
   const navLinks = [
-    { href: "#", label: "Home" },
+    { href: "/", label: "Home" },
     { href: "#about", label: "About" },
     { href: "#directory", label: "Directory" },
     { href: "#news", label: "News" },
@@ -57,7 +57,9 @@ const Navigation = () => {
             >
               {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
-            <Button variant="outline">Login</Button>
+            <Button variant="outline" asChild>
+              <a href="/login">Login</a>
+            </Button>
           </div>
 
           {/* Mobile menu button */}
@@ -96,7 +98,9 @@ const Navigation = () => {
                 </a>
               ))}
               <div className="pt-2">
-                <Button variant="outline" className="w-full">Login</Button>
+                <Button variant="outline" className="w-full" asChild>
+                  <a href="/login">Login</a>
+                </Button>
               </div>
             </div>
           </div>
