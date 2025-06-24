@@ -1,14 +1,14 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Clock, Mail } from "lucide-react";
 import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
 
 const PendingApproval = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background dark:bg-background">
       <Navigation />
-      <div className="container mx-auto py-12 px-4">
+      <div className="container mx-auto py-12 px-4 flex-grow">
         <div className="max-w-2xl mx-auto text-center">
           <Card>
             <CardHeader className="pb-8">
@@ -100,6 +100,7 @@ const PendingApproval = () => {
           </Card>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

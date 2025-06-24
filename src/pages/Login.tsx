@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -35,9 +35,9 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background dark:bg-background">
       <Navigation />
-      <div className="container mx-auto py-12 px-4">
+      <div className="container mx-auto py-12 px-4 flex-grow">
         <div className="max-w-md mx-auto">
           <Card>
             <CardHeader className="text-center">
@@ -124,6 +124,7 @@ const Login = () => {
           </Card>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

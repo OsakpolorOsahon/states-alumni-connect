@@ -5,7 +5,7 @@ const HeroSection = () => {
   return (
     <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
       {/* Background with red overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-800">
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900">
         {/* You can replace this with an actual background image */}
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1562774053-701939374585?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center opacity-30"></div>
         <div className="absolute inset-0 bg-[#E10600] opacity-20"></div>
@@ -31,9 +31,8 @@ const HeroSection = () => {
             View Directory
           </Button>
           <Button 
-            variant="outline" 
             size="lg" 
-            className="border-white text-white hover:bg-white hover:text-[#E10600] px-8 py-3 text-lg font-semibold"
+            className="bg-[#E10600] hover:bg-[#C10500] text-white px-8 py-3 text-lg font-semibold"
             aria-label="Contact Us"
           >
             Contact Us

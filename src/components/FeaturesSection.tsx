@@ -7,17 +7,17 @@ const FeaturesSection = () => {
     {
       icon: Users,
       title: "Exclusive Membership",
-      description: "Connect with fellow UNIBEN Man O' War alumni in a private, secure environment designed specifically for our community."
+      description: "Connect with fellow UNIBEN Man O' War alumni in a private, secure environment designed specifically for our community. Access member-only resources, networking opportunities, and maintain lifelong bonds with your fellow Statesmen."
     },
     {
       icon: BookOpen,
       title: "Empowerment & Resources",
-      description: "Access professional development opportunities, mentorship programs, and resources to advance your career and personal growth."
+      description: "Access professional development opportunities, mentorship programs, and resources to advance your career and personal growth. Benefit from workshops, seminars, and educational content curated for our distinguished alumni network."
     },
     {
       icon: Award,
       title: "Recognition & Impact",
-      description: "Celebrate achievements, share success stories, and contribute to the legacy of excellence that defines our alumni network."
+      description: "Celebrate achievements, share success stories, and contribute to the legacy of excellence that defines our alumni network. Showcase your accomplishments and inspire the next generation of Man O' War leaders through our platform."
     }
   ];
 
@@ -39,23 +39,23 @@ const FeaturesSection = () => {
             return (
               <Card 
                 key={index} 
-                className="text-center hover:shadow-lg transition-shadow duration-300 border-border"
+                className="text-center hover:shadow-lg transition-all duration-300 border-border dark:bg-card dark:border-border dark:hover:shadow-lg"
                 role="article"
                 aria-labelledby={`feature-title-${index}`}
               >
                 <CardHeader className="pb-4">
-                  <div className="mx-auto w-16 h-16 bg-[#E10600]/10 rounded-full flex items-center justify-center mb-4">
+                  <div className="mx-auto w-16 h-16 bg-[#E10600]/10 dark:bg-[#E10600]/20 rounded-full flex items-center justify-center mb-4">
                     <Icon className="w-8 h-8 text-[#E10600]" aria-hidden="true" />
                   </div>
                   <CardTitle 
                     id={`feature-title-${index}`}
-                    className="text-xl font-bold text-foreground"
+                    className="text-xl font-bold text-foreground dark:text-foreground"
                   >
                     {feature.title}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground leading-relaxed">
+                  <p className="text-muted-foreground dark:text-muted-foreground leading-relaxed">
                     {feature.description}
                   </p>
                 </CardContent>

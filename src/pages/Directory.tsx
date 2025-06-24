@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Search, Badge } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -6,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
 
 // Sample member data
 const sampleMembers = [
@@ -156,10 +156,9 @@ const Directory = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background dark:bg-background">
       <Navigation />
-      
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <main className="container mx-auto py-12 px-4">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-4">Statesmen Directory</h1>
@@ -240,7 +239,8 @@ const Directory = () => {
             <p className="text-sm text-muted-foreground mt-2">Try adjusting your filters or search term.</p>
           </div>
         )}
-      </div>
+      </main>
+      <Footer />
     </div>
   );
 };
