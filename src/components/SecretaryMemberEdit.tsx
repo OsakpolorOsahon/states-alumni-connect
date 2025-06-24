@@ -84,8 +84,7 @@ const SecretaryMemberEdit = ({ member, onUpdate, onCancel }: SecretaryMemberEdit
           </Label>
           <Select 
             value={editingMember.lastMowcubPosition} 
-            onValueChange={(value) => setEditing
-            Member(prev => ({ ...prev, lastMowcubPosition: value }))}
+            onValueChange={(value) => setEditingMember(prev => ({ ...prev, lastMowcubPosition: value }))}
           >
             <SelectTrigger className="dark:bg-background dark:border-border dark:text-foreground">
               <SelectValue placeholder="Select position" />
