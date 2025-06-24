@@ -1,4 +1,7 @@
+
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +11,8 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     emailOrUsername: "",
     password: "",
@@ -20,18 +25,18 @@ const Login = () => {
     setError("");
     setIsLoading(true);
 
-    // Simulate login attempt
-    setTimeout(() => {
-      if (formData.emailOrUsername === "demo" && formData.password === "demo") {
-        // Successful login
-        console.log("Login successful");
-        setIsLoading(false);
+    try {
+      const success = await login(formData.emailOrUsername, formData.password);
+      if (success) {
+        navigate("/dashboard");
       } else {
-        // Failed login
-        setError("Invalid credentials. Please try again.");
-        setIsLoading(false);
+        setError("Invalid credentials. Try demo@smmowcub.org/demo or secretary@smmowcub.org/secretary");
       }
-    }, 1000);
+    } catch (error) {
+      setError("Login failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -56,6 +61,15 @@ const Login = () => {
                     <AlertDescription>{error}</AlertDescription>
                   </Alert>
                 )}
+
+                {/* Demo Credentials Info */}
+                <Alert>
+                  <AlertDescription>
+                    <strong>Demo credentials:</strong><br />
+                    Member: demo@smmowcub.org / demo<br />
+                    Secretary: secretary@smmowcub.org / secretary
+                  </AlertDescription>
+                </Alert>
 
                 {/* Email or Username */}
                 <div className="space-y-2">
