@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import PWAInstallBanner from "@/components/PWAInstallBanner";
 import Index from "./pages/Index";
 import History from "./pages/History";
 import Directory from "./pages/Directory";
@@ -15,6 +16,7 @@ import Login from "./pages/Login";
 import PendingApproval from "./pages/PendingApproval";
 import Contact from "./pages/Contact";
 import News from "./pages/News";
+import Map from "./pages/Map";
 import MemberDashboard from "./pages/MemberDashboard";
 import SecretaryDashboard from "./pages/SecretaryDashboard";
 import NotFound from "./pages/NotFound";
@@ -35,6 +37,7 @@ const App = () => (
               <Route path="/directory" element={<Directory />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/news" element={<News />} />
+              <Route path="/map" element={<Map />} />
               <Route path="/signup" element={<SignUp />} />
               <Route path="/login" element={<Login />} />
               <Route path="/pending-approval" element={<PendingApproval />} />
@@ -51,6 +54,7 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <PWAInstallBanner />
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>
