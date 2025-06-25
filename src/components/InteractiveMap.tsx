@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -12,13 +11,13 @@ const InteractiveMap = () => {
   const [mapboxToken, setMapboxToken] = useState('');
   const [isMapLoaded, setIsMapLoaded] = useState(false);
 
-  // Mock member data with locations
+  // Mock member data with locations - using proper tuple types
   const members = [
-    { id: 1, name: "John Doe", location: [3.3792, 6.5244], city: "Lagos, Nigeria" },
-    { id: 2, name: "Jane Smith", location: [7.3775, 3.9470], city: "Abuja, Nigeria" },
-    { id: 3, name: "David Johnson", location: [7.0785, 4.2574], city: "Ibadan, Nigeria" },
-    { id: 4, name: "Sarah Wilson", location: [4.8156, 7.0498], city: "Port Harcourt, Nigeria" },
-    { id: 5, name: "Michael Brown", location: [6.5244, 3.3792], city: "Benin City, Nigeria" }
+    { id: 1, name: "John Doe", location: [3.3792, 6.5244] as [number, number], city: "Lagos, Nigeria" },
+    { id: 2, name: "Jane Smith", location: [7.3775, 3.9470] as [number, number], city: "Abuja, Nigeria" },
+    { id: 3, name: "David Johnson", location: [7.0785, 4.2574] as [number, number], city: "Ibadan, Nigeria" },
+    { id: 4, name: "Sarah Wilson", location: [4.8156, 7.0498] as [number, number], city: "Port Harcourt, Nigeria" },
+    { id: 5, name: "Michael Brown", location: [6.5244, 3.3792] as [number, number], city: "Benin City, Nigeria" }
   ];
 
   const initializeMap = () => {
