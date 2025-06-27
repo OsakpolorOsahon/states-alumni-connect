@@ -80,10 +80,20 @@ const InteractiveMap = () => {
         return;
       }
 
-      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/updateMemberLocation`, {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to update your location",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const response = await fetch(`https://ojxgyaylosexrbvvllzg.supabase.co/functions/v1/updateMemberLocation`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${user.access_token}`,
+          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ lat, lng })

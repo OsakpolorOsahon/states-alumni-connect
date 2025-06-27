@@ -87,20 +87,20 @@ const SignUp = () => {
       if (authError) throw authError;
 
       if (authData.user) {
-        // Create member profile
+        // Create member profile with correct field names
         const { error: profileError } = await supabase
           .from('members')
           .insert({
             user_id: authData.user.id,
             full_name: formData.fullName,
             nickname: formData.nickname || null,
-            stateship_year: formData.stateshipYear,
-            last_mowcub_position: formData.lastMowcubPosition,
-            current_council_office: formData.currentCouncilOffice === "None" ? "None" : formData.currentCouncilOffice,
+            stateship_year: formData.stateshipYear as any,
+            last_mowcub_position: formData.lastMowcubPosition as any,
+            current_council_office: formData.currentCouncilOffice === "None" ? "None" as any : formData.currentCouncilOffice as any,
             photo_url: formData.photoUrl || null,
             dues_proof_url: formData.duesProofUrl || null,
-            status: 'Pending',
-            role: 'member'
+            status: 'Pending' as any,
+            role: 'member' as any
           });
 
         if (profileError) throw profileError;
