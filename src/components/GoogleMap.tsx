@@ -1,8 +1,11 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Users } from "lucide-react";
+
+// Import the types to ensure they're loaded
+import '../types/google-maps.d.ts';
 
 interface Member {
   id: string;
@@ -21,6 +24,13 @@ interface GoogleMapProps {
   onLocationUpdate?: (lat: number, lng: number) => void;
 }
 
+declare global {
+  interface Window {
+    google: any;
+    initMap?: () => void;
+  }
+}
+
 const GoogleMap: React.FC<GoogleMapProps> = ({ 
   members = [], 
   center = { lat: 9.0820, lng: 8.6753 }, // Nigeria center
@@ -28,7 +38,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   onLocationUpdate 
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<google.maps.Map | null>(null);
+  const mapInstanceRef = useRef<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
@@ -48,9 +58,9 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
     };
 
     const initializeMap = () => {
-      if (!mapRef.current) return;
+      if (!mapRef.current || !window.google) return;
 
-      const map = new google.maps.Map(mapRef.current, {
+      const map = new window.google.maps.Map(mapRef.current, {
         center,
         zoom,
         styles: [
@@ -72,7 +82,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
 
       // Add member markers
       members.forEach((member) => {
-        const marker = new google.maps.Marker({
+        const marker = new window.google.maps.Marker({
           position: { lat: member.latitude, lng: member.longitude },
           map,
           title: member.full_name,
@@ -83,12 +93,12 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
                 <circle cx="12" cy="9" r="2.5" fill="white"/>
               </svg>
             `),
-            scaledSize: new google.maps.Size(30, 30),
-            anchor: new google.maps.Point(15, 30)
+            scaledSize: new window.google.maps.Size(30, 30),
+            anchor: new window.google.maps.Point(15, 30)
           }
         });
 
-        const infoWindow = new google.maps.InfoWindow({
+        const infoWindow = new window.google.maps.InfoWindow({
           content: `
             <div class="p-3 min-w-[200px]">
               <h3 class="font-semibold text-lg">${member.full_name}</h3>
@@ -109,7 +119,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
 
       // Add click listener for location updates
       if (onLocationUpdate) {
-        map.addListener('click', (event: google.maps.MapMouseEvent) => {
+        map.addListener('click', (event: any) => {
           if (event.latLng) {
             const lat = event.latLng.lat();
             const lng = event.latLng.lng();
@@ -132,11 +142,11 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
           };
           setUserLocation(location);
           
-          if (mapInstanceRef.current) {
+          if (mapInstanceRef.current && window.google) {
             mapInstanceRef.current.setCenter(location);
             mapInstanceRef.current.setZoom(12);
             
-            new google.maps.Marker({
+            new window.google.maps.Marker({
               position: location,
               map: mapInstanceRef.current,
               title: "Your Location",
@@ -147,8 +157,8 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
                     <circle cx="12" cy="12" r="3" fill="#fff"/>
                   </svg>
                 `),
-                scaledSize: new google.maps.Size(24, 24),
-                anchor: new google.maps.Point(12, 12)
+                scaledSize: new window.google.maps.Size(24, 24),
+                anchor: new window.google.maps.Point(12, 12)
               }
             });
           }
