@@ -24,13 +24,6 @@ interface GoogleMapProps {
   onLocationUpdate?: (lat: number, lng: number) => void;
 }
 
-declare global {
-  interface Window {
-    google: any;
-    initMap?: () => void;
-  }
-}
-
 const GoogleMap: React.FC<GoogleMapProps> = ({ 
   members = [], 
   center = { lat: 9.0820, lng: 8.6753 }, // Nigeria center
