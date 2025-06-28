@@ -10,6 +10,7 @@ import PWAInstallBanner from "@/components/PWAInstallBanner";
 import Index from "./pages/Index";
 import History from "./pages/History";
 import Directory from "./pages/Directory";
+import MemberProfile from "./pages/MemberProfile";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import PendingApproval from "./pages/PendingApproval";
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/history" element={<History />} />
             <Route path="/directory" element={<Directory />} />
+            <Route path="/directory/:id" element={<MemberProfile />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/news" element={<News />} />
             <Route path="/map" element={<Map />} />

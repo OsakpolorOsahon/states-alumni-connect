@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,6 @@ import Footer from "@/components/Footer";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
   const [formData, setFormData] = useState({
     emailOrUsername: "",
     password: "",
@@ -26,14 +25,18 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const success = await login(formData.emailOrUsername, formData.password);
-      if (success) {
-        navigate("/dashboard");
+      const { error } = await supabase.auth.signInWithPassword({
+        email: formData.emailOrUsername,
+        password: formData.password,
+      });
+
+      if (error) {
+        setError("Invalid credentials. Please try again.");
       } else {
-        setError("Invalid credentials. Try demo@smmowcub.org/demo or secretary@smmowcub.org/secretary");
+        navigate("/dashboard");
       }
     } catch (error) {
-      setError("Login failed. Please try again.");
+      setError("Invalid credentials. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -62,19 +65,10 @@ const Login = () => {
                   </Alert>
                 )}
 
-                {/* Demo Credentials Info */}
-                <Alert>
-                  <AlertDescription>
-                    <strong>Demo credentials:</strong><br />
-                    Member: demo@smmowcub.org / demo<br />
-                    Secretary: secretary@smmowcub.org / secretary
-                  </AlertDescription>
-                </Alert>
-
                 {/* Email or Username */}
                 <div className="space-y-2">
                   <Label htmlFor="emailOrUsername" className="text-sm font-medium">
-                    Email or Username
+                    Email/Username
                   </Label>
                   <Input
                     id="emailOrUsername"
@@ -84,7 +78,6 @@ const Login = () => {
                     value={formData.emailOrUsername}
                     onChange={(e) => setFormData(prev => ({ ...prev, emailOrUsername: e.target.value }))}
                     className="focus:ring-red-300 focus:border-red-300"
-                    aria-describedby={error ? "login-error" : undefined}
                   />
                 </div>
 
@@ -101,7 +94,6 @@ const Login = () => {
                     value={formData.password}
                     onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                     className="focus:ring-red-300 focus:border-red-300"
-                    aria-describedby={error ? "login-error" : undefined}
                   />
                 </div>
 
