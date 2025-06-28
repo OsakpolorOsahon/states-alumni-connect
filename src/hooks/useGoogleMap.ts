@@ -11,7 +11,7 @@ export const useGoogleMap = (
   onLocationUpdate?: (lat: number, lng: number) => void
 ) => {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<google.maps.Map | null>(null);
+  const mapInstanceRef = useRef<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -37,7 +37,7 @@ export const useGoogleMap = (
 
         // Add click listener for location updates
         if (onLocationUpdate) {
-          map.addListener('click', (event: google.maps.MapMouseEvent) => {
+          map.addListener('click', (event: any) => {
             if (event.latLng) {
               const lat = event.latLng.lat();
               const lng = event.latLng.lng();

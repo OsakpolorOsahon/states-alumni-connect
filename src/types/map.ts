@@ -17,6 +17,6 @@ export interface GoogleMapProps {
 }
 
 export interface MapInstance {
-  map: google.maps.Map | null;
+  map: typeof window.google.maps.Map | null;
   isLoaded: boolean;
 }

@@ -1,7 +1,7 @@
 
 import { Member } from '@/types/map';
 
-export const createMemberMarker = (member: Member, map: google.maps.Map) => {
+export const createMemberMarker = (member: Member, map: any) => {
   const marker = new window.google.maps.Marker({
     position: { lat: member.latitude, lng: member.longitude },
     map,
@@ -39,7 +39,7 @@ export const createMemberMarker = (member: Member, map: google.maps.Map) => {
   return marker;
 };
 
-export const createUserLocationMarker = (location: { lat: number; lng: number }, map: google.maps.Map) => {
+export const createUserLocationMarker = (location: { lat: number; lng: number }, map: any) => {
   return new window.google.maps.Marker({
     position: location,
     map,
