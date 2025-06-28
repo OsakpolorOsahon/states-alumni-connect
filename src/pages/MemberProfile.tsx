@@ -16,7 +16,6 @@ interface Member {
   id: string;
   full_name: string;
   nickname?: string;
-  graduation_year: string;
   stateship_year: string;
   last_mowcub_position: string;
   current_council_office?: string;
@@ -26,7 +25,7 @@ interface Member {
   paid_through?: string;
 }
 
-interface Badge {
+interface BadgeRecord {
   id: string;
   badge_name: string;
   badge_code: string;
@@ -38,7 +37,7 @@ const MemberProfile = () => {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
   const [member, setMember] = useState<Member | null>(null);
-  const [badges, setBadges] = useState<Badge[]>([]);
+  const [badges, setBadges] = useState<BadgeRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -49,7 +48,7 @@ const MemberProfile = () => {
         // Fetch member details
         const { data: memberData, error: memberError } = await supabase
           .from('members')
-          .select('*')
+          .select('id, full_name, nickname, stateship_year, last_mowcub_position, current_council_office, photo_url, latitude, longitude, paid_through')
           .eq('id', id)
           .eq('status', 'Active')
           .single();
@@ -163,12 +162,6 @@ const MemberProfile = () => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-[#E10600]" />
-                      <span className="text-sm">
-                        <strong>Graduation:</strong> {member.graduation_year}
-                      </span>
-                    </div>
                     <div className="flex items-center gap-2">
                       <User className="w-4 h-4 text-[#E10600]" />
                       <span className="text-sm">

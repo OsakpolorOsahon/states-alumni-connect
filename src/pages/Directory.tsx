@@ -16,7 +16,6 @@ interface Member {
   id: string;
   full_name: string;
   nickname?: string;
-  graduation_year: string;
   stateship_year: string;
   last_mowcub_position: string;
   current_council_office?: string;
@@ -30,13 +29,11 @@ const Directory = () => {
   const [members, setMembers] = useState<Member[]>([]);
   const [filteredMembers, setFilteredMembers] = useState<Member[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedGradYear, setSelectedGradYear] = useState("all");
   const [selectedOffice, setSelectedOffice] = useState("all");
   const [selectedSession, setSelectedSession] = useState("all");
   const [nearbyRadius, setNearbyRadius] = useState("10");
   const [isLoading, setIsLoading] = useState(true);
 
-  const graduationYears = Array.from({ length: 11 }, (_, i) => (2015 + i).toString());
   const stateshipYears = [
     '2015/2016', '2016/2017', '2017/2018', '2018/2019', '2019/2020', '2020/2021',
     '2021/2022', '2022/2023', '2023/2024', '2024/2025', '2025/2026'
@@ -53,7 +50,7 @@ const Directory = () => {
     const fetchMembers = async () => {
       const { data, error } = await supabase
         .from('members')
-        .select('*')
+        .select('id, full_name, nickname, stateship_year, last_mowcub_position, current_council_office, photo_url, latitude, longitude')
         .eq('status', 'Active');
 
       if (error) {
@@ -78,7 +75,18 @@ const Directory = () => {
         { event: 'INSERT', schema: 'public', table: 'members' },
         (payload) => {
           if (payload.new.status === 'Active') {
-            setMembers(prev => [...prev, payload.new as Member]);
+            const newMember = {
+              id: payload.new.id,
+              full_name: payload.new.full_name,
+              nickname: payload.new.nickname,
+              stateship_year: payload.new.stateship_year,
+              last_mowcub_position: payload.new.last_mowcub_position,
+              current_council_office: payload.new.current_council_office,
+              photo_url: payload.new.photo_url,
+              latitude: payload.new.latitude,
+              longitude: payload.new.longitude
+            };
+            setMembers(prev => [...prev, newMember]);
           }
         }
       )
@@ -86,8 +94,19 @@ const Directory = () => {
         { event: 'UPDATE', schema: 'public', table: 'members' },
         (payload) => {
           if (payload.new.status === 'Active') {
+            const updatedMember = {
+              id: payload.new.id,
+              full_name: payload.new.full_name,
+              nickname: payload.new.nickname,
+              stateship_year: payload.new.stateship_year,
+              last_mowcub_position: payload.new.last_mowcub_position,
+              current_council_office: payload.new.current_council_office,
+              photo_url: payload.new.photo_url,
+              latitude: payload.new.latitude,
+              longitude: payload.new.longitude
+            };
             setMembers(prev => prev.map(member => 
-              member.id === payload.new.id ? payload.new as Member : member
+              member.id === payload.new.id ? updatedMember : member
             ));
           } else {
             setMembers(prev => prev.filter(member => member.id !== payload.new.id));
@@ -106,11 +125,10 @@ const Directory = () => {
     let filtered = members.filter(member => {
       const matchesSearch = member.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            (member.nickname && member.nickname.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchesGradYear = selectedGradYear === "all" || member.graduation_year === selectedGradYear;
       const matchesOffice = selectedOffice === "all" || member.current_council_office === selectedOffice;
       const matchesSession = selectedSession === "all" || member.stateship_year === selectedSession;
 
-      return matchesSearch && matchesGradYear && matchesOffice && matchesSession;
+      return matchesSearch && matchesOffice && matchesSession;
     });
 
     // Sort by: Office → Stateship Year (oldest first) → Last MOWCUB Position
@@ -132,7 +150,7 @@ const Directory = () => {
     });
 
     setFilteredMembers(filtered);
-  }, [members, searchTerm, selectedGradYear, selectedOffice, selectedSession]);
+  }, [members, searchTerm, selectedOffice, selectedSession]);
 
   const handleNearbySearch = async () => {
     if (!navigator.geolocation) {
@@ -149,18 +167,27 @@ const Directory = () => {
         const { latitude, longitude } = position.coords;
         
         try {
-          const { data, error } = await supabase.rpc('get_nearby_members', {
-            target_lat: latitude,
-            target_lng: longitude,
-            radius_km: parseInt(nearbyRadius)
+          // Use the existing members data and filter by distance
+          const nearbyMembers = members.filter(member => {
+            if (!member.latitude || !member.longitude) return false;
+            
+            // Simple distance calculation (approximate)
+            const R = 6371; // Earth's radius in km
+            const dLat = (member.latitude - latitude) * Math.PI / 180;
+            const dLon = (member.longitude - longitude) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                     Math.cos(latitude * Math.PI / 180) * Math.cos(member.latitude * Math.PI / 180) *
+                     Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const distance = R * c;
+            
+            return distance <= parseInt(nearbyRadius);
           });
 
-          if (error) throw error;
-
-          setFilteredMembers(data || []);
+          setFilteredMembers(nearbyMembers);
           toast({
             title: "Nearby Members Found",
-            description: `Found ${data?.length || 0} members within ${nearbyRadius}km`,
+            description: `Found ${nearbyMembers.length} members within ${nearbyRadius}km`,
           });
         } catch (error) {
           console.error('Error finding nearby members:', error);
@@ -209,13 +236,13 @@ const Directory = () => {
           <h1 className="text-4xl font-bold text-foreground mb-4">Statesmen Directory</h1>
           <p className="text-base text-muted-foreground max-w-3xl">
             Connect with fellow SMMOWCUB members across Nigeria and beyond. 
-            Filter by graduation year, council office, or find members near you.
+            Filter by council office, war session, or find members near you.
           </p>
         </div>
 
         {/* Sticky Controls Bar */}
         <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border mb-8 pb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Search Bar */}
             <div className="relative lg:col-span-2">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -227,19 +254,6 @@ const Directory = () => {
                 className="pl-10"
               />
             </div>
-
-            {/* Graduation Year Filter */}
-            <Select value={selectedGradYear} onValueChange={setSelectedGradYear}>
-              <SelectTrigger>
-                <SelectValue placeholder="Graduation Year" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Years</SelectItem>
-                {graduationYears.map(year => (
-                  <SelectItem key={year} value={year}>{year}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
 
             {/* Council Office Filter */}
             <Select value={selectedOffice} onValueChange={setSelectedOffice}>
