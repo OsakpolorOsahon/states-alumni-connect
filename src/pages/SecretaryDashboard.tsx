@@ -19,7 +19,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 
 const SecretaryDashboard = () => {
-  const { user } = useAuth();
+  const { member } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
 
   const pendingApprovals = [
@@ -44,7 +44,7 @@ const SecretaryDashboard = () => {
             <div>
               <h1 className="text-3xl font-bold text-foreground">Secretary Dashboard</h1>
               <p className="text-muted-foreground mt-2">
-                Welcome, {user?.fullName} - Manage SMMOWCUB operations
+                Welcome, {member?.full_name} - Manage SMMOWCUB operations
               </p>
             </div>
             <Button asChild variant="outline">

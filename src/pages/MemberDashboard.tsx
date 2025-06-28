@@ -8,7 +8,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 
 const MemberDashboard = () => {
-  const { user, logout } = useAuth();
+  const { user, member, logout, isSecretary } = useAuth();
 
   const quickLinks = [
     { title: "Empowerment Hub", description: "Access resources and training materials", icon: BookOpen, href: "/empowerment" },
@@ -28,17 +28,17 @@ const MemberDashboard = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h1 className="text-3xl font-bold text-foreground">
-                Welcome back, {user?.nickname || user?.fullName}!
+                Welcome back, {member?.nickname || member?.full_name}!
               </h1>
               <p className="text-muted-foreground mt-2">
-                {user?.currentCouncilOffice && user.currentCouncilOffice !== "None" 
-                  ? `Current Office: ${user.currentCouncilOffice}` 
-                  : `Last Position: ${user?.lastMowcubPosition} (${user?.lastWarSession})`
+                {member?.current_council_office && member.current_council_office !== "None" 
+                  ? `Current Office: ${member.current_council_office}` 
+                  : `Last Position: ${member?.last_mowcub_position} (${member?.stateship_year})`
                 }
               </p>
             </div>
             <div className="flex gap-2">
-              {user?.isSecretary && (
+              {isSecretary && (
                 <Button asChild className="bg-[#E10600] hover:bg-[#C10500]">
                   <a href="/secretary-dashboard">Secretary Dashboard</a>
                 </Button>
