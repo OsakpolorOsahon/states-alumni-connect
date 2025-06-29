@@ -8,7 +8,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 
 const MemberDashboard = () => {
-  const { user, member, logout, isSecretary } = useAuth();
+  const { user, member, signOut, isSecretary } = useAuth();
 
   const quickLinks = [
     { title: "Empowerment Hub", description: "Access resources and training materials", icon: BookOpen, href: "/empowerment" },
@@ -43,7 +43,7 @@ const MemberDashboard = () => {
                   <a href="/secretary-dashboard">Secretary Dashboard</a>
                 </Button>
               )}
-              <Button variant="outline" onClick={logout}>
+              <Button variant="outline" onClick={signOut}>
                 Logout
               </Button>
             </div>
