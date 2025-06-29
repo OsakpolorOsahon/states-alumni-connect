@@ -19,6 +19,8 @@ import News from "./pages/News";
 import Map from "./pages/Map";
 import MemberDashboard from "./pages/MemberDashboard";
 import SecretaryDashboard from "./pages/SecretaryDashboard";
+import HallOfFame from "./pages/HallOfFame";
+import NewsEvents from "./pages/NewsEvents";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,10 +39,16 @@ const App = () => (
             <Route path="/directory/:id" element={<MemberProfile />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/news" element={<News />} />
+            <Route path="/news-events" element={
+              <ProtectedRoute requireSecretary>
+                <NewsEvents />
+              </ProtectedRoute>
+            } />
+            <Route path="/hall-of-fame" element={<HallOfFame />} />
             <Route path="/map" element={<Map />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/pending-approval" element={<PendingApproval />} />
+            <Route path="/pending-approval" element={<PendingAproval />} />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <MemberDashboard />

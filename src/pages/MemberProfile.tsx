@@ -3,13 +3,13 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { MapPin, Award, Calendar, User, AlertTriangle } from "lucide-react";
+import { MapPin, User, AlertTriangle } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import MemberProfileBadges from "@/components/MemberProfileBadges";
 import { useToast } from "@/hooks/use-toast";
 
 interface Member {
@@ -25,19 +25,10 @@ interface Member {
   paid_through?: string;
 }
 
-interface BadgeRecord {
-  id: string;
-  badge_name: string;
-  badge_code: string;
-  description?: string;
-  awarded_at: string;
-}
-
 const MemberProfile = () => {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
   const [member, setMember] = useState<Member | null>(null);
-  const [badges, setBadges] = useState<BadgeRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -45,7 +36,6 @@ const MemberProfile = () => {
       if (!id) return;
 
       try {
-        // Fetch member details
         const { data: memberData, error: memberError } = await supabase
           .from('members')
           .select('id, full_name, nickname, stateship_year, last_mowcub_position, current_council_office, photo_url, latitude, longitude, paid_through')
@@ -54,18 +44,7 @@ const MemberProfile = () => {
           .single();
 
         if (memberError) throw memberError;
-
         setMember(memberData);
-
-        // Fetch member badges
-        const { data: badgeData, error: badgeError } = await supabase
-          .from('badges')
-          .select('*')
-          .eq('member_id', id);
-
-        if (badgeError) throw badgeError;
-
-        setBadges(badgeData || []);
       } catch (error) {
         console.error('Error fetching member data:', error);
         toast({
@@ -169,7 +148,7 @@ const MemberProfile = () => {
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Award className="w-4 h-4 text-[#E10600]" />
+                      <User className="w-4 h-4 text-[#E10600]" />
                       <span className="text-sm">
                         <strong>Last Position:</strong> {member.last_mowcub_position}
                       </span>
@@ -190,40 +169,7 @@ const MemberProfile = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Badges Section */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="h-5 w-5" />
-                  Recognition Badges ({badges.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {badges.length > 0 ? (
-                  <div className="space-y-4">
-                    {badges.map(badge => (
-                      <div key={badge.id} className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-                        <div className="w-10 h-10 bg-[#E10600] text-white rounded-full flex items-center justify-center font-bold text-sm">
-                          {badge.badge_code}
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold">{badge.badge_name}</h4>
-                          {badge.description && (
-                            <p className="text-sm text-muted-foreground">{badge.description}</p>
-                          )}
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Awarded: {new Date(badge.awarded_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground text-center py-8">
-                    No badges awarded yet
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+            <MemberProfileBadges memberId={member.id} />
 
             {/* Location Map */}
             <Card>
@@ -247,9 +193,11 @@ const MemberProfile = () => {
                         </p>
                       </div>
                     </div>
-                    <Button variant="outline" className="w-full">
-                      <MapPin className="w-4 h-4 mr-2" />
-                      View on Map
+                    <Button variant="outline" className="w-full" asChild>
+                      <a href="/map">
+                        <MapPin className="w-4 h-4 mr-2" />
+                        View on Map
+                      </a>
                     </Button>
                   </div>
                 ) : (
