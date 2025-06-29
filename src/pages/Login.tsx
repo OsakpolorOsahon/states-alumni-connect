@@ -1,131 +1,102 @@
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabaseClient";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import Navigation from '@/components/Navigation';
+import Footer from '@/components/Footer';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { signIn } = useAuth();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    emailOrUsername: "",
-    password: "",
+    email: '',
+    password: ''
   });
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setIsLoading(true);
+    setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: formData.emailOrUsername,
-        password: formData.password,
-      });
-
-      if (error) {
-        setError("Invalid credentials. Please try again.");
+      const result = await signIn(formData.email, formData.password);
+      
+      if (result.error) {
+        toast({
+          title: "Login Failed",
+          description: result.error.message,
+          variant: "destructive"
+        });
       } else {
-        navigate("/dashboard");
+        toast({
+          title: "Login Successful",
+          description: "Welcome back!",
+        });
+        navigate('/');
       }
     } catch (error) {
-      setError("Invalid credentials. Please try again.");
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive"
+      });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background dark:bg-background">
+    <div className="min-h-screen bg-background">
       <Navigation />
-      <div className="container mx-auto py-12 px-4 flex-grow">
+      <div className="container mx-auto py-12 px-4">
         <div className="max-w-md mx-auto">
           <Card>
-            <CardHeader className="text-center">
-              <CardTitle className="text-3xl font-bold text-foreground">
-                Member Login
-              </CardTitle>
-              <p className="text-muted-foreground mt-2">
-                Access your SMMOWCUB account
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-center">Welcome Back</CardTitle>
+              <p className="text-center text-muted-foreground">
+                Sign in to your SMMOWCUB account
               </p>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Error Alert */}
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-
-                {/* Email or Username */}
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="emailOrUsername" className="text-sm font-medium">
-                    Email/Username
-                  </Label>
+                  <Label htmlFor="email">Email Address</Label>
                   <Input
-                    id="emailOrUsername"
-                    type="text"
-                    placeholder="Enter your email or username"
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                     required
-                    value={formData.emailOrUsername}
-                    onChange={(e) => setFormData(prev => ({ ...prev, emailOrUsername: e.target.value }))}
-                    className="focus:ring-red-300 focus:border-red-300"
                   />
                 </div>
-
-                {/* Password */}
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-medium">
-                    Password
-                  </Label>
+                  <Label htmlFor="password">Password</Label>
                   <Input
                     id="password"
                     type="password"
-                    placeholder="Enter your password"
-                    required
                     value={formData.password}
                     onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                    className="focus:ring-red-300 focus:border-red-300"
+                    required
                   />
                 </div>
-
-                {/* Submit Button */}
-                <Button 
-                  type="submit" 
-                  className="w-full bg-[#E10600] hover:bg-[#C10500] text-white"
-                  size="lg"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Logging in..." : "Log In"}
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? 'Signing In...' : 'Sign In'}
                 </Button>
-
-                {/* Forgot Password Link */}
-                <div className="text-center">
-                  <a 
-                    href="/forgot-password" 
-                    className="text-sm text-[#E10600] hover:underline font-medium"
-                  >
-                    Forgot Password?
-                  </a>
-                </div>
-
-                <div className="text-center pt-4 border-t border-border">
-                  <p className="text-sm text-muted-foreground">
-                    Don't have an account?{" "}
-                    <a href="/signup" className="text-[#E10600] hover:underline font-medium">
-                      Sign up here
-                    </a>
-                  </p>
-                </div>
               </form>
+              <div className="mt-4 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Don't have an account?{' '}
+                  <Link to="/signup" className="text-[#E10600] hover:underline">
+                    Sign up here
+                  </Link>
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>
