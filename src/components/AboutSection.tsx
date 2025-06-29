@@ -5,10 +5,10 @@ import { Link } from "react-router-dom";
 
 const AboutSection = () => {
   return (
-    <section className="py-16 lg:py-24 bg-white">
+    <section className="py-16 lg:py-24 bg-background dark:bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground dark:text-foreground mb-4">
             About SMMOWCUB
           </h2>
         </div>
@@ -18,20 +18,20 @@ const AboutSection = () => {
           <div className="relative">
             <div className="absolute left-0 top-0 w-1 h-full bg-[#E10600]"></div>
             <div className="pl-8">
-              <p className="text-lg text-gray-700 leading-relaxed mb-8">
-                The Student Man O' War Command of the University of Benin (SMMOWCUB) stands as a beacon of leadership, discipline, and excellence. Founded on the principles of character development and service to humanity, our organization has been shaping future leaders for over five decades.
+              <p className="text-lg text-muted-foreground dark:text-muted-foreground leading-relaxed mb-8">
+                The Senior Members of the Man O' War Club University of Benin (SMMOWCUB) stands as a beacon of leadership, discipline, and excellence. Founded on the principles of character development and service to humanity, our organization has been shaping future leaders for over five decades.
               </p>
-              <p className="text-lg text-gray-700 leading-relaxed mb-8">
+              <p className="text-lg text-muted-foreground dark:text-muted-foreground leading-relaxed mb-8">
                 Our alumni, known as Statesmen, have gone on to become influential leaders across various sectors—from government and military to business and academia. This exclusive portal serves as a bridge connecting our distinguished graduates, fostering continued growth, mentorship, and professional development.
               </p>
-              <p className="text-lg text-gray-700 leading-relaxed mb-12">
+              <p className="text-lg text-muted-foreground dark:text-muted-foreground leading-relaxed mb-12">
                 Through shared values of integrity, courage, and service, we continue to uphold the legacy that defines the Man O' War tradition, ensuring that the spirit of excellence lives on in every generation of UNIBEN graduates.
               </p>
               
               <Link to="/history">
                 <Button 
                   variant="outline" 
-                  className="border-[#E10600] text-[#E10600] hover:bg-[#E10600] hover:text-white group"
+                  className="border-[#E10600] text-[#E10600] hover:bg-[#E10600] hover:text-white dark:border-[#E10600] dark:text-[#E10600] dark:hover:bg-[#E10600] dark:hover:text-white group"
                 >
                   Learn More
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />

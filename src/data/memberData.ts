@@ -65,3 +65,12 @@ export const BADGE_DEFINITIONS = [
   { code: 'INNOVATION_PIONEER', name: 'Innovation Pioneer', description: 'Groundbreaking innovation and creativity' },
   { code: 'BROTHERHOOD_AMBASSADOR', name: 'Brotherhood Ambassador', description: 'Exceptional promotion of SMMOWCUB values' }
 ];
+
+// Organization information
+export const ORGANIZATION_INFO = {
+  fullName: 'Senior Members of the Man O\' War Club University of Benin',
+  abbreviation: 'SMMOWCUB',
+  description: 'A prestigious alumni association of the Man O\' War Club, University of Benin, dedicated to leadership, discipline, and excellence.',
+  foundedYear: 1970,
+  motto: 'Leadership Through Service'
+};
