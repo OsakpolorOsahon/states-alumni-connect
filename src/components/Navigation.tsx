@@ -1,9 +1,20 @@
+// src/components/Navigation.tsx
 
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Sun, Moon, User, Award, Calendar, MapPin, Users, LogOut } from "lucide-react";
+import {
+  Menu,
+  Sun,
+  Moon,
+  User,
+  Award,
+  Calendar,
+  MapPin,
+  Users,
+  LogOut,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -12,7 +23,7 @@ const Navigation = () => {
   const { theme, setTheme } = useTheme();
   const { user, member, signOut, loading } = useAuth();
   const location = useLocation();
-
+  
   const publicNavItems = [
     { name: "Home", href: "/" },
     { name: "History", href: "/history" },
@@ -22,7 +33,7 @@ const Navigation = () => {
     { name: "Map", href: "/map" },
     { name: "Contact", href: "/contact" },
   ];
-
+  
   const memberNavItems = [
     { name: "Dashboard", href: "/dashboard", icon: User },
     { name: "Hall of Fame", href: "/hall-of-fame", icon: Award },
@@ -30,26 +41,34 @@ const Navigation = () => {
     { name: "Map", href: "/map", icon: MapPin },
     { name: "Directory", href: "/directory", icon: Users },
   ];
-
+  
   const isActive = (path: string) => location.pathname === path;
-
+  
   const handleLinkClick = () => {
     setIsOpen(false);
   };
-
+  
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
+          {/* Logo + Brand */}
           <div className="flex items-center">
-            <Link to="/" className="flex-shrink-0">
-              <span className="text-xl font-bold text-[#E10600]">SMMOWCUB</span>
+            <Link to="/" className="flex-shrink-0 flex items-center space-x-2">
+              <img
+                src="/images/logo-transparent.png"
+                alt="SMMOWCUB Logo"
+                className="h-8 w-auto"
+              />
+              <span className="text-xl font-bold text-[#E10600] dark:text-white">
+                SMMOWCUB
+              </span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
-            {user && member?.status === 'Active' ? (
+            {user && member?.status === "Active" ? (
               // Authenticated Member Navigation
               memberNavItems.map((item) => {
                 const IconComponent = item.icon;
@@ -101,9 +120,9 @@ const Navigation = () => {
               <div className="w-20 h-9 bg-muted animate-pulse rounded-md" />
             ) : user ? (
               <div className="flex items-center gap-2">
-                {member?.role === 'secretary' && (
+                {member?.role === "secretary" && (
                   <Link to="/secretary-dashboard">
-                    <Button size="sm" className="bg-[#E10600] hover:bg-[#C10500]">
+                    <Button className="bg-[#E10600] hover:bg-[#C10500]">
                       Secretary
                     </Button>
                   </Link>
@@ -120,12 +139,10 @@ const Navigation = () => {
             ) : (
               <div className="flex items-center gap-2">
                 <Link to="/login">
-                  <Button variant="ghost" size="sm">
-                    Login
-                  </Button>
+                  <Button variant="ghost">Login</Button>
                 </Link>
                 <Link to="/signup">
-                  <Button size="sm" className="bg-[#E10600] hover:bg-[#C10500]">
+                  <Button className="bg-[#E10600] hover:bg-[#C10500]">
                     Join Us
                   </Button>
                 </Link>
@@ -133,7 +150,7 @@ const Navigation = () => {
             )}
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile menu & theme */}
           <div className="md:hidden flex items-center gap-2">
             <Button
               variant="ghost"
@@ -143,7 +160,7 @@ const Navigation = () => {
               <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
               <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             </Button>
-            
+
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
@@ -153,15 +170,15 @@ const Navigation = () => {
               </SheetTrigger>
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
                 <div className="flex flex-col space-y-4 mt-8">
-                  {user && member?.status === 'Active' ? (
-                    // Authenticated Member Mobile Navigation
+                  {user && member?.status === "Active" ? (
                     <>
                       <div className="pb-4 border-b border-border">
                         <p className="font-medium text-foreground">
                           {member?.nickname || member?.full_name}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          {member?.current_council_office || member?.last_mowcub_position}
+                          {member?.current_council_office ||
+                            member?.last_mowcub_position}
                         </p>
                       </div>
                       {memberNavItems.map((item) => {
@@ -182,7 +199,7 @@ const Navigation = () => {
                           </Link>
                         );
                       })}
-                      {member?.role === 'secretary' && (
+                      {member?.role === "secretary" && (
                         <Link
                           to="/secretary-dashboard"
                           onClick={handleLinkClick}
@@ -204,7 +221,6 @@ const Navigation = () => {
                       </Button>
                     </>
                   ) : (
-                    // Public Mobile Navigation
                     <>
                       {publicNavItems.map((item) => (
                         <Link
