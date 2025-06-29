@@ -48,7 +48,7 @@ const App = () => (
             <Route path="/map" element={<Map />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/pending-approval" element={<PendingAproval />} />
+            <Route path="/pending-approval" element={<PendingApproval />} />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <MemberDashboard />

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -64,7 +63,7 @@ const HallOfFame = () => {
             current_council_office
           )
         `)
-        .order('achievement_date', { ascending: false, nullsLast: true })
+        .order('achievement_date', { ascending: false, nullsFirst: true })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
