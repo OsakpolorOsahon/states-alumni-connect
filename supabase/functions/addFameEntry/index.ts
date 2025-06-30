@@ -18,61 +18,61 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { memberId, achievementTitle, achievementDescription, achievementDate } = await req.json()
+    const { member_id, achievement_title, achievement_description, achievement_date } = await req.json()
 
-    if (!memberId || !achievementTitle) {
+    if (!member_id || !achievement_title) {
       return new Response(
         JSON.stringify({ error: 'Member ID and achievement title are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Add to hall of fame
-    const { data: fameEntry, error: fameError } = await supabaseClient
+    // Add Hall of Fame entry
+    const { data: entry, error: entryError } = await supabaseClient
       .from('hall_of_fame')
       .insert({
-        member_id: memberId,
-        achievement_title: achievementTitle,
-        achievement_description: achievementDescription,
-        achievement_date: achievementDate || new Date().toISOString().split('T')[0]
+        member_id,
+        achievement_title,
+        achievement_description,
+        achievement_date: achievement_date || null
       })
       .select('*')
       .single()
 
-    if (fameError) {
-      throw fameError
+    if (entryError) {
+      throw entryError
     }
 
     // Get member info for notification
     const { data: member } = await supabaseClient
       .from('members')
       .select('full_name')
-      .eq('id', memberId)
+      .eq('id', member_id)
       .single()
 
     // Create notification
     await supabaseClient
       .from('notifications')
       .insert({
-        member_id: memberId,
-        title: 'Hall of Fame Entry!',
-        message: `Congratulations! You've been added to the Hall of Fame for "${achievementTitle}".`,
-        type: 'general'
+        member_id: member_id,
+        title: 'Hall of Fame Recognition!',
+        message: `Congratulations! You've been inducted into the Hall of Fame for "${achievement_title}".`,
+        type: 'hall_of_fame'
       })
 
-    console.log(`Hall of Fame entry created for member ${member?.full_name}: ${achievementTitle}`)
+    console.log(`Hall of Fame entry added for member ${member?.full_name}`)
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Hall of Fame entry created for ${member?.full_name}`,
-        fameEntry
+        message: `Hall of Fame entry added successfully`,
+        entry
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {
-    console.error('Error creating Hall of Fame entry:', error)
+    console.error('Error adding hall of fame entry:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

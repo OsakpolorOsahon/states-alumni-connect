@@ -1,7 +1,8 @@
+
 {
-  "name": "SMMOWCUB – Senior Members of the Man O’ War Club, UNIBEN",
+  "name": "SMMOWCUB – Senior Members of the Man O' War Club, UNIBEN",
   "short_name": "SMMOWCUB",
-  "description": "Official portal for Senior Members of the Man O’ War Club, University of Benin alumni network",
+  "description": "Official portal for Senior Members of the Man O' War Club, University of Benin alumni network",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

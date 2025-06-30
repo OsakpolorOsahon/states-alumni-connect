@@ -1,7 +1,7 @@
-// src/components/Navigation.tsx
 
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/contexts/AuthContext";
+import NotificationBell from "./NotificationBell";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,6 +27,7 @@ const Navigation = () => {
   
   const publicNavItems = [
     { name: "Home", href: "/" },
+    { name: "About", href: "/about" },
     { name: "History", href: "/history" },
     { name: "Directory", href: "/directory" },
     { name: "Hall of Fame", href: "/hall-of-fame" },
@@ -49,11 +51,19 @@ const Navigation = () => {
   };
   
   return (
-    <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+    <motion.nav
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo + Brand */}
-          <div className="flex items-center">
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className="flex items-center"
+          >
             <Link to="/" className="flex-shrink-0 flex items-center space-x-2">
               <img
                 src="/images/logo-transparent.png"
@@ -64,45 +74,60 @@ const Navigation = () => {
                 SMMOWCUB
               </span>
             </Link>
-          </div>
+          </motion.div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
             {user && member?.status === "Active" ? (
               // Authenticated Member Navigation
-              memberNavItems.map((item) => {
+              memberNavItems.map((item, index) => {
                 const IconComponent = item.icon;
                 return (
-                  <Link
+                  <motion.div
                     key={item.name}
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                  >
+                    <Link
+                      to={item.href}
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
+                        isActive(item.href)
+                          ? "bg-[#E10600] text-white"
+                          : "text-foreground hover:text-[#E10600] hover:bg-muted"
+                      }`}
+                    >
+                      <IconComponent className="h-4 w-4" />
+                      {item.name}
+                    </Link>
+                  </motion.div>
+                );
+              })
+            ) : (
+              // Public Navigation
+              publicNavItems.map((item, index) => (
+                <motion.div
+                  key={item.name}
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <Link
                     to={item.href}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                       isActive(item.href)
                         ? "bg-[#E10600] text-white"
                         : "text-foreground hover:text-[#E10600] hover:bg-muted"
                     }`}
                   >
-                    <IconComponent className="h-4 w-4" />
                     {item.name}
                   </Link>
-                );
-              })
-            ) : (
-              // Public Navigation
-              publicNavItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive(item.href)
-                      ? "bg-[#E10600] text-white"
-                      : "text-foreground hover:text-[#E10600] hover:bg-muted"
-                  }`}
-                >
-                  {item.name}
-                </Link>
+                </motion.div>
               ))
             )}
+
+            {/* Notification Bell */}
+            {user && member?.status === "Active" && <NotificationBell />}
 
             {/* Theme Toggle */}
             <Button
@@ -152,6 +177,8 @@ const Navigation = () => {
 
           {/* Mobile menu & theme */}
           <div className="md:hidden flex items-center gap-2">
+            {user && member?.status === "Active" && <NotificationBell />}
+            
             <Button
               variant="ghost"
               size="icon"
@@ -256,7 +283,7 @@ const Navigation = () => {
           </div>
         </div>
       </div>
-    </nav>
+    </motion.nav>
   );
 };
 
