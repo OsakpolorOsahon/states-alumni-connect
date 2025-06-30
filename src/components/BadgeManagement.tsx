@@ -24,10 +24,8 @@ interface BadgeRecord {
   description?: string;
   member_id: string;
   awarded_at: string;
-  members: {
-    full_name: string;
-    nickname?: string;
-  };
+  member_name: string;
+  member_nickname?: string;
 }
 
 const BadgeManagement = () => {
@@ -75,19 +73,32 @@ const BadgeManagement = () => {
 
   const fetchBadges = async () => {
     try {
-      const { data, error } = await supabase
+      // First fetch badges
+      const { data: badgesData, error: badgesError } = await supabase
         .from('badges')
-        .select(`
-          *,
-          members (
-            full_name,
-            nickname
-          )
-        `)
+        .select('*')
         .order('awarded_at', { ascending: false });
 
-      if (error) throw error;
-      setBadges(data || []);
+      if (badgesError) throw badgesError;
+
+      // Then fetch member details for each badge
+      const badgesWithMembers = await Promise.all(
+        (badgesData || []).map(async (badge) => {
+          const { data: memberData } = await supabase
+            .from('members')
+            .select('full_name, nickname')
+            .eq('id', badge.member_id)
+            .single();
+
+          return {
+            ...badge,
+            member_name: memberData?.full_name || 'Unknown',
+            member_nickname: memberData?.nickname
+          };
+        })
+      );
+
+      setBadges(badgesWithMembers);
     } catch (error) {
       console.error('Error fetching badges:', error);
     }
@@ -280,8 +291,8 @@ const BadgeManagement = () => {
                     <div>
                       <h4 className="font-semibold">{badge.badge_name}</h4>
                       <p className="text-sm text-muted-foreground">
-                        Awarded to {badge.members.full_name}
-                        {badge.members.nickname && ` "${badge.members.nickname}"`}
+                        Awarded to {badge.member_name}
+                        {badge.member_nickname && ` "${badge.member_nickname}"`}
                       </p>
                     </div>
                   </div>
