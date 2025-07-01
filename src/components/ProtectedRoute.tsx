@@ -9,7 +9,7 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children, requireSecretary = false }: ProtectedRouteProps) => {
   return (
-    <AuthGuard requireAuth={true} requireSecretary={requireSecretary}>
+    <AuthGuard requireAuth={true} requireActive={true} requireSecretary={requireSecretary}>
       {children}
     </AuthGuard>
   );

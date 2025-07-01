@@ -14,6 +14,11 @@ import {
   MapPin,
   Users,
   LogOut,
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  Youtube,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,22 +34,28 @@ const Navigation = () => {
     { name: "Home", href: "/" },
     { name: "About", href: "/about" },
     { name: "History", href: "/history" },
-    { name: "Directory", href: "/directory" },
     { name: "Hall of Fame", href: "/hall-of-fame" },
-    { name: "News", href: "/news" },
-    { name: "Map", href: "/map" },
     { name: "Contact", href: "/contact" },
   ];
   
   const memberNavItems = [
     { name: "Dashboard", href: "/dashboard", icon: User },
-    { name: "Hall of Fame", href: "/hall-of-fame", icon: Award },
-    { name: "News & Events", href: "/news-events", icon: Calendar },
-    { name: "Map", href: "/map", icon: MapPin },
     { name: "Directory", href: "/directory", icon: Users },
+    { name: "News", href: "/news", icon: Calendar },
+    { name: "Map", href: "/map", icon: MapPin },
+    { name: "Hall of Fame", href: "/hall-of-fame", icon: Award },
+  ];
+
+  const socialLinks = [
+    { icon: Facebook, href: "#", label: "Facebook" },
+    { icon: Twitter, href: "#", label: "Twitter" },
+    { icon: Instagram, href: "#", label: "Instagram" },
+    { icon: Linkedin, href: "#", label: "LinkedIn" },
+    { icon: Youtube, href: "#", label: "YouTube" },
   ];
   
   const isActive = (path: string) => location.pathname === path;
+  const isHomePage = location.pathname === "/";
   
   const handleLinkClick = () => {
     setIsOpen(false);
@@ -124,6 +135,27 @@ const Navigation = () => {
                   </Link>
                 </motion.div>
               ))
+            )}
+
+            {/* Social Links (only on homepage) */}
+            {isHomePage && !user && (
+              <div className="flex items-center space-x-2 ml-4 pl-4 border-l border-border">
+                {socialLinks.map((social, index) => {
+                  const IconComponent = social.icon;
+                  return (
+                    <motion.a
+                      key={social.label}
+                      href={social.href}
+                      whileHover={{ scale: 1.1, y: -2 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="p-2 text-muted-foreground hover:text-[#E10600] transition-colors duration-300"
+                      aria-label={social.label}
+                    >
+                      <IconComponent className="h-4 w-4" />
+                    </motion.a>
+                  );
+                })}
+              </div>
             )}
 
             {/* Notification Bell */}
@@ -263,6 +295,29 @@ const Navigation = () => {
                           {item.name}
                         </Link>
                       ))}
+                      
+                      {/* Social Links in Mobile */}
+                      {isHomePage && (
+                        <div className="pt-4 border-t border-border">
+                          <p className="text-sm font-medium text-muted-foreground mb-3">Follow Us</p>
+                          <div className="flex space-x-3">
+                            {socialLinks.map((social) => {
+                              const IconComponent = social.icon;
+                              return (
+                                <a
+                                  key={social.label}
+                                  href={social.href}
+                                  className="p-2 bg-muted rounded-full hover:bg-[#E10600] hover:text-white transition-colors duration-300"
+                                  aria-label={social.label}
+                                >
+                                  <IconComponent className="h-4 w-4" />
+                                </a>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      
                       <div className="pt-4 border-t border-border space-y-2">
                         <Link to="/login" onClick={handleLinkClick}>
                           <Button variant="outline" className="w-full justify-start">

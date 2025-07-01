@@ -38,12 +38,17 @@ export const deleteFile = async (
   bucket: string = 'member-files'
 ): Promise<{ success: boolean; error?: string }> => {
   try {
-    const fileName = url.split('/').pop();
-    if (!fileName) return { success: false, error: 'Invalid file URL' };
+    // Extract the file path from the URL
+    const urlParts = url.split('/');
+    const bucketIndex = urlParts.findIndex(part => part === bucket);
+    if (bucketIndex === -1) return { success: false, error: 'Invalid file URL' };
+    
+    const filePath = urlParts.slice(bucketIndex + 1).join('/');
+    if (!filePath) return { success: false, error: 'Invalid file path' };
 
     const { error } = await supabase.storage
       .from(bucket)
-      .remove([fileName]);
+      .remove([filePath]);
 
     if (error) {
       return { success: false, error: error.message };

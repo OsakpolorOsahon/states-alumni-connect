@@ -1,5 +1,6 @@
 
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   return (
@@ -23,20 +24,24 @@ const HeroSection = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Button 
-            size="lg" 
-            className="bg-[#E10600] hover:bg-[#C10500] text-white px-8 py-3 text-lg font-semibold"
-            aria-label="View Alumni Directory"
-          >
-            View Directory
-          </Button>
-          <Button 
-            size="lg" 
-            className="bg-[#E10600] hover:bg-[#C10500] text-white px-8 py-3 text-lg font-semibold"
-            aria-label="Contact Us"
-          >
-            Contact Us
-          </Button>
+          <Link to="/directory">
+            <Button 
+              size="lg" 
+              className="bg-[#E10600] hover:bg-[#C10500] text-white px-8 py-3 text-lg font-semibold"
+              aria-label="View Alumni Directory"
+            >
+              View Directory
+            </Button>
+          </Link>
+          <Link to="/contact">
+            <Button 
+              size="lg" 
+              className="bg-[#E10600] hover:bg-[#C10500] text-white px-8 py-3 text-lg font-semibold"
+              aria-label="Contact Us"
+            >
+              Contact Us
+            </Button>
+          </Link>
         </div>
       </div>
 

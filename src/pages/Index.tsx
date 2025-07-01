@@ -4,6 +4,10 @@ import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
 import FeaturesSection from "@/components/FeaturesSection";
 import AboutSection from "@/components/AboutSection";
+import HistorySection from "@/components/HistorySection";
+import DirectorySection from "@/components/DirectorySection";
+import HallOfFameSection from "@/components/HallOfFameSection";
+import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
 
@@ -24,6 +28,10 @@ const Index = () => {
       <HeroSection />
       <FeaturesSection />
       <AboutSection />
+      <HistorySection />
+      <DirectorySection />
+      <HallOfFameSection />
+      <ContactSection />
       <Footer />
     </motion.div>
   );

@@ -53,26 +53,46 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/history" element={<History />} />
-                <Route path="/directory" element={<Directory />} />
-                <Route path="/directory/:id" element={<MemberProfile />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/news" element={<News />} />
-                <Route path="/news-events" element={
-                  <ProtectedRoute requireSecretary>
-                    <NewsEvents />
-                  </ProtectedRoute>
-                } />
                 <Route path="/hall-of-fame" element={<HallOfFame />} />
-                <Route path="/map" element={<Map />} />
+                <Route path="/contact" element={<Contact />} />
                 <Route path="/signup" element={<SignUp />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/pending-approval" element={<PendingApproval />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-use" element={<TermsOfUse />} />
                 <Route path="/guidelines" element={<Guidelines />} />
+                
+                {/* Protected routes for authenticated active members */}
+                <Route path="/directory" element={
+                  <ProtectedRoute>
+                    <Directory />
+                  </ProtectedRoute>
+                } />
+                <Route path="/directory/:id" element={
+                  <ProtectedRoute>
+                    <MemberProfile />
+                  </ProtectedRoute>
+                } />
+                <Route path="/news" element={
+                  <ProtectedRoute>
+                    <News />
+                  </ProtectedRoute>
+                } />
+                <Route path="/map" element={
+                  <ProtectedRoute>
+                    <Map />
+                  </ProtectedRoute>
+                } />
                 <Route path="/dashboard" element={
                   <ProtectedRoute>
                     <MemberDashboard />
+                  </ProtectedRoute>
+                } />
+                
+                {/* Secretary-only routes */}
+                <Route path="/news-events" element={
+                  <ProtectedRoute requireSecretary>
+                    <NewsEvents />
                   </ProtectedRoute>
                 } />
                 <Route path="/secretary-dashboard" element={
@@ -80,6 +100,7 @@ const App = () => (
                     <SecretaryDashboard />
                   </ProtectedRoute>
                 } />
+                
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

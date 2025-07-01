@@ -8,7 +8,7 @@ const Footer = () => {
     { name: 'About Us', href: '/about' },
     { name: 'Directory', href: '/directory' },
     { name: 'News', href: '/news' },
-    { name: 'Events', href: '/events' },
+    { name: 'News & Events', href: '/news-events' },
     { name: 'Hall of Fame', href: '/hall-of-fame' },
     { name: 'Contact', href: '/contact' },
   ];
