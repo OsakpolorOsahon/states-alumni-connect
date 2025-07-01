@@ -1,7 +1,7 @@
 
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Instagram, Linkedin, Youtube, Mail, Phone, MapPin } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from 'lucide-react';
 
 const Footer = () => {
   const quickLinks = [
@@ -14,11 +14,10 @@ const Footer = () => {
   ];
 
   const socialLinks = [
-    { icon: Facebook, href: '#', label: 'Facebook' },
-    { icon: Twitter, href: '#', label: 'Twitter' },
-    { icon: Instagram, href: '#', label: 'Instagram' },
-    { icon: Linkedin, href: '#', label: 'LinkedIn' },
-    { icon: Youtube, href: '#', label: 'YouTube' },
+    { icon: Facebook, href: 'https://www.facebook.com/csmowcub1154', label: 'Facebook' },
+    { icon: Twitter, href: 'https://www.x.com/csmowcub1154', label: 'Twitter' },
+    { icon: Instagram, href: 'https://www.instagram.com/csmowcub1154', label: 'Instagram' },
+    { icon: Linkedin, href: 'http://www.linkedin.com/in/csmowcub1154', label: 'LinkedIn' },
   ];
 
   return (
@@ -56,6 +55,8 @@ const Footer = () => {
                   <motion.a
                     key={social.label}
                     href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     whileHover={{ scale: 1.1, y: -2 }}
                     whileTap={{ scale: 0.95 }}
                     className="p-2 bg-gray-800 rounded-full hover:bg-[#E10600] transition-colors duration-300"

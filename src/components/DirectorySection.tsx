@@ -2,9 +2,13 @@
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin, Users, Globe } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const DirectorySection = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
   const stats = [
     {
       number: "500+",
@@ -22,6 +26,14 @@ const DirectorySection = () => {
       icon: MapPin
     }
   ];
+
+  const handleDirectoryClick = () => {
+    if (user) {
+      navigate('/directory');
+    } else {
+      navigate('/login');
+    }
+  };
 
   return (
     <section className="py-16 lg:py-24 bg-background">
@@ -61,12 +73,13 @@ const DirectorySection = () => {
               })}
             </div>
 
-            <Link to="/directory">
-              <Button className="bg-[#E10600] hover:bg-[#C10500] group">
-                Browse Directory
-                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
+            <Button 
+              onClick={handleDirectoryClick}
+              className="bg-[#E10600] hover:bg-[#C10500] group"
+            >
+              Browse Directory
+              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Button>
           </motion.div>
 
           <motion.div

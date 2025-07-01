@@ -1,9 +1,21 @@
 
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { Facebook, Instagram, Linkedin, Twitter, Youtube } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const HeroSection = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleDirectoryClick = () => {
+    if (user) {
+      navigate('/directory');
+    } else {
+      navigate('/login');
+    }
+  };
+
   return (
     <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
       {/* Background with red overlay */}
@@ -25,15 +37,14 @@ const HeroSection = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-          <Link to="/directory">
-            <Button 
-              size="lg" 
-              className="bg-[#E10600] hover:bg-[#C10500] text-white px-8 py-3 text-lg font-semibold"
-              aria-label="View Alumni Directory"
-            >
-              View Directory
-            </Button>
-          </Link>
+          <Button 
+            onClick={handleDirectoryClick}
+            size="lg" 
+            className="bg-[#E10600] hover:bg-[#C10500] text-white px-8 py-3 text-lg font-semibold"
+            aria-label="View Alumni Directory"
+          >
+            View Directory
+          </Button>
           <Link to="/contact">
             <Button 
               size="lg" 
@@ -48,7 +59,7 @@ const HeroSection = () => {
         {/* Social Media Icons */}
         <div className="flex justify-center items-center space-x-6 mb-8">
           <a 
-            href="https://facebook.com/smmowcub" 
+            href="https://www.facebook.com/csmowcub1154" 
             target="_blank" 
             rel="noopener noreferrer"
             className="text-white hover:text-[#E10600] transition-colors duration-200"
@@ -57,7 +68,7 @@ const HeroSection = () => {
             <Facebook className="h-6 w-6" />
           </a>
           <a 
-            href="https://twitter.com/smmowcub" 
+            href="https://www.x.com/csmowcub1154" 
             target="_blank" 
             rel="noopener noreferrer"
             className="text-white hover:text-[#E10600] transition-colors duration-200"
@@ -66,7 +77,7 @@ const HeroSection = () => {
             <Twitter className="h-6 w-6" />
           </a>
           <a 
-            href="https://instagram.com/smmowcub" 
+            href="https://www.instagram.com/csmowcub1154" 
             target="_blank" 
             rel="noopener noreferrer"
             className="text-white hover:text-[#E10600] transition-colors duration-200"
@@ -75,22 +86,13 @@ const HeroSection = () => {
             <Instagram className="h-6 w-6" />
           </a>
           <a 
-            href="https://linkedin.com/company/smmowcub" 
+            href="http://www.linkedin.com/in/csmowcub1154" 
             target="_blank" 
             rel="noopener noreferrer"
             className="text-white hover:text-[#E10600] transition-colors duration-200"
             aria-label="Follow us on LinkedIn"
           >
             <Linkedin className="h-6 w-6" />
-          </a>
-          <a 
-            href="https://youtube.com/smmowcub" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-white hover:text-[#E10600] transition-colors duration-200"
-            aria-label="Follow us on YouTube"
-          >
-            <Youtube className="h-6 w-6" />
           </a>
         </div>
       </div>
