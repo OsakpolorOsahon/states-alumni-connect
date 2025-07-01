@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { Facebook, Instagram, Linkedin, Twitter, Youtube } from "lucide-react";
 
 const HeroSection = () => {
   return (
@@ -23,7 +24,7 @@ const HeroSection = () => {
           A secure portal for our Statesmen to connect, learn, and be recognized.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
           <Link to="/directory">
             <Button 
               size="lg" 
@@ -42,6 +43,55 @@ const HeroSection = () => {
               Contact Us
             </Button>
           </Link>
+        </div>
+
+        {/* Social Media Icons */}
+        <div className="flex justify-center items-center space-x-6 mb-8">
+          <a 
+            href="https://facebook.com/smmowcub" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-white hover:text-[#E10600] transition-colors duration-200"
+            aria-label="Follow us on Facebook"
+          >
+            <Facebook className="h-6 w-6" />
+          </a>
+          <a 
+            href="https://twitter.com/smmowcub" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-white hover:text-[#E10600] transition-colors duration-200"
+            aria-label="Follow us on Twitter"
+          >
+            <Twitter className="h-6 w-6" />
+          </a>
+          <a 
+            href="https://instagram.com/smmowcub" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-white hover:text-[#E10600] transition-colors duration-200"
+            aria-label="Follow us on Instagram"
+          >
+            <Instagram className="h-6 w-6" />
+          </a>
+          <a 
+            href="https://linkedin.com/company/smmowcub" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-white hover:text-[#E10600] transition-colors duration-200"
+            aria-label="Follow us on LinkedIn"
+          >
+            <Linkedin className="h-6 w-6" />
+          </a>
+          <a 
+            href="https://youtube.com/smmowcub" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-white hover:text-[#E10600] transition-colors duration-200"
+            aria-label="Follow us on YouTube"
+          >
+            <Youtube className="h-6 w-6" />
+          </a>
         </div>
       </div>
 
