@@ -8,7 +8,10 @@
     <!-- PWA Meta Tags -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#E10600" />
-    <meta name="description" content="Secure portal for Senior Members of the Man O’ War Club, University of Benin" />
+    <meta
+      name="description"
+      content="Secure portal for Senior Members of the Man O’ War Club, University of Benin"
+    />
     <link rel="manifest" href="/manifest.json" />
     <!-- Apple touch icon for iOS -->
     <link rel="apple-touch-icon" href="/icons/icon-512.png" />
@@ -19,7 +22,10 @@
     <title>SMMOWCUB – Senior Members of the Man O’ War Club</title>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Fallback content for when JS hasn’t loaded yet -->
+    <div id="root">
+      Loading…
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
