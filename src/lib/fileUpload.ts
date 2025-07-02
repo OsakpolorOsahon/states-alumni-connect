@@ -1,6 +1,6 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
+// Upload for authenticated users (existing functionality)
 export const uploadFile = async (
   file: File,
   bucket: string = 'member-files',
@@ -33,6 +33,36 @@ export const uploadFile = async (
   }
 };
 
+// NEW: Upload function for signup process (unauthenticated users)
+export const signupUpload = async (
+  file: File,
+  folder: 'photos' | 'dues'
+): Promise<{ url?: string; error?: string }> => {
+  try {
+    // Generate unique filename with timestamp and random string
+    const fileExt = file.name.split('.').pop();
+    const randomString = Math.random().toString(36).substring(2, 9);
+    const fileName = `signups/${folder}/${Date.now()}-${randomString}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('member-files')
+      .upload(fileName, file);
+
+    if (uploadError) {
+      return { error: uploadError.message };
+    }
+
+    const { data } = supabase.storage
+      .from('member-files')
+      .getPublicUrl(fileName);
+
+    return { url: data.publicUrl };
+  } catch (error) {
+    return { error: 'Signup upload failed' };
+  }
+};
+
+// Delete function (unchanged)
 export const deleteFile = async (
   url: string,
   bucket: string = 'member-files'
