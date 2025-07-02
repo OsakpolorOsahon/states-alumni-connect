@@ -1,5 +1,6 @@
+// src/pages/SignUp.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +20,7 @@ const SignUp = () => {
   const { signUp } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -34,69 +36,62 @@ const SignUp = () => {
     longitude: null as number | null
   });
 
-  // Get user's location
-  React.useEffect(() => {
+  useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setFormData(prev => ({
-            ...prev,
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
-          }));
-        },
-        (error) => {
-          console.log('Location access denied:', error);
-        }
+        pos => setFormData(prev => ({
+          ...prev,
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude
+        })),
+        () => {}
       );
     }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords do not match",
-        variant: "destructive"
-      });
+      toast({ title: "Error", description: "Passwords do not match", variant: "destructive" });
       return;
     }
 
     if (!formData.photoUrl || !formData.duesProofUrl) {
-      toast({
-        title: "Error",
-        description: "Please upload both profile photo and dues proof",
-        variant: "destructive"
-      });
+      toast({ title: "Error", description: "Please upload both profile photo and dues proof", variant: "destructive" });
       return;
     }
 
     setLoading(true);
 
     try {
-      const result = await signUp(formData.email, formData.password, formData);
-      
-      if (result.error) {
-        toast({
-          title: "Sign Up Failed",
-          description: result.error.message,
-          variant: "destructive"
-        });
+      const { error } = await signUp(
+        formData.email,
+        formData.password,
+        {
+          fullName: formData.fullName,
+          nickname: formData.nickname,
+          stateshipYear: formData.stateshipYear,
+          lastPosition: formData.lastPosition,
+          councilOffice: formData.councilOffice,
+          photoUrl: formData.photoUrl,
+          duesProofUrl: formData.duesProofUrl,
+          latitude: formData.latitude,
+          longitude: formData.longitude
+        }
+      );
+
+      if (error) {
+        toast({ title: "Sign Up Failed", description: error.message, variant: "destructive" });
       } else {
         toast({
           title: "Sign Up Successful",
-          description: "Please check your email to verify your account, then wait for approval.",
+          description: "Please verify your email, then wait for approval."
         });
         navigate('/pending-approval');
       }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive"
-      });
+    } catch {
+      toast({ title: "Error", description: "An unexpected error occurred", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -110,129 +105,62 @@ const SignUp = () => {
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-center">Join SMMOWCUB</CardTitle>
-              <p className="text-center text-muted-foreground">
-                Create your account to apply for membership
-              </p>
+              <p className="text-center text-muted-foreground">Create your account to apply for membership</p>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Basic Information */}
+                {/* Basic Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name</Label>
-                    <Input
-                      id="fullName"
-                      value={formData.fullName}
-                      onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
-                      required
-                    />
-                  </div>
+                  <div><Label>Email Address</Label><Input type="email" required value={formData.email} onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))} /></div>
+                  <div><Label>Full Name</Label><Input required value={formData.fullName} onChange={e => setFormData(prev => ({ ...prev, fullName: e.target.value }))} /></div>
                 </div>
 
+                {/* Passwords */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <PasswordInput
-                      id="password"
-                      value={formData.password}
-                      onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Confirm Password</Label>
-                    <PasswordInput
-                      id="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                      required
-                    />
-                  </div>
+                  <div><Label>Password</Label><PasswordInput required value={formData.password} onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))} /></div>
+                  <div><Label>Confirm Password</Label><PasswordInput required value={formData.confirmPassword} onChange={e => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))} /></div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="nickname">Nickname (Optional)</Label>
-                  <Input
-                    id="nickname"
-                    value={formData.nickname}
-                    onChange={(e) => setFormData(prev => ({ ...prev, nickname: e.target.value }))}
-                  />
-                </div>
+                {/* Nickname */}
+                <div><Label>Nickname (Optional)</Label><Input value={formData.nickname} onChange={e => setFormData(prev => ({ ...prev, nickname: e.target.value }))} /></div>
 
-                {/* MOWCUB Information */}
+                {/* MOWCUB Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
+                  <div>
                     <Label>Year of Statesmanship</Label>
-                    <Select value={formData.stateshipYear} onValueChange={(value) => setFormData(prev => ({ ...prev, stateshipYear: value }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select year" />
-                      </SelectTrigger>
+                    <Select required value={formData.stateshipYear} onValueChange={value => setFormData(prev => ({ ...prev, stateshipYear: value }))}>
+                      <SelectTrigger><SelectValue placeholder="Select year" /></SelectTrigger>
                       <SelectContent>
-                        {STATESHIP_YEARS.map(year => (
-                          <SelectItem key={year} value={year}>{year}</SelectItem>
-                        ))}
+                        {STATESHIP_YEARS.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
+                  <div>
                     <Label>Last MOWCUB Position</Label>
-                    <Select value={formData.lastPosition} onValueChange={(value) => setFormData(prev => ({ ...prev, lastPosition: value }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select position" />
-                      </SelectTrigger>
+                    <Select required value={formData.lastPosition} onValueChange={value => setFormData(prev => ({ ...prev, lastPosition: value }))}>
+                      <SelectTrigger><SelectValue placeholder="Select position" /></SelectTrigger>
                       <SelectContent>
-                        {MOWCUB_POSITIONS.map(position => (
-                          <SelectItem key={position.code} value={position.code}>
-                            {position.code} - {position.title}
-                          </SelectItem>
-                        ))}
+                        {MOWCUB_POSITIONS.map(p => <SelectItem key={p.code} value={p.code}>{p.code} – {p.title}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                {/* Council Office */}
+                <div>
                   <Label>Current Council Office (if any)</Label>
-                  <Select value={formData.councilOffice} onValueChange={(value) => setFormData(prev => ({ ...prev, councilOffice: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select office" />
-                    </SelectTrigger>
+                  <Select value={formData.councilOffice} onValueChange={value => setFormData(prev => ({ ...prev, councilOffice: value }))}>
+                    <SelectTrigger><SelectValue placeholder="Select office" /></SelectTrigger>
                     <SelectContent>
-                      {COUNCIL_OFFICES.map(office => (
-                        <SelectItem key={office} value={office}>{office}</SelectItem>
-                      ))}
+                      {COUNCIL_OFFICES.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
 
                 {/* File Uploads */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FileUpload
-                    label="Profile Photo"
-                    accept="image/*"
-                    folder="photos"
-                    currentUrl={formData.photoUrl}
-                    onUpload={(url) => setFormData(prev => ({ ...prev, photoUrl: url }))}
-                    maxSize={5}
-                  />
-                  <FileUpload
-                    label="Dues Payment Proof"
-                    accept="image/*,.pdf"
-                    folder="dues"
-                    currentUrl={formData.duesProofUrl}
-                    onUpload={(url) => setFormData(prev => ({ ...prev, duesProofUrl: url }))}
-                    maxSize={10}
-                  />
+                  <FileUpload label="Profile Photo" accept="image/*" folder="photos" currentUrl={formData.photoUrl} onUpload={url => setFormData(prev => ({ ...prev, photoUrl: url }))} maxSize={5} />
+                  <FileUpload label="Dues Payment Proof" accept=".pdf,image/*" folder="dues" currentUrl={formData.duesProofUrl} onUpload={url => setFormData(prev => ({ ...prev, duesProofUrl: url }))} maxSize={10} />
                 </div>
 
                 <Button type="submit" className="w-full" disabled={loading}>
