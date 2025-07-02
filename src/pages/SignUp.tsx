@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabaseClient';  // ← our client
+import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -31,19 +31,19 @@ export default function SignUp() {
 
   // raw files
   const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [duesFile, setDuesFile] = useState<File | null>(null);
+  const [duesFile, setDuesFile]     = useState<File | null>(null);
 
   // form fields
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail]                 = useState('');
+  const [password, setPassword]           = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [nickname, setNickname] = useState('');
+  const [fullName, setFullName]           = useState('');
+  const [nickname, setNickname]           = useState('');
   const [stateshipYear, setStateshipYear] = useState('');
-  const [lastPosition, setLastPosition] = useState('');
+  const [lastPosition, setLastPosition]   = useState('');
   const [councilOffice, setCouncilOffice] = useState('None');
-  const [latitude, setLatitude] = useState<number | null>(null);
-  const [longitude, setLongitude] = useState<number | null>(null);
+  const [latitude, setLatitude]           = useState<number | null>(null);
+  const [longitude, setLongitude]         = useState<number | null>(null);
 
   // get geo
   useEffect(() => {
@@ -61,12 +61,12 @@ export default function SignUp() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 1) passwords
+    // 1) validate passwords
     if (password !== confirmPassword) {
       toast({ title: 'Error', description: 'Passwords do not match', variant: 'destructive' });
       return;
     }
-    // 2) files selected
+    // 2) validate files selected
     if (!photoFile || !duesFile) {
       toast({ title: 'Error', description: 'Please select both photo and dues proof', variant: 'destructive' });
       return;
@@ -74,30 +74,42 @@ export default function SignUp() {
 
     setLoading(true);
     try {
-      // 3) sign up and get session
-      const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
+      // 3) sign up
+      const { data: signupData, error: signupError } = await supabase.auth.signUp({
         email,
         password
       });
-      if (signUpErr || !signUpData.user) throw signUpErr || new Error('Sign-up failed');
-      const userId = signUpData.user.id;
+      if (signupError || !signupData.user) {
+        throw signupError || new Error('Sign-up failed');
+      }
+      // 4) immediately sign in to get a session (for RLS)
+      const { error: signinError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      if (signinError) {
+        throw signinError;
+      }
+      const userId = signupData.user.id;
 
-      // 4) upload photo
-      const { data: pd, error: pe } = await supabase.storage
+      // 5) upload photo
+      const { data: photoData, error: photoError } = await supabase
+        .storage
         .from('member-files')
         .upload(`photos/${userId}/${Date.now()}_${photoFile.name}`, photoFile);
-      if (pe || !pd.path) throw pe || new Error('Photo upload failed');
-      const photoUrl = supabase.storage.from('member-files').getPublicUrl(pd.path).publicUrl;
+      if (photoError || !photoData.path) throw photoError || new Error('Photo upload failed');
+      const photoUrl = supabase.storage.from('member-files').getPublicUrl(photoData.path).publicUrl;
 
-      // 5) upload dues proof
-      const { data: dd, error: de } = await supabase.storage
+      // 6) upload dues proof
+      const { data: duesData, error: duesError } = await supabase
+        .storage
         .from('member-files')
         .upload(`dues/${userId}/${Date.now()}_${duesFile.name}`, duesFile);
-      if (de || !dd.path) throw de || new Error('Dues upload failed');
-      const duesUrl = supabase.storage.from('member-files').getPublicUrl(dd.path).publicUrl;
+      if (duesError || !duesData.path) throw duesError || new Error('Dues upload failed');
+      const duesUrl = supabase.storage.from('member-files').getPublicUrl(duesData.path).publicUrl;
 
-      // 6) insert member record
-      const { error: dbErr } = await supabase
+      // 7) insert member record
+      const { error: dbError } = await supabase
         .from('members')
         .insert([{
           user_id: userId,
@@ -112,9 +124,9 @@ export default function SignUp() {
           longitude,
           status: 'Pending'
         }]);
-      if (dbErr) throw dbErr;
+      if (dbError) throw dbError;
 
-      // 7) success
+      // 8) success!
       toast({
         title: 'Sign Up Successful',
         description: 'Check your email to verify, then await approval.'
@@ -144,47 +156,106 @@ export default function SignUp() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Email + Name */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div><Label>Email</Label><Input type="email" required value={email} onChange={e=>setEmail(e.target.value)}/></div>
-                  <div><Label>Full Name</Label><Input required value={fullName} onChange={e=>setFullName(e.target.value)}/></div>
+                  <div>
+                    <Label>Email</Label>
+                    <Input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label>Full Name</Label>
+                    <Input
+                      required
+                      value={fullName}
+                      onChange={e => setFullName(e.target.value)}
+                    />
+                  </div>
                 </div>
+
                 {/* Passwords */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div><Label>Password</Label><PasswordInput required value={password} onChange={e=>setPassword(e.target.value)}/></div>
-                  <div><Label>Confirm Password</Label><PasswordInput required value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)}/></div>
+                  <div>
+                    <Label>Password</Label>
+                    <PasswordInput
+                      required
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label>Confirm Password</Label>
+                    <PasswordInput
+                      required
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                    />
+                  </div>
                 </div>
+
                 {/* Nickname */}
-                <div><Label>Nickname (Optional)</Label><Input value={nickname} onChange={e=>setNickname(e.target.value)}/></div>
+                <div>
+                  <Label>Nickname (Optional)</Label>
+                  <Input
+                    value={nickname}
+                    onChange={e => setNickname(e.target.value)}
+                  />
+                </div>
+
                 {/* MOWCUB Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label>Year of Statesmanship</Label>
-                    <Select required value={stateshipYear} onValueChange={setStateshipYear}>
-                      <SelectTrigger><SelectValue placeholder="Select year"/></SelectTrigger>
+                    <Select
+                      required
+                      value={stateshipYear}
+                      onValueChange={setStateshipYear}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Select year" /></SelectTrigger>
                       <SelectContent>
-                        {STATESHIP_YEARS.map(y=> <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                        {STATESHIP_YEARS.map(y => (
+                          <SelectItem key={y} value={y}>{y}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
                     <Label>Last MOWCUB Position</Label>
-                    <Select required value={lastPosition} onValueChange={setLastPosition}>
-                      <SelectTrigger><SelectValue placeholder="Select position"/></SelectTrigger>
+                    <Select
+                      required
+                      value={lastPosition}
+                      onValueChange={setLastPosition}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Select position" /></SelectTrigger>
                       <SelectContent>
-                        {MOWCUB_POSITIONS.map(p=> <SelectItem key={p.code} value={p.code}>{p.code} – {p.title}</SelectItem>)}
+                        {MOWCUB_POSITIONS.map(p => (
+                          <SelectItem key={p.code} value={p.code}>
+                            {p.code} – {p.title}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
+
                 {/* Council Office */}
                 <div>
                   <Label>Council Office (if any)</Label>
-                  <Select value={councilOffice} onValueChange={setCouncilOffice}>
-                    <SelectTrigger><SelectValue placeholder="Select office"/></SelectTrigger>
+                  <Select
+                    value={councilOffice}
+                    onValueChange={setCouncilOffice}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Select office" /></SelectTrigger>
                     <SelectContent>
-                      {COUNCIL_OFFICES.map(o=> <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                      {COUNCIL_OFFICES.map(o => (
+                        <SelectItem key={o} value={o}>{o}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
+
                 {/* File Uploads */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -206,6 +277,7 @@ export default function SignUp() {
                     />
                   </div>
                 </div>
+
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Submitting...' : 'Submit Application'}
                 </Button>
