@@ -1,140 +1,102 @@
-// src/pages/SignUp.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem
-} from '@/components/ui/select';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import FileUpload from '@/components/FileUpload';
 import PasswordInput from '@/components/PasswordInput';
-import {
-  STATESHIP_YEARS,
-  MOWCUB_POSITIONS,
-  COUNCIL_OFFICES
-} from '@/data/memberData';
+import { STATESHIP_YEARS, MOWCUB_POSITIONS, COUNCIL_OFFICES } from '@/data/memberData';
 
-export default function SignUp() {
+const SignUp = () => {
   const navigate = useNavigate();
+  const { signUp } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    fullName: '',
+    nickname: '',
+    stateshipYear: '',
+    lastPosition: '',
+    councilOffice: 'None',
+    photoUrl: '',
+    duesProofUrl: '',
+    latitude: null as number | null,
+    longitude: null as number | null
+  });
 
-  // raw files
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [duesFile, setDuesFile]     = useState<File | null>(null);
-
-  // form fields
-  const [email, setEmail]                 = useState('');
-  const [password, setPassword]           = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [fullName, setFullName]           = useState('');
-  const [nickname, setNickname]           = useState('');
-  const [stateshipYear, setStateshipYear] = useState('');
-  const [lastPosition, setLastPosition]   = useState('');
-  const [councilOffice, setCouncilOffice] = useState('None');
-  const [latitude, setLatitude]           = useState<number | null>(null);
-  const [longitude, setLongitude]         = useState<number | null>(null);
-
-  // get geo
-  useEffect(() => {
+  // Get user's location
+  React.useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        pos => {
-          setLatitude(pos.coords.latitude);
-          setLongitude(pos.coords.longitude);
+        (position) => {
+          setFormData(prev => ({
+            ...prev,
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          }));
         },
-        () => {}
+        (error) => {
+          console.log('Location access denied:', error);
+        }
       );
     }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // 1) validate passwords
-    if (password !== confirmPassword) {
-      toast({ title: 'Error', description: 'Passwords do not match', variant: 'destructive' });
+    
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive"
+      });
       return;
     }
-    // 2) validate files selected
-    if (!photoFile || !duesFile) {
-      toast({ title: 'Error', description: 'Please select both photo and dues proof', variant: 'destructive' });
+
+    if (!formData.photoUrl || !formData.duesProofUrl) {
+      toast({
+        title: "Error",
+        description: "Please upload both profile photo and dues proof",
+        variant: "destructive"
+      });
       return;
     }
 
     setLoading(true);
+
     try {
-      // 3) sign up
-      const { data: signupData, error: signupError } = await supabase.auth.signUp({
-        email,
-        password
-      });
-      if (signupError || !signupData.user) {
-        throw signupError || new Error('Sign-up failed');
+      const result = await signUp(formData.email, formData.password, formData);
+      
+      if (result.error) {
+        toast({
+          title: "Sign Up Failed",
+          description: result.error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Sign Up Successful",
+          description: "Please check your email to verify your account, then wait for approval.",
+        });
+        navigate('/pending-approval');
       }
-      // 4) immediately sign in to get a session (for RLS)
-      const { error: signinError } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-      if (signinError) {
-        throw signinError;
-      }
-      const userId = signupData.user.id;
-
-      // 5) upload photo
-      const { data: photoData, error: photoError } = await supabase
-        .storage
-        .from('member-files')
-        .upload(`photos/${userId}/${Date.now()}_${photoFile.name}`, photoFile);
-      if (photoError || !photoData.path) throw photoError || new Error('Photo upload failed');
-      const photoUrl = supabase.storage.from('member-files').getPublicUrl(photoData.path).publicUrl;
-
-      // 6) upload dues proof
-      const { data: duesData, error: duesError } = await supabase
-        .storage
-        .from('member-files')
-        .upload(`dues/${userId}/${Date.now()}_${duesFile.name}`, duesFile);
-      if (duesError || !duesData.path) throw duesError || new Error('Dues upload failed');
-      const duesUrl = supabase.storage.from('member-files').getPublicUrl(duesData.path).publicUrl;
-
-      // 7) insert member record
-      const { error: dbError } = await supabase
-        .from('members')
-        .insert([{
-          user_id: userId,
-          full_name: fullName,
-          nickname,
-          stateship_year: stateshipYear,
-          last_mowcub_position: lastPosition,
-          current_council_office: councilOffice,
-          photo_url: photoUrl,
-          dues_proof_url: duesUrl,
-          latitude,
-          longitude,
-          status: 'Pending'
-        }]);
-      if (dbError) throw dbError;
-
-      // 8) success!
+    } catch (error) {
       toast({
-        title: 'Sign Up Successful',
-        description: 'Check your email to verify, then await approval.'
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive"
       });
-      navigate('/pending-approval');
-
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -147,92 +109,91 @@ export default function SignUp() {
         <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl text-center">Join SMMOWCUB</CardTitle>
+              <CardTitle className="text-2xl font-bold text-center">Join SMMOWCUB</CardTitle>
               <p className="text-center text-muted-foreground">
                 Create your account to apply for membership
               </p>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Email + Name */}
+                {/* Basic Information */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Email</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email Address</Label>
                     <Input
+                      id="email"
                       type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                       required
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
                     />
                   </div>
-                  <div>
-                    <Label>Full Name</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName">Full Name</Label>
                     <Input
+                      id="fullName"
+                      value={formData.fullName}
+                      onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
                       required
-                      value={fullName}
-                      onChange={e => setFullName(e.target.value)}
                     />
                   </div>
                 </div>
 
-                {/* Passwords */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Password</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
                     <PasswordInput
+                      id="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                       required
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
                     />
                   </div>
-                  <div>
-                    <Label>Confirm Password</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
                     <PasswordInput
+                      id="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                       required
-                      value={confirmPassword}
-                      onChange={e => setConfirmPassword(e.target.value)}
                     />
                   </div>
                 </div>
 
-                {/* Nickname */}
-                <div>
-                  <Label>Nickname (Optional)</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="nickname">Nickname (Optional)</Label>
                   <Input
-                    value={nickname}
-                    onChange={e => setNickname(e.target.value)}
+                    id="nickname"
+                    value={formData.nickname}
+                    onChange={(e) => setFormData(prev => ({ ...prev, nickname: e.target.value }))}
                   />
                 </div>
 
-                {/* MOWCUB Info */}
+                {/* MOWCUB Information */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
+                  <div className="space-y-2">
                     <Label>Year of Statesmanship</Label>
-                    <Select
-                      required
-                      value={stateshipYear}
-                      onValueChange={setStateshipYear}
-                    >
-                      <SelectTrigger><SelectValue placeholder="Select year" /></SelectTrigger>
+                    <Select value={formData.stateshipYear} onValueChange={(value) => setFormData(prev => ({ ...prev, stateshipYear: value }))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select year" />
+                      </SelectTrigger>
                       <SelectContent>
-                        {STATESHIP_YEARS.map(y => (
-                          <SelectItem key={y} value={y}>{y}</SelectItem>
+                        {STATESHIP_YEARS.map(year => (
+                          <SelectItem key={year} value={year}>{year}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label>Last MOWCUB Position</Label>
-                    <Select
-                      required
-                      value={lastPosition}
-                      onValueChange={setLastPosition}
-                    >
-                      <SelectTrigger><SelectValue placeholder="Select position" /></SelectTrigger>
+                    <Select value={formData.lastPosition} onValueChange={(value) => setFormData(prev => ({ ...prev, lastPosition: value }))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select position" />
+                      </SelectTrigger>
                       <SelectContent>
-                        {MOWCUB_POSITIONS.map(p => (
-                          <SelectItem key={p.code} value={p.code}>
-                            {p.code} – {p.title}
+                        {MOWCUB_POSITIONS.map(position => (
+                          <SelectItem key={position.code} value={position.code}>
+                            {position.code} - {position.title}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -240,17 +201,15 @@ export default function SignUp() {
                   </div>
                 </div>
 
-                {/* Council Office */}
-                <div>
-                  <Label>Council Office (if any)</Label>
-                  <Select
-                    value={councilOffice}
-                    onValueChange={setCouncilOffice}
-                  >
-                    <SelectTrigger><SelectValue placeholder="Select office" /></SelectTrigger>
+                <div className="space-y-2">
+                  <Label>Current Council Office (if any)</Label>
+                  <Select value={formData.councilOffice} onValueChange={(value) => setFormData(prev => ({ ...prev, councilOffice: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select office" />
+                    </SelectTrigger>
                     <SelectContent>
-                      {COUNCIL_OFFICES.map(o => (
-                        <SelectItem key={o} value={o}>{o}</SelectItem>
+                      {COUNCIL_OFFICES.map(office => (
+                        <SelectItem key={office} value={office}>{office}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -258,28 +217,26 @@ export default function SignUp() {
 
                 {/* File Uploads */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Profile Photo</Label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={e => setPhotoFile(e.target.files?.[0] ?? null)}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label>Dues Proof</Label>
-                    <input
-                      type="file"
-                      accept=".pdf,image/*"
-                      onChange={e => setDuesFile(e.target.files?.[0] ?? null)}
-                      required
-                    />
-                  </div>
+                  <FileUpload
+                    label="Profile Photo"
+                    accept="image/*"
+                    folder="photos"
+                    currentUrl={formData.photoUrl}
+                    onUpload={(url) => setFormData(prev => ({ ...prev, photoUrl: url }))}
+                    maxSize={5}
+                  />
+                  <FileUpload
+                    label="Dues Payment Proof"
+                    accept="image/*,.pdf"
+                    folder="dues"
+                    currentUrl={formData.duesProofUrl}
+                    onUpload={(url) => setFormData(prev => ({ ...prev, duesProofUrl: url }))}
+                    maxSize={10}
+                  />
                 </div>
 
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Submitting...' : 'Submit Application'}
+                  {loading ? 'Creating Account...' : 'Submit Application'}
                 </Button>
               </form>
             </CardContent>
@@ -289,4 +246,6 @@ export default function SignUp() {
       <Footer />
     </div>
   );
-}
+};
+
+export default SignUp;

@@ -1,4 +1,3 @@
-// src/lib/fileUpload.ts
 
 import { supabase } from '@/integrations/supabase/client';
 
@@ -8,9 +7,13 @@ export const uploadFile = async (
   folder: 'photos' | 'dues'
 ): Promise<{ url?: string; error?: string }> => {
   try {
-    // Removed auth check to allow uploads during sign-up
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { error: 'User not authenticated' };
+    }
+
     const fileExt = file.name.split('.').pop();
-    const fileName = `${folder}/${Date.now()}.${fileExt}`;
+    const fileName = `${user.id}/${folder}/${Date.now()}.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
       .from(bucket)
@@ -25,7 +28,7 @@ export const uploadFile = async (
       .getPublicUrl(fileName);
 
     return { url: data.publicUrl };
-  } catch {
+  } catch (error) {
     return { error: 'Upload failed' };
   }
 };
@@ -39,7 +42,7 @@ export const deleteFile = async (
     const urlParts = url.split('/');
     const bucketIndex = urlParts.findIndex(part => part === bucket);
     if (bucketIndex === -1) return { success: false, error: 'Invalid file URL' };
-
+    
     const filePath = urlParts.slice(bucketIndex + 1).join('/');
     if (!filePath) return { success: false, error: 'Invalid file path' };
 
@@ -52,7 +55,7 @@ export const deleteFile = async (
     }
 
     return { success: true };
-  } catch {
+  } catch (error) {
     return { success: false, error: 'Delete failed' };
   }
 };
