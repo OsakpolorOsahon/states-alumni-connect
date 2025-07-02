@@ -157,10 +157,36 @@ const SignUp = () => {
                   </Select>
                 </div>
 
-                {/* File Uploads */}
+                {/* File Uploads - UPDATED WITH IS SIGNUP PROP */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FileUpload label="Profile Photo" accept="image/*" folder="photos" currentUrl={formData.photoUrl} onUpload={url => setFormData(prev => ({ ...prev, photoUrl: url }))} maxSize={5} />
-                  <FileUpload label="Dues Payment Proof" accept=".pdf,image/*" folder="dues" currentUrl={formData.duesProofUrl} onUpload={url => setFormData(prev => ({ ...prev, duesProofUrl: url }))} maxSize={10} />
+                  <FileUpload 
+                    label="Profile Photo" 
+                    accept="image/*" 
+                    folder="photos" 
+                    currentUrl={formData.photoUrl} 
+                    onUpload={url => setFormData(prev => ({ ...prev, photoUrl: url }))} 
+                    maxSize={5} 
+                    isSignup={true}
+                    onError={(error) => toast({
+                      title: "Upload Failed",
+                      description: error,
+                      variant: "destructive"
+                    })}
+                  />
+                  <FileUpload 
+                    label="Dues Payment Proof" 
+                    accept=".pdf,image/*" 
+                    folder="dues" 
+                    currentUrl={formData.duesProofUrl} 
+                    onUpload={url => setFormData(prev => ({ ...prev, duesProofUrl: url }))} 
+                    maxSize={10} 
+                    isSignup={true}
+                    onError={(error) => toast({
+                      title: "Upload Failed",
+                      description: error,
+                      variant: "destructive"
+                    })}
+                  />
                 </div>
 
                 <Button type="submit" className="w-full" disabled={loading}>
