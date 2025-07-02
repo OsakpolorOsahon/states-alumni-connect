@@ -1,91 +1,161 @@
-import { supabase } from '@/integrations/supabase/client';
+// src/components/FileUpload.tsx
 
-// Upload for authenticated users (existing functionality)
-export const uploadFile = async (
-  file: File,
-  bucket: string = 'member-files',
-  folder: 'photos' | 'dues'
-): Promise<{ url?: string; error?: string }> => {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return { error: 'User not authenticated' };
+import React, { useState, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Icons } from '@/components/icons';
+import { uploadFile, signupUpload } from '@/integrations/supabase/fileUpload';
+
+interface FileUploadProps {
+  label: string;
+  accept: string;
+  folder: 'photos' | 'dues';
+  currentUrl: string;
+  onUpload: (url: string) => void;
+  maxSize: number; // in MB
+  isSignup?: boolean;
+  onError?: (error: string) => void;
+}
+
+const FileUpload: React.FC<FileUploadProps> = ({
+  label,
+  accept,
+  folder,
+  currentUrl,
+  onUpload,
+  maxSize,
+  isSignup = false,
+  onError,
+}) => {
+  const [file, setFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      
+      // Check file size
+      if (selectedFile.size > maxSize * 1024 * 1024) {
+        const errorMsg = `File size exceeds ${maxSize}MB limit`;
+        if (onError) onError(errorMsg);
+        return;
+      }
+
+      setFile(selectedFile);
+      
+      // Create preview for images
+      if (selectedFile.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          setPreviewUrl(reader.result as string);
+        };
+        reader.readAsDataURL(selectedFile);
+      } else {
+        setPreviewUrl(null);
+      }
+
+      // Start upload immediately
+      handleUpload(selectedFile);
     }
+  };
 
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${user.id}/${folder}/${Date.now()}.${fileExt}`;
+  const handleUpload = useCallback(async (fileToUpload: File) => {
+    setIsUploading(true);
+    try {
+      let result;
+      if (isSignup) {
+        result = await signupUpload(fileToUpload, folder);
+      } else {
+        result = await uploadFile(fileToUpload, 'member-files', folder);
+      }
 
-    const { error: uploadError } = await supabase.storage
-      .from(bucket)
-      .upload(fileName, file);
-
-    if (uploadError) {
-      return { error: uploadError.message };
+      if (result.url) {
+        onUpload(result.url);
+      } else if (result.error) {
+        if (onError) onError(result.error);
+      }
+    } catch (error) {
+      if (onError) onError('File upload failed');
+    } finally {
+      setIsUploading(false);
     }
+  }, [folder, isSignup, onUpload, onError]);
 
-    const { data } = supabase.storage
-      .from(bucket)
-      .getPublicUrl(fileName);
+  const handleRemove = () => {
+    setFile(null);
+    setPreviewUrl(null);
+    onUpload('');
+  };
 
-    return { url: data.publicUrl };
-  } catch (error) {
-    return { error: 'Upload failed' };
-  }
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      
+      {currentUrl ? (
+        <div className="flex items-center space-x-2">
+          <span className="text-sm truncate">
+            File uploaded: {currentUrl.split('/').pop()}
+          </span>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => handleRemove()}
+            disabled={isUploading}
+          >
+            Remove
+          </Button>
+        </div>
+      ) : previewUrl ? (
+        <div className="flex flex-col items-start">
+          <div className="mb-2 w-full">
+            <img 
+              src={previewUrl} 
+              alt="Preview" 
+              className="max-h-48 object-contain rounded-md"
+            />
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => handleRemove()}
+            disabled={isUploading}
+          >
+            Remove
+          </Button>
+        </div>
+      ) : (
+        <div className="flex items-center space-x-2">
+          <Label
+            htmlFor={`file-upload-${label.replace(/\s+/g, '-')}`}
+            className="cursor-pointer"
+          >
+            <div className="flex items-center px-4 py-2 border border-input rounded-md bg-background hover:bg-accent hover:text-accent-foreground">
+              {isUploading ? (
+                <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Icons.upload className="h-4 w-4 mr-2" />
+              )}
+              <span>{isUploading ? 'Uploading...' : 'Choose File'}</span>
+            </div>
+            <Input
+              id={`file-upload-${label.replace(/\s+/g, '-')}`}
+              type="file"
+              accept={accept}
+              className="sr-only"
+              onChange={handleFileChange}
+              disabled={isUploading}
+            />
+          </Label>
+        </div>
+      )}
+      
+      <p className="text-xs text-muted-foreground">
+        Accepted: {accept} | Max size: {maxSize}MB
+      </p>
+    </div>
+  );
 };
 
-// NEW: Upload function for signup process (unauthenticated users)
-export const signupUpload = async (
-  file: File,
-  folder: 'photos' | 'dues'
-): Promise<{ url?: string; error?: string }> => {
-  try {
-    // Generate unique filename with timestamp and random string
-    const fileExt = file.name.split('.').pop();
-    const randomString = Math.random().toString(36).substring(2, 9);
-    const fileName = `signups/${folder}/${Date.now()}-${randomString}.${fileExt}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('member-files')
-      .upload(fileName, file);
-
-    if (uploadError) {
-      return { error: uploadError.message };
-    }
-
-    const { data } = supabase.storage
-      .from('member-files')
-      .getPublicUrl(fileName);
-
-    return { url: data.publicUrl };
-  } catch (error) {
-    return { error: 'Signup upload failed' };
-  }
-};
-
-// Delete function (unchanged)
-export const deleteFile = async (
-  url: string,
-  bucket: string = 'member-files'
-): Promise<{ success: boolean; error?: string }> => {
-  try {
-    // Extract the file path from the URL
-    const urlParts = url.split('/');
-    const bucketIndex = urlParts.findIndex(part => part === bucket);
-    if (bucketIndex === -1) return { success: false, error: 'Invalid file URL' };
-    
-    const filePath = urlParts.slice(bucketIndex + 1).join('/');
-    if (!filePath) return { success: false, error: 'Invalid file path' };
-
-    const { error } = await supabase.storage
-      .from(bucket)
-      .remove([filePath]);
-
-    if (error) {
-      return { success: false, error: error.message };
-    }
-
-    return { success: true };
-  } catch (error) {
-    return { success: false, error: 'Delete failed' };
-  }
-};
+export default FileUpload;
