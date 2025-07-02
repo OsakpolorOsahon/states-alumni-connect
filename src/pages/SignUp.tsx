@@ -1,5 +1,4 @@
 // src/pages/SignUp.tsx
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -20,6 +19,10 @@ const SignUp = () => {
   const { signUp } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [filesUploaded, setFilesUploaded] = useState({
+    photo: false,
+    dues: false
+  });
 
   const [formData, setFormData] = useState({
     email: '',
@@ -49,6 +52,14 @@ const SignUp = () => {
     }
   }, []);
 
+  // Update filesUploaded state when URLs change
+  useEffect(() => {
+    setFilesUploaded({
+      photo: !!formData.photoUrl,
+      dues: !!formData.duesProofUrl
+    });
+  }, [formData.photoUrl, formData.duesProofUrl]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -57,8 +68,12 @@ const SignUp = () => {
       return;
     }
 
-    if (!formData.photoUrl || !formData.duesProofUrl) {
-      toast({ title: "Error", description: "Please upload both profile photo and dues proof", variant: "destructive" });
+    if (!filesUploaded.photo || !filesUploaded.dues) {
+      toast({ 
+        title: "Upload Required", 
+        description: "Please complete both file uploads", 
+        variant: "destructive" 
+      });
       return;
     }
 
@@ -90,8 +105,12 @@ const SignUp = () => {
         });
         navigate('/pending-approval');
       }
-    } catch {
-      toast({ title: "Error", description: "An unexpected error occurred", variant: "destructive" });
+    } catch (error: any) {
+      toast({ 
+        title: "Error", 
+        description: error.message || "An unexpected error occurred", 
+        variant: "destructive" 
+      });
     } finally {
       setLoading(false);
     }
@@ -157,7 +176,7 @@ const SignUp = () => {
                   </Select>
                 </div>
 
-                {/* File Uploads - UPDATED WITH IS SIGNUP PROP */}
+                {/* File Uploads */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FileUpload 
                     label="Profile Photo" 
@@ -189,7 +208,17 @@ const SignUp = () => {
                   />
                 </div>
 
-                <Button type="submit" className="w-full" disabled={loading}>
+                {/* Upload status indicators */}
+                <div className="flex justify-between text-sm">
+                  <span className={filesUploaded.photo ? "text-green-600" : "text-yellow-600"}>
+                    {filesUploaded.photo ? "✓ Profile photo uploaded" : "Profile photo required"}
+                  </span>
+                  <span className={filesUploaded.dues ? "text-green-600" : "text-yellow-600"}>
+                    {filesUploaded.dues ? "✓ Dues proof uploaded" : "Dues proof required"}
+                  </span>
+                </div>
+
+                <Button type="submit" className="w-full" disabled={loading || !filesUploaded.photo || !filesUploaded.dues}>
                   {loading ? 'Creating Account...' : 'Submit Application'}
                 </Button>
               </form>
