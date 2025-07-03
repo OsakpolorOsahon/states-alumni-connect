@@ -1,48 +1,47 @@
 // src/App.tsx
 
-import { Suspense, lazy } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "next-themes";
-import { HelmetProvider } from "react-helmet-async";
-import ProtectedRoute from "@/components/ProtectedRoute";
-import PWAInstallBanner from "@/components/PWAInstallBanner";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { Suspense, lazy } from 'react'
+import { Toaster } from '@/components/ui/toaster'
+import { Toaster as Sonner } from '@/components/ui/sonner'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { ThemeProvider } from 'next-themes'
+import { HelmetProvider } from 'react-helmet-async'
+import ProtectedRoute from '@/components/ProtectedRoute'
+import PWAInstallBanner from '@/components/PWAInstallBanner'
+import LoadingSpinner from '@/components/LoadingSpinner'
 
-// Lazy load pages
-const Index = lazy(() => import("./pages/Index"));
-const About = lazy(() => import("./pages/About"));
-const History = lazy(() => import("./pages/History"));
-const Directory = lazy(() => import("./pages/Directory"));
-const MemberProfile = lazy(() => import("./pages/MemberProfile"));
-const SignUp = lazy(() => import("./pages/SignUp"));
-const UploadDocuments = lazy(() => import("./pages/UploadDocuments"));
-const Login = lazy(() => import("./pages/Login"));
-const PendingApproval = lazy(() => import("./pages/PendingApproval"));
-const Contact = lazy(() => import("./pages/Contact"));
-const News = lazy(() => import("./pages/News"));
-const Map = lazy(() => import("./pages/Map"));
-const MemberDashboard = lazy(() => import("./pages/MemberDashboard"));
-const SecretaryDashboard = lazy(() => import("./pages/SecretaryDashboard"));
-const HallOfFame = lazy(() => import("./pages/HallOfFame"));
-const NewsEvents = lazy(() => import("./pages/NewsEvents"));
-const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
-const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
-const Guidelines = lazy(() => import("./pages/Guidelines"));
-const UserManual = lazy(() => import("./pages/UserManual"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+const Index = lazy(() => import('./pages/Index'))
+const About = lazy(() => import('./pages/About'))
+const History = lazy(() => import('./pages/History'))
+const Directory = lazy(() => import('./pages/Directory'))
+const MemberProfile = lazy(() => import('./pages/MemberProfile'))
+const SignUp = lazy(() => import('./pages/SignUp'))
+const UploadDocuments = lazy(() => import('./pages/UploadDocuments'))
+const Login = lazy(() => import('./pages/Login'))
+const PendingApproval = lazy(() => import('./pages/PendingApproval'))
+const Contact = lazy(() => import('./pages/Contact'))
+const News = lazy(() => import('./pages/News'))
+const Map = lazy(() => import('./pages/Map'))
+const MemberDashboard = lazy(() => import('./pages/MemberDashboard'))
+const SecretaryDashboard = lazy(() => import('./pages/SecretaryDashboard'))
+const HallOfFame = lazy(() => import('./pages/HallOfFame'))
+const NewsEvents = lazy(() => import('./pages/NewsEvents'))
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
+const TermsOfUse = lazy(() => import('./pages/TermsOfUse'))
+const Guidelines = lazy(() => import('./pages/Guidelines'))
+const UserManual = lazy(() => import('./pages/UserManual'))
+const NotFound = lazy(() => import('./pages/NotFound'))
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient()
 
 function LoadingFallback() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <LoadingSpinner size="lg" text="Loading page..." />
     </div>
-  );
+  )
 }
 
 export default function App() {
@@ -56,7 +55,7 @@ export default function App() {
             <BrowserRouter>
               <Suspense fallback={<LoadingFallback />}>
                 <Routes>
-                  {/* Public pages */}
+                  {/* public */}
                   <Route path="/" element={<Index />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/history" element={<History />} />
@@ -67,12 +66,12 @@ export default function App() {
                   <Route path="/guidelines" element={<Guidelines />} />
                   <Route path="/user-manual" element={<UserManual />} />
 
-                  {/* Authentication flows */}
+                  {/* auth flows */}
                   <Route path="/signup" element={<SignUp />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/pending-approval" element={<PendingApproval />} />
 
-                  {/* After sign-up, upload docs */}
+                  {/* post-signup uploads */}
                   <Route
                     path="/upload-documents"
                     element={
@@ -82,7 +81,7 @@ export default function App() {
                     }
                   />
 
-                  {/* Member-only pages */}
+                  {/* member-only */}
                   <Route
                     path="/directory"
                     element={
@@ -124,7 +123,7 @@ export default function App() {
                     }
                   />
 
-                  {/* Secretary-only pages */}
+                  {/* secretary-only */}
                   <Route
                     path="/news-events"
                     element={
@@ -142,16 +141,14 @@ export default function App() {
                     }
                   />
 
-                  {/* Catch-all */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
-
               <PWAInstallBanner />
             </BrowserRouter>
           </TooltipProvider>
         </ThemeProvider>
       </HelmetProvider>
     </QueryClientProvider>
-  );
+  )
 }
