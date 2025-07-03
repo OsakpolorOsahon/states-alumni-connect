@@ -12,13 +12,14 @@ import ProtectedRoute from '@/components/ProtectedRoute'
 import PWAInstallBanner from '@/components/PWAInstallBanner'
 import LoadingSpinner from '@/components/LoadingSpinner'
 
+// lazy imports
 const Index = lazy(() => import('./pages/Index'))
 const About = lazy(() => import('./pages/About'))
 const History = lazy(() => import('./pages/History'))
 const Directory = lazy(() => import('./pages/Directory'))
 const MemberProfile = lazy(() => import('./pages/MemberProfile'))
 const SignUp = lazy(() => import('./pages/SignUp'))
-const UploadDocuments = lazy(() => import('./pages/UploadDocuments'))
+const UploadDocuments = lazy(() => import('./pages/UploadDocuments'))  // ← added here
 const Login = lazy(() => import('./pages/Login'))
 const PendingApproval = lazy(() => import('./pages/PendingApproval'))
 const Contact = lazy(() => import('./pages/Contact'))
@@ -71,7 +72,7 @@ export default function App() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/pending-approval" element={<PendingApproval />} />
 
-                  {/* post-signup uploads */}
+                  {/* post-signup upload documents */}
                   <Route
                     path="/upload-documents"
                     element={
@@ -141,6 +142,7 @@ export default function App() {
                     }
                   />
 
+                  {/* catch-all */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
