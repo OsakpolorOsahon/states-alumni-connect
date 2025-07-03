@@ -1,77 +1,116 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+// src/pages/UploadDocuments.tsx
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import ProtectedRoute from '@/components/ProtectedRoute';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 
-function UploadDocuments() {
-  const { state } = useLocation();
+export default function UploadDocuments() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [photoFile, setPhotoFile] = useState<File|null>(null);
-  const [duesFile, setDuesFile]   = useState<File|null>(null);
-  const [loading, setLoading]     = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Ensure state is present
-  if (!state || !state.fullName) {
-    navigate('/signup');
-    return null;
-  }
+  // File objects
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [duesFile, setDuesFile] = useState<File | null>(null);
 
-  const handleFinish = async () => {
+  // Uploaded URLs
+  const [photoUrl, setPhotoUrl] = useState<string>('');
+  const [duesUrl, setDuesUrl] = useState<string>('');
+
+  // Ensure user is signed in
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
+        toast({
+          title: 'Not Signed In',
+          description: 'Please sign up or log in first.',
+          variant: 'destructive'
+        });
+        navigate('/login');
+      }
+    });
+  }, []);
+
+  const handleUploadAndSubmit = async () => {
     if (!photoFile || !duesFile) {
-      toast({ title: 'Error', description: 'Please upload both files', variant: 'destructive' });
+      toast({
+        title: 'Files Required',
+        description: 'Please select both photo and dues proof files before proceeding.',
+        variant: 'destructive'
+      });
       return;
     }
+
     setLoading(true);
-
     try {
-      // get user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not signed in');
+      // Get current user
+      const { data: { user }, error: userErr } = await supabase.auth.getUser();
+      if (userErr || !user) throw userErr || new Error('User not authenticated');
 
-      // upload photo
-      const photoPath = `photos/${user.id}/${Date.now()}_${photoFile.name}`;
-      const { error: pErr, data: pData } = await supabase
-        .storage.from('member-files')
+      const userId = user.id;
+
+      // 1) Upload profile photo
+      const photoPath = `photos/${userId}/${Date.now()}_${photoFile.name}`;
+      const { error: photoErr, data: photoData } = await supabase
+        .storage
+        .from('member-files')
         .upload(photoPath, photoFile);
-      if (pErr) throw pErr;
-      const photoUrl = supabase.storage.from('member-files').getPublicUrl(pData.path).publicUrl;
+      if (photoErr || !photoData?.path) throw photoErr || new Error('Photo upload failed');
+      const photoPublicUrl = supabase
+        .storage
+        .from('member-files')
+        .getPublicUrl(photoData.path).publicUrl;
+      setPhotoUrl(photoPublicUrl);
 
-      // upload dues
-      const duesPath = `dues/${user.id}/${Date.now()}_${duesFile.name}`;
-      const { error: dErr, data: dData } = await supabase
-        .storage.from('member-files')
+      // 2) Upload dues proof
+      const duesPath = `dues/${userId}/${Date.now()}_${duesFile.name}`;
+      const { error: duesErr, data: duesData } = await supabase
+        .storage
+        .from('member-files')
         .upload(duesPath, duesFile);
-      if (dErr) throw dErr;
-      const duesUrl = supabase.storage.from('member-files').getPublicUrl(dData.path).publicUrl;
+      if (duesErr || !duesData?.path) throw duesErr || new Error('Dues upload failed');
+      const duesPublicUrl = supabase
+        .storage
+        .from('member-files')
+        .getPublicUrl(duesData.path).publicUrl;
+      setDuesUrl(duesPublicUrl);
 
-      // insert member record
-      const { error: dbErr } = await supabase.from('members').insert([{
-        user_id: user.id,
-        full_name: state.fullName,
-        nickname: state.nickname,
-        stateship_year: state.year,
-        last_mowcub_position: state.lastPos,
-        current_council_office: state.office,
-        photo_url: photoUrl,
-        dues_proof_url: duesUrl,
-        latitude: state.latitude,
-        longitude: state.longitude,
-        status: 'Pending'
-      }]);
+      // 3) Insert into members table
+      const { error: dbErr } = await supabase
+        .from('members')
+        .insert([{
+          user_id: userId,
+          full_name: user.user_metadata.full_name,     // adjust if you stored these in metadata
+          nickname: user.user_metadata.nickname || '',
+          stateship_year: user.user_metadata.stateship_year || '',
+          last_mowcub_position: user.user_metadata.last_position || '',
+          current_council_office: user.user_metadata.council_office || 'None',
+          photo_url: photoPublicUrl,
+          dues_proof_url: duesPublicUrl,
+          latitude: user.user_metadata.latitude || null,
+          longitude: user.user_metadata.longitude || null,
+          status: 'Pending'
+        }]);
       if (dbErr) throw dbErr;
 
-      toast({ title: 'Done!', description: 'Your application is pending approval.' });
+      toast({
+        title: 'Upload Complete',
+        description: 'Your documents were uploaded. Please await secretary approval.',
+      });
       navigate('/pending-approval');
 
     } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      console.error(err);
+      toast({
+        title: 'Error',
+        description: err.message || 'Something went wrong uploading documents.',
+        variant: 'destructive'
+      });
     } finally {
       setLoading(false);
     }
@@ -81,40 +120,45 @@ function UploadDocuments() {
     <div className="min-h-screen bg-background">
       <Navigation />
       <div className="container mx-auto py-12 px-4">
-        <Card className="max-w-2xl mx-auto">
-          <CardHeader>
-            <CardTitle>Upload Your Documents</CardTitle>
-            <p className="text-muted-foreground">
-              Profile photo and payment proof
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <Label>Profile Photo</Label>
-              <input type="file" accept="image/*"
-                onChange={e => setPhotoFile(e.target.files?.[0]||null)} />
-            </div>
-            <div>
-              <Label>Dues Payment Proof</Label>
-              <input type="file" accept=".pdf,image/*"
-                onChange={e => setDuesFile(e.target.files?.[0]||null)} />
-            </div>
-            <Button onClick={handleFinish} className="w-full" disabled={loading}>
-              {loading ? 'Submitting…' : 'Finish Registration'}
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="max-w-xl mx-auto">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl text-center">Upload Your Documents</CardTitle>
+              <p className="text-center text-muted-foreground">
+                Please upload your profile photo and dues payment proof.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <label className="block mb-1 font-medium">Profile Photo</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={e => setPhotoFile(e.target.files?.[0] ?? null)}
+                  className="block w-full"
+                />
+              </div>
+              <div>
+                <label className="block mb-1 font-medium">Dues Payment Proof</label>
+                <input
+                  type="file"
+                  accept=".pdf,image/*"
+                  onChange={e => setDuesFile(e.target.files?.[0] ?? null)}
+                  className="block w-full"
+                />
+              </div>
+              <Button
+                onClick={handleUploadAndSubmit}
+                disabled={loading || !photoFile || !duesFile}
+                className="w-full"
+              >
+                {loading ? 'Uploading…' : 'Upload & Submit'}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
       <Footer />
     </div>
-  );
-}
-
-// Wrap in ProtectedRoute so only signed-in users can access
-export default function ProtectedUpload() {
-  return (
-    <ProtectedRoute>
-      <UploadDocuments />
-    </ProtectedRoute>
   );
 }
