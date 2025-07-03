@@ -1,164 +1,252 @@
-// src/pages/UploadDocuments.tsx
+// src/pages/SignUp.tsx
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/hooks/use-toast'
+import Navigation from '@/components/Navigation'
+import Footer from '@/components/Footer'
+import PasswordInput from '@/components/PasswordInput'
+import {
+  STATESHIP_YEARS,
+  MOWCUB_POSITIONS,
+  COUNCIL_OFFICES,
+} from '@/data/memberData'
 
-export default function UploadDocuments() {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
+export default function SignUp() {
+  const navigate = useNavigate()
+  const { signUp } = useAuth()
+  const { toast } = useToast()
+  const [loading, setLoading] = useState(false)
 
-  // File objects
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [duesFile, setDuesFile] = useState<File | null>(null);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    fullName: '',
+    nickname: '',
+    stateshipYear: '',
+    lastPosition: '',
+    councilOffice: 'None',
+    latitude: null as number | null,
+    longitude: null as number | null,
+  })
 
-  // Uploaded URLs
-  const [photoUrl, setPhotoUrl] = useState<string>('');
-  const [duesUrl, setDuesUrl] = useState<string>('');
-
-  // Ensure user is signed in
+  // capture geolocation once
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) {
-        toast({
-          title: 'Not Signed In',
-          description: 'Please sign up or log in first.',
-          variant: 'destructive'
-        });
-        navigate('/login');
-      }
-    });
-  }, []);
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) =>
+          setFormData((prev) => ({
+            ...prev,
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+          })),
+        () => {}
+      )
+    }
+  }, [])
 
-  const handleUploadAndSubmit = async () => {
-    if (!photoFile || !duesFile) {
-      toast({
-        title: 'Files Required',
-        description: 'Please select both photo and dues proof files before proceeding.',
-        variant: 'destructive'
-      });
-      return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (formData.password !== formData.confirmPassword) {
+      toast({ title: 'Error', description: 'Passwords do not match', variant: 'destructive' })
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
     try {
-      // Get current user
-      const { data: { user }, error: userErr } = await supabase.auth.getUser();
-      if (userErr || !user) throw userErr || new Error('User not authenticated');
-
-      const userId = user.id;
-
-      // 1) Upload profile photo
-      const photoPath = `photos/${userId}/${Date.now()}_${photoFile.name}`;
-      const { error: photoErr, data: photoData } = await supabase
-        .storage
-        .from('member-files')
-        .upload(photoPath, photoFile);
-      if (photoErr || !photoData?.path) throw photoErr || new Error('Photo upload failed');
-      const photoPublicUrl = supabase
-        .storage
-        .from('member-files')
-        .getPublicUrl(photoData.path).publicUrl;
-      setPhotoUrl(photoPublicUrl);
-
-      // 2) Upload dues proof
-      const duesPath = `dues/${userId}/${Date.now()}_${duesFile.name}`;
-      const { error: duesErr, data: duesData } = await supabase
-        .storage
-        .from('member-files')
-        .upload(duesPath, duesFile);
-      if (duesErr || !duesData?.path) throw duesErr || new Error('Dues upload failed');
-      const duesPublicUrl = supabase
-        .storage
-        .from('member-files')
-        .getPublicUrl(duesData.path).publicUrl;
-      setDuesUrl(duesPublicUrl);
-
-      // 3) Insert into members table
-      const { error: dbErr } = await supabase
-        .from('members')
-        .insert([{
-          user_id: userId,
-          full_name: user.user_metadata.full_name,     // adjust if you stored these in metadata
-          nickname: user.user_metadata.nickname || '',
-          stateship_year: user.user_metadata.stateship_year || '',
-          last_mowcub_position: user.user_metadata.last_position || '',
-          current_council_office: user.user_metadata.council_office || 'None',
-          photo_url: photoPublicUrl,
-          dues_proof_url: duesPublicUrl,
-          latitude: user.user_metadata.latitude || null,
-          longitude: user.user_metadata.longitude || null,
-          status: 'Pending'
-        }]);
-      if (dbErr) throw dbErr;
-
-      toast({
-        title: 'Upload Complete',
-        description: 'Your documents were uploaded. Please await secretary approval.',
-      });
-      navigate('/pending-approval');
-
+      const { error } = await signUp(
+        formData.email,
+        formData.password,
+        {
+          fullName: formData.fullName,
+          nickname: formData.nickname,
+          stateshipYear: formData.stateshipYear,
+          lastPosition: formData.lastPosition,
+          councilOffice: formData.councilOffice,
+          latitude: formData.latitude,
+          longitude: formData.longitude,
+        }
+      )
+      if (error) {
+        toast({ title: 'Sign Up Failed', description: error.message, variant: 'destructive' })
+      } else {
+        toast({
+          title: 'Account Created',
+          description: 'Check your email to verify. Then upload your documents.',
+        })
+        navigate('/upload-documents')
+      }
     } catch (err: any) {
-      console.error(err);
-      toast({
-        title: 'Error',
-        description: err.message || 'Something went wrong uploading documents.',
-        variant: 'destructive'
-      });
+      toast({ title: 'Error', description: err.message || 'Unexpected error', variant: 'destructive' })
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
       <div className="container mx-auto py-12 px-4">
-        <div className="max-w-xl mx-auto">
+        <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl text-center">Upload Your Documents</CardTitle>
+              <CardTitle className="text-2xl text-center">Join SMMOWCUB</CardTitle>
               <p className="text-center text-muted-foreground">
-                Please upload your profile photo and dues payment proof.
+                Create your account to apply for membership
               </p>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <label className="block mb-1 font-medium">Profile Photo</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={e => setPhotoFile(e.target.files?.[0] ?? null)}
-                  className="block w-full"
-                />
-              </div>
-              <div>
-                <label className="block mb-1 font-medium">Dues Payment Proof</label>
-                <input
-                  type="file"
-                  accept=".pdf,image/*"
-                  onChange={e => setDuesFile(e.target.files?.[0] ?? null)}
-                  className="block w-full"
-                />
-              </div>
-              <Button
-                onClick={handleUploadAndSubmit}
-                disabled={loading || !photoFile || !duesFile}
-                className="w-full"
-              >
-                {loading ? 'Uploading…' : 'Upload & Submit'}
-              </Button>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Email & Name */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Email Address</Label>
+                    <Input
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) =>
+                        setFormData((p) => ({ ...p, email: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>Full Name</Label>
+                    <Input
+                      required
+                      value={formData.fullName}
+                      onChange={(e) =>
+                        setFormData((p) => ({ ...p, fullName: e.target.value }))
+                      }
+                    />
+                  </div>
+                </div>
+
+                {/* Passwords */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Password</Label>
+                    <PasswordInput
+                      required
+                      value={formData.password}
+                      onChange={(e) =>
+                        setFormData((p) => ({ ...p, password: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>Confirm Password</Label>
+                    <PasswordInput
+                      required
+                      value={formData.confirmPassword}
+                      onChange={(e) =>
+                        setFormData((p) => ({ ...p, confirmPassword: e.target.value }))
+                      }
+                    />
+                  </div>
+                </div>
+
+                {/* Nickname */}
+                <div>
+                  <Label>Nickname (Optional)</Label>
+                  <Input
+                    value={formData.nickname}
+                    onChange={(e) =>
+                      setFormData((p) => ({ ...p, nickname: e.target.value }))
+                    }
+                  />
+                </div>
+
+                {/* MOWCUB Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Year of Statesmanship</Label>
+                    <Select
+                      required
+                      value={formData.stateshipYear}
+                      onValueChange={(v) =>
+                        setFormData((p) => ({ ...p, stateshipYear: v }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select year" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {STATESHIP_YEARS.map((y) => (
+                          <SelectItem key={y} value={y}>
+                            {y}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Last MOWCUB Position</Label>
+                    <Select
+                      required
+                      value={formData.lastPosition}
+                      onValueChange={(v) =>
+                        setFormData((p) => ({ ...p, lastPosition: v }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select position" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MOWCUB_POSITIONS.map((p) => (
+                          <SelectItem key={p.code} value={p.code}>
+                            {p.code} – {p.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Council Office */}
+                <div>
+                  <Label>Current Council Office (if any)</Label>
+                  <Select
+                    value={formData.councilOffice}
+                    onValueChange={(v) =>
+                      setFormData((p) => ({ ...p, councilOffice: v }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select office" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COUNCIL_OFFICES.map((o) => (
+                        <SelectItem key={o} value={o}>
+                          {o}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? 'Creating Account...' : 'Next: Upload Documents'}
+                </Button>
+              </form>
             </CardContent>
           </Card>
         </div>
       </div>
       <Footer />
     </div>
-  );
+  )
 }
