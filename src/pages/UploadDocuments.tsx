@@ -1,245 +1,92 @@
-// src/pages/SignUp.tsx
+// src/pages/UploadDocuments.tsx
 
-import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from '@/components/ui/select'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { useAuth } from '@/contexts/AuthContext'
-import { useToast } from '@/hooks/use-toast'
-import Navigation from '@/components/Navigation'
-import Footer from '@/components/Footer'
-import PasswordInput from '@/components/PasswordInput'
-import {
-  STATESHIP_YEARS,
-  MOWCUB_POSITIONS,
-  COUNCIL_OFFICES,
-} from '@/data/memberData'
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import Navigation from '@/components/Navigation';
+import Footer from '@/components/Footer';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import FileUpload from '@/components/FileUpload';
 
-export default function SignUp() {
-  const navigate = useNavigate()
-  const { signUp } = useAuth()
-  const { toast } = useToast()
-  const [loading, setLoading] = useState(false)
+export default function UploadDocuments() {
+  const { user, createMember, signOut } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [photoUrl, setPhotoUrl] = useState('');
+  const [duesUrl, setDuesUrl] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    fullName: '',
-    nickname: '',
-    stateshipYear: '',
-    lastPosition: '',
-    councilOffice: 'None',
-    latitude: null as number | null,
-    longitude: null as number | null,
-  })
-
-  // capture geolocation once
-  useEffect(() => {
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) =>
-          setFormData((prev) => ({
-            ...prev,
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-          })),
-        () => {}
-      )
-    }
-  }, [])
+  if (!user) {
+    // not signed in
+    signOut().then(() => navigate('/signup'));
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (formData.password !== formData.confirmPassword) {
-      toast({ title: 'Error', description: 'Passwords do not match', variant: 'destructive' })
-      return
+    e.preventDefault();
+    if (!photoUrl || !duesUrl) {
+      toast({ title: 'Error', description: 'Both files are required', variant: 'destructive' });
+      return;
     }
-
-    setLoading(true)
-    try {
-      const { error } = await signUp(
-        formData.email,
-        formData.password,
-        {
-          fullName: formData.fullName,
-          nickname: formData.nickname,
-          stateshipYear: formData.stateshipYear,
-          lastPosition: formData.lastPosition,
-          councilOffice: formData.councilOffice,
-          latitude: formData.latitude,
-          longitude: formData.longitude,
-        }
-      )
-      if (error) {
-        toast({ title: 'Sign Up Failed', description: error.message, variant: 'destructive' })
-      } else {
-        toast({
-          title: 'Account Created',
-          description: 'Check your email to verify. Then upload your documents.',
-        })
-        navigate('/upload-documents')
-      }
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message || 'Unexpected error', variant: 'destructive' })
-    } finally {
-      setLoading(false)
+    setLoading(true);
+    const geo = await new Promise<{ lat: number; lng: number }>((res) => {
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) => res({ lat: coords.latitude, lng: coords.longitude }),
+        () => res({ lat: 0, lng: 0 })
+      );
+    });
+    const { error } = await createMember({
+      user_id: user.id,
+      full_name: user.user_metadata.full_name || '',
+      nickname: user.user_metadata.nickname || '',
+      stateship_year: user.user_metadata.stateship_year || '',
+      last_mowcub_position: user.user_metadata.last_mowcub_position || '',
+      current_council_office: user.user_metadata.current_council_office || 'None',
+      photo_url: photoUrl,
+      dues_proof_url: duesUrl,
+      latitude: geo.lat,
+      longitude: geo.lng,
+    });
+    setLoading(false);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Success', description: 'Documents submitted, awaiting approval.' });
+      navigate('/pending-approval');
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
       <div className="container mx-auto py-12 px-4">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-lg mx-auto">
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl text-center">Join SMMOWCUB</CardTitle>
-              <p className="text-center text-muted-foreground">
-                Create your account to apply for membership
-              </p>
+              <CardTitle className="text-2xl text-center">Upload Your Documents</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Email & Name */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Email Address</Label>
-                    <Input
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) =>
-                        setFormData((p) => ({ ...p, email: e.target.value }))
-                      }
-                    />
-                  </div>
-                  <div>
-                    <Label>Full Name</Label>
-                    <Input
-                      required
-                      value={formData.fullName}
-                      onChange={(e) =>
-                        setFormData((p) => ({ ...p, fullName: e.target.value }))
-                      }
-                    />
-                  </div>
-                </div>
-
-                {/* Passwords */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Password</Label>
-                    <PasswordInput
-                      required
-                      value={formData.password}
-                      onChange={(e) =>
-                        setFormData((p) => ({ ...p, password: e.target.value }))
-                      }
-                    />
-                  </div>
-                  <div>
-                    <Label>Confirm Password</Label>
-                    <PasswordInput
-                      required
-                      value={formData.confirmPassword}
-                      onChange={(e) =>
-                        setFormData((p) => ({ ...p, confirmPassword: e.target.value }))
-                      }
-                    />
-                  </div>
-                </div>
-
-                {/* Nickname */}
-                <div>
-                  <Label>Nickname (Optional)</Label>
-                  <Input
-                    value={formData.nickname}
-                    onChange={(e) =>
-                      setFormData((p) => ({ ...p, nickname: e.target.value }))
-                    }
-                  />
-                </div>
-
-                {/* MOWCUB Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Year of Statesmanship</Label>
-                    <Select
-                      required
-                      value={formData.stateshipYear}
-                      onValueChange={(v) =>
-                        setFormData((p) => ({ ...p, stateshipYear: v }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select year" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {STATESHIP_YEARS.map((y) => (
-                          <SelectItem key={y} value={y}>
-                            {y}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Last MOWCUB Position</Label>
-                    <Select
-                      required
-                      value={formData.lastPosition}
-                      onValueChange={(v) =>
-                        setFormData((p) => ({ ...p, lastPosition: v }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select position" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {MOWCUB_POSITIONS.map((p) => (
-                          <SelectItem key={p.code} value={p.code}>
-                            {p.code} – {p.title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* Council Office */}
-                <div>
-                  <Label>Current Council Office (if any)</Label>
-                  <Select
-                    value={formData.councilOffice}
-                    onValueChange={(v) =>
-                      setFormData((p) => ({ ...p, councilOffice: v }))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select office" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COUNCIL_OFFICES.map((o) => (
-                        <SelectItem key={o} value={o}>
-                          {o}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Creating Account...' : 'Next: Upload Documents'}
+                <FileUpload
+                  label="Profile Photo"
+                  accept="image/*"
+                  folder={`photos/${user.id}`}
+                  currentUrl={photoUrl}
+                  onUpload={setPhotoUrl}
+                  maxSize={5}
+                />
+                <FileUpload
+                  label="Dues Payment Proof"
+                  accept=".pdf,image/*"
+                  folder={`dues/${user.id}`}
+                  currentUrl={duesUrl}
+                  onUpload={setDuesUrl}
+                  maxSize={10}
+                />
+                <Button type="submit" className="w-full" disabled={loading || !photoUrl || !duesUrl}>
+                  {loading ? 'Submitting...' : 'Submit Documents'}
                 </Button>
               </form>
             </CardContent>
@@ -248,5 +95,5 @@ export default function SignUp() {
       </div>
       <Footer />
     </div>
-  )
+  );
 }
