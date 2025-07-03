@@ -11,6 +11,7 @@ const Footer = () => {
     { name: 'News & Events', href: '/news-events' },
     { name: 'Hall of Fame', href: '/hall-of-fame' },
     { name: 'Contact', href: '/contact' },
+    { name: 'User Manual', href: '/user-manual' },
   ];
 
   const socialLinks = [
@@ -160,6 +161,12 @@ const Footer = () => {
                 className="text-gray-400 hover:text-white text-sm transition-colors duration-300"
               >
                 Community Guidelines
+              </Link>
+              <Link
+                to="/user-manual"
+                className="text-gray-400 hover:text-white text-sm transition-colors duration-300"
+              >
+                User Manual
               </Link>
             </div>
           </div>

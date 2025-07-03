@@ -28,11 +28,7 @@ const DirectorySection = () => {
   ];
 
   const handleDirectoryClick = () => {
-    if (user) {
-      navigate('/directory');
-    } else {
-      navigate('/login');
-    }
+    navigate('/directory');
   };
 
   return (

@@ -30,6 +30,7 @@ const NewsEvents = lazy(() => import("./pages/NewsEvents"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
 const Guidelines = lazy(() => import("./pages/Guidelines"));
+const UserManual = lazy(() => import("./pages/UserManual"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -61,6 +62,7 @@ const App = () => (
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-use" element={<TermsOfUse />} />
                 <Route path="/guidelines" element={<Guidelines />} />
+                <Route path="/user-manual" element={<UserManual />} />
                 
                 {/* Protected routes for authenticated active members */}
                 <Route path="/directory" element={

@@ -184,13 +184,7 @@ const SignUp = () => {
                     folder="photos" 
                     currentUrl={formData.photoUrl} 
                     onUpload={url => setFormData(prev => ({ ...prev, photoUrl: url }))} 
-                    maxSize={5} 
-                    isSignup={true}
-                    onError={(error) => toast({
-                      title: "Upload Failed",
-                      description: error,
-                      variant: "destructive"
-                    })}
+                    maxSize={5}
                   />
                   <FileUpload 
                     label="Dues Payment Proof" 
@@ -198,13 +192,7 @@ const SignUp = () => {
                     folder="dues" 
                     currentUrl={formData.duesProofUrl} 
                     onUpload={url => setFormData(prev => ({ ...prev, duesProofUrl: url }))} 
-                    maxSize={10} 
-                    isSignup={true}
-                    onError={(error) => toast({
-                      title: "Upload Failed",
-                      description: error,
-                      variant: "destructive"
-                    })}
+                    maxSize={10}
                   />
                 </div>
 
