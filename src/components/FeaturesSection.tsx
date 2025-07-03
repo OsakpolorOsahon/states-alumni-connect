@@ -6,8 +6,8 @@ const FeaturesSection = () => {
   const features = [
     {
       icon: Users,
-      title: "Exclusive Membership",
-      description: "Connect with fellow UNIBEN Man O' War alumni in a private, secure environment designed specifically for our community. Access member-only resources, networking opportunities, and maintain lifelong bonds with your fellow Statesmen."
+      title: "Networking",
+      description: "Connect with fellow Statesmen in a private, secure environment designed specifically for our community. Access member-only resources, networking opportunities, and maintain lifelong bonds with your fellow Statesmen."
     },
     {
       icon: BookOpen,
@@ -17,7 +17,7 @@ const FeaturesSection = () => {
     {
       icon: Award,
       title: "Recognition & Impact",
-      description: "Celebrate achievements, share success stories, and contribute to the legacy of excellence that defines our alumni network. Showcase your accomplishments and inspire the next generation of Man O' War leaders through our platform."
+      description: "Celebrate achievements, share success stories, and contribute to the legacy of excellence that defines our network. Showcase your accomplishments and inspire the next generation of Man O' War leaders through this platform."
     }
   ];
 
@@ -26,10 +26,10 @@ const FeaturesSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Why Join SMMOWCUB?
+            SMMOWCUB Portal
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Discover the benefits of being part of our exclusive alumni network
+            Discover our exclusive statesmen network
           </p>
         </div>
 
