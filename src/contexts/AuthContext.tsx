@@ -1,3 +1,4 @@
+// src/contexts/AuthContext.tsx
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
@@ -13,7 +14,9 @@ interface Member {
   last_mowcub_position: string;
   current_council_office?: string;
   photo_url?: string;
-  paid_through?: string;
+  dues_proof_url?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 interface AuthContextType {
@@ -21,7 +24,8 @@ interface AuthContextType {
   member: Member | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, memberData: any) => Promise<any>;
+  signUp: (email: string, password: string) => Promise<{ data: any; error: any }>;
+  createMember: (data: Omit<Member, 'id' | 'role' | 'status'>) => Promise<{ data: any; error: any }>;
   signIn: (email: string, password: string) => Promise<any>;
   signOut: () => Promise<void>;
   isSecretary: boolean;
@@ -32,11 +36,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -46,124 +48,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchMemberData(session.user.id);
-      } else {
+      if (session?.user) fetchMemberData(session.user.id);
+      else setLoading(false);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) fetchMemberData(session.user.id);
+      else {
+        setMember(null);
         setLoading(false);
       }
     });
-
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          // Use setTimeout to defer the Supabase call
-          setTimeout(() => {
-            fetchMemberData(session.user.id);
-          }, 0);
-        } else {
-          setMember(null);
-          setLoading(false);
-        }
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    return () => sub.subscription.unsubscribe();
   }, []);
 
-  const fetchMemberData = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('members')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching member data:', error);
-      } else if (data) {
-        setMember(data);
-      }
-    } catch (error) {
-      console.error('Error fetching member data:', error);
-    } finally {
-      setLoading(false);
-    }
+  const fetchMemberData = async (uid: string) => {
+    const { data, error } = await supabase
+      .from('members')
+      .select('*')
+      .eq('user_id', uid)
+      .maybeSingle();
+    if (data) setMember(data);
+    setLoading(false);
   };
 
-  const signUp = async (email: string, password: string, memberData: any) => {
-    // Validate required fields before attempting signup
-    if (!memberData.photoUrl || !memberData.duesProofUrl) {
-      return { error: { message: "Please upload both profile photo and dues proof" } };
-    }
+  const signUp = (email: string, password: string) =>
+    supabase.auth.signUp({ email, password });
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/`,
-        data: {
-          full_name: memberData.fullName
-        }
-      }
-    });
+  const createMember = (data: Omit<Member, 'id' | 'role' | 'status'>) =>
+    supabase.from('members').insert([{ ...data, status: 'Pending', role: 'member' }]);
 
-    if (error) return { error };
+  const signIn = (email: string, password: string) =>
+    supabase.auth.signInWithPassword({ email, password });
 
-    if (data.user) {
-      // Create member record
-      const { error: memberError } = await supabase
-        .from('members')
-        .insert({
-          user_id: data.user.id,
-          full_name: memberData.fullName,
-          nickname: memberData.nickname,
-          stateship_year: memberData.stateshipYear,
-          last_mowcub_position: memberData.lastPosition,
-          current_council_office: memberData.councilOffice || 'None',
-          photo_url: memberData.photoUrl,
-          dues_proof_url: memberData.duesProofUrl,
-          latitude: memberData.latitude,
-          longitude: memberData.longitude,
-          status: 'Pending'
-        });
-
-      if (memberError) return { error: memberError };
-    }
-
-    return { data };
-  };
-
-  const signIn = async (email: string, password: string) => {
-    return await supabase.auth.signInWithPassword({ email, password });
-  };
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
-  };
-
-  const value = {
-    user,
-    member,
-    session,
-    loading,
-    signUp,
-    signIn,
-    signOut,
-    isSecretary: member?.role === 'secretary',
-    isPending: member?.status === 'Pending',
-    isActive: member?.status === 'Active'
-  };
+  const signOut = () => supabase.auth.signOut();
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider
+      value={{
+        user,
+        member,
+        session,
+        loading,
+        signUp,
+        createMember,
+        signIn,
+        signOut,
+        isSecretary: member?.role === 'secretary',
+        isPending: member?.status === 'Pending',
+        isActive: member?.status === 'Active',
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
