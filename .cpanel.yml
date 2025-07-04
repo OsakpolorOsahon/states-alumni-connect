@@ -4,7 +4,7 @@ __metadata:
 deployment:
   tasks:
     - echo "🛠️ Installing dependencies..."
-    - npm install --production
+    - npm install
     - echo "🔨 Building static assets..."
     - npm run build
     - echo "🚚 Copying build to public_html..."
