@@ -11,9 +11,9 @@ import { HelmetProvider } from 'react-helmet-async';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PWAInstallBanner from '@/components/PWAInstallBanner';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { supabase } from '@/integrations/supabase/client'; // ensure this path matches your project
+import { supabase } from '@/integrations/supabase/client';
 
-// lazy imports
+// lazy-loaded pages
 const Index = lazy(() => import('./pages/Index'));
 const About = lazy(() => import('./pages/About'));
 const History = lazy(() => import('./pages/History'));
@@ -48,15 +48,12 @@ function LoadingFallback() {
 }
 
 export default function App() {
-  // Capture Supabase magic-link session tokens from URL on redirect
+  // Capture magic-link session from URL on mount
   useEffect(() => {
     supabase.auth.getSessionFromUrl({ storeSession: true })
       .then(({ data: { session }, error }) => {
-        if (error) {
-          console.error('Error capturing session from URL:', error.message);
-        } else if (session) {
-          console.log('Magic link session established for', session.user.email);
-        }
+        if (error) console.error('Error capturing session:', error.message);
+        else if (session) console.log('Session established for', session.user.email);
       });
   }, []);
   
@@ -70,7 +67,7 @@ export default function App() {
             <BrowserRouter>
               <Suspense fallback={<LoadingFallback />}>
                 <Routes>
-                  {/* public */}
+                  {/* Public */}
                   <Route path="/" element={<Index />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/history" element={<History />} />
@@ -81,17 +78,16 @@ export default function App() {
                   <Route path="/guidelines" element={<Guidelines />} />
                   <Route path="/user-manual" element={<UserManual />} />
 
-                  {/* auth flows */}
+                  {/* Auth flows */}
                   <Route path="/signup" element={<SignUp />} />
                   <Route path="/email-verification" element={<EmailVerification />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/pending-approval" element={<PendingApproval />} />
 
-                  {/* post-signup upload documents */}
-                  {/* Removed ProtectedRoute to allow magic-link session capture */}
+                  {/* Post-signup upload documents */}
                   <Route path="/upload-documents" element={<UploadDocuments />} />
 
-                  {/* member-only */}
+                  {/* Member-only */}
                   <Route
                     path="/directory"
                     element={
@@ -133,7 +129,7 @@ export default function App() {
                     }
                   />
 
-                  {/* secretary-only */}
+                  {/* Secretary-only */}
                   <Route
                     path="/news-events"
                     element={
@@ -151,7 +147,7 @@ export default function App() {
                     }
                   />
 
-                  {/* catch-all */}
+                  {/* Catch-all */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
