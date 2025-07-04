@@ -18,11 +18,13 @@ export default function UploadDocuments() {
   const [duesUrl, setDuesUrl] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // If no user yet (magic-link not captured), redirect to signup
   if (!user) {
     navigate('/signup');
     return null;
   }
 
+  // If email not verified, show notice
   if (!isVerified) {
     return (
       <div className="min-h-screen bg-background">
@@ -31,7 +33,8 @@ export default function UploadDocuments() {
           <div className="max-w-lg mx-auto text-center">
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl">Email Verification Required</CardTitle>
+                <CardTitle className="text-2xl">Email Verification Required</p><?xml version="1.0" encoding="UTF-8"?>
+</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground">
@@ -49,7 +52,7 @@ export default function UploadDocuments() {
     );
   }
 
-  // If user already has a member record, redirect to appropriate page
+  // If user already has a member record, redirect accordingly
   if (member) {
     if (member.status === 'Pending') {
       navigate('/pending-approval');

@@ -1,52 +1,65 @@
 // src/App.tsx
 
-import { Suspense, lazy } from 'react'
-import { Toaster } from '@/components/ui/toaster'
-import { Toaster as Sonner } from '@/components/ui/sonner'
-import { TooltipProvider } from '@/components/ui/tooltip'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { ThemeProvider } from 'next-themes'
-import { HelmetProvider } from 'react-helmet-async'
-import ProtectedRoute from '@/components/ProtectedRoute'
-import PWAInstallBanner from '@/components/PWAInstallBanner'
-import LoadingSpinner from '@/components/LoadingSpinner'
+import { Suspense, lazy, useEffect } from 'react';
+import { Toaster } from '@/components/ui/toaster';
+import { Toaster as Sonner } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from 'next-themes';
+import { HelmetProvider } from 'react-helmet-async';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import PWAInstallBanner from '@/components/PWAInstallBanner';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import { supabase } from '@/integrations/supabase/client'; // ensure this path matches your project
 
 // lazy imports
-const Index = lazy(() => import('./pages/Index'))
-const About = lazy(() => import('./pages/About'))
-const History = lazy(() => import('./pages/History'))
-const Directory = lazy(() => import('./pages/Directory'))
-const MemberProfile = lazy(() => import('./pages/MemberProfile'))
-const SignUp = lazy(() => import('./pages/SignUp'))
-const EmailVerification = lazy(() => import('./pages/EmailVerification'))
-const UploadDocuments = lazy(() => import('./pages/UploadDocuments'))
-const Login = lazy(() => import('./pages/Login'))
-const PendingApproval = lazy(() => import('./pages/PendingApproval'))
-const Contact = lazy(() => import('./pages/Contact'))
-const News = lazy(() => import('./pages/News'))
-const Map = lazy(() => import('./pages/Map'))
-const MemberDashboard = lazy(() => import('./pages/MemberDashboard'))
-const SecretaryDashboard = lazy(() => import('./pages/SecretaryDashboard'))
-const HallOfFame = lazy(() => import('./pages/HallOfFame'))
-const NewsEvents = lazy(() => import('./pages/NewsEvents'))
-const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
-const TermsOfUse = lazy(() => import('./pages/TermsOfUse'))
-const Guidelines = lazy(() => import('./pages/Guidelines'))
-const UserManual = lazy(() => import('./pages/UserManual'))
-const NotFound = lazy(() => import('./pages/NotFound'))
+const Index = lazy(() => import('./pages/Index'));
+const About = lazy(() => import('./pages/About'));
+const History = lazy(() => import('./pages/History'));
+const Directory = lazy(() => import('./pages/Directory'));
+const MemberProfile = lazy(() => import('./pages/MemberProfile'));
+const SignUp = lazy(() => import('./pages/SignUp'));
+const EmailVerification = lazy(() => import('./pages/EmailVerification'));
+const UploadDocuments = lazy(() => import('./pages/UploadDocuments'));
+const Login = lazy(() => import('./pages/Login'));
+const PendingApproval = lazy(() => import('./pages/PendingApproval'));
+const Contact = lazy(() => import('./pages/Contact'));
+const News = lazy(() => import('./pages/News'));
+const Map = lazy(() => import('./pages/Map'));
+const MemberDashboard = lazy(() => import('./pages/MemberDashboard'));
+const SecretaryDashboard = lazy(() => import('./pages/SecretaryDashboard'));
+const HallOfFame = lazy(() => import('./pages/HallOfFame'));
+const NewsEvents = lazy(() => import('./pages/NewsEvents'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfUse = lazy(() => import('./pages/TermsOfUse'));
+const Guidelines = lazy(() => import('./pages/Guidelines'));
+const UserManual = lazy(() => import('./pages/UserManual'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient();
 
 function LoadingFallback() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <LoadingSpinner size="lg" text="Loading page..." />
     </div>
-  )
+  );
 }
 
 export default function App() {
+  // Capture Supabase magic-link session tokens from URL on redirect
+  useEffect(() => {
+    supabase.auth.getSessionFromUrl({ storeSession: true })
+      .then(({ data: { session }, error }) => {
+        if (error) {
+          console.error('Error capturing session from URL:', error.message);
+        } else if (session) {
+          console.log('Magic link session established for', session.user.email);
+        }
+      });
+  }, []);
+  
   return (
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>
@@ -74,15 +87,9 @@ export default function App() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/pending-approval" element={<PendingApproval />} />
 
-                  {/* post-signup upload documents - requires authentication but not active membership */}
-                  <Route
-                    path="/upload-documents"
-                    element={
-                      <ProtectedRoute>
-                        <UploadDocuments />
-                      </ProtectedRoute>
-                    }
-                  />
+                  {/* post-signup upload documents */}
+                  {/* Removed ProtectedRoute to allow magic-link session capture */}
+                  <Route path="/upload-documents" element={<UploadDocuments />} />
 
                   {/* member-only */}
                   <Route
@@ -154,5 +161,5 @@ export default function App() {
         </ThemeProvider>
       </HelmetProvider>
     </QueryClientProvider>
-  )
+  );
 }
