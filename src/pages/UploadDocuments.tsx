@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import FileUpload from '@/components/FileUpload';
 
 export default function UploadDocuments() {
-  const { user, createMember, signOut } = useAuth();
+  const { user, member, createMember, signOut, isVerified } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [photoUrl, setPhotoUrl] = useState('');
@@ -19,9 +19,45 @@ export default function UploadDocuments() {
   const [loading, setLoading] = useState(false);
 
   if (!user) {
-    // not signed in
-    signOut().then(() => navigate('/signup'));
+    navigate('/signup');
     return null;
+  }
+
+  if (!isVerified) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="container mx-auto py-12 px-4">
+          <div className="max-w-lg mx-auto text-center">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl">Email Verification Required</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-muted-foreground">
+                  Please check your email and click the verification link before uploading documents.
+                </p>
+                <Button variant="outline" onClick={signOut}>
+                  Sign Out
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // If user already has a member record, redirect to appropriate page
+  if (member) {
+    if (member.status === 'Pending') {
+      navigate('/pending-approval');
+      return null;
+    } else if (member.status === 'Active') {
+      navigate('/dashboard');
+      return null;
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,7 +108,7 @@ export default function UploadDocuments() {
                 <FileUpload
                   label="Profile Photo"
                   accept="image/*"
-                  folder={`photos/${user.id}`}
+                  folder={`photos`}
                   currentUrl={photoUrl}
                   onUpload={setPhotoUrl}
                   maxSize={5}
@@ -80,7 +116,7 @@ export default function UploadDocuments() {
                 <FileUpload
                   label="Dues Payment Proof"
                   accept=".pdf,image/*"
-                  folder={`dues/${user.id}`}
+                  folder={`dues`}
                   currentUrl={duesUrl}
                   onUpload={setDuesUrl}
                   maxSize={10}

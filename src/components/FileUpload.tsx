@@ -10,7 +10,7 @@ import { uploadFile } from '@/integrations/supabase/fileUpload';
 interface FileUploadProps {
   label: string;
   accept: string;
-  folder: 'photos' | 'dues';
+  folder: string; // Changed from 'photos' | 'dues' to string
   onUpload: (url: string) => void;
   currentUrl?: string;
   maxSize?: number; // in MB

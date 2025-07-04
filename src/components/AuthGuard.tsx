@@ -35,6 +35,9 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
     if (requireActive && (!member || member.status !== 'Active')) {
       if (member?.status === 'Pending') {
         navigate('/pending-approval');
+      } else if (user && !member) {
+        // User exists but no member record - redirect to upload documents
+        navigate('/upload-documents');
       } else {
         navigate('/');
       }

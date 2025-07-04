@@ -71,11 +71,11 @@ export default function SignUp() {
         formData.email,
         formData.password,
         {
-          fullName: formData.fullName,
+          full_name: formData.fullName,
           nickname: formData.nickname,
-          stateshipYear: formData.stateshipYear,
-          lastPosition: formData.lastPosition,
-          councilOffice: formData.councilOffice,
+          stateship_year: formData.stateshipYear,
+          last_mowcub_position: formData.lastPosition,
+          current_council_office: formData.councilOffice,
           latitude: formData.latitude,
           longitude: formData.longitude,
         }
@@ -84,10 +84,10 @@ export default function SignUp() {
         toast({ title: 'Sign Up Failed', description: error.message, variant: 'destructive' })
       } else {
         toast({
-          title: 'Account Created',
-          description: 'Check your email to verify. Then upload your documents.',
+          title: 'Account Created Successfully!',
+          description: 'Please check your email and click the verification link to continue.',
         })
-        navigate('/upload-documents')
+        navigate('/email-verification');
       }
     } catch (err: any) {
       toast({ title: 'Error', description: err.message || 'Unexpected error', variant: 'destructive' })
@@ -239,7 +239,7 @@ export default function SignUp() {
                 </div>
 
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Creating Account...' : 'Next: Upload Documents'}
+                  {loading ? 'Creating Account...' : 'Create Account'}
                 </Button>
               </form>
             </CardContent>

@@ -3,34 +3,24 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { Tables, TablesInsert } from '@/integrations/supabase/types';
 
-interface Member {
-  id: string;
-  full_name: string;
-  nickname?: string;
-  role: 'member' | 'secretary';
-  status: 'Pending' | 'Active' | 'Rejected' | 'Banned';
-  stateship_year: string;
-  last_mowcub_position: string;
-  current_council_office?: string;
-  photo_url?: string;
-  dues_proof_url?: string;
-  latitude?: number;
-  longitude?: number;
-}
+type Member = Tables<'members'>;
+type MemberInsert = TablesInsert<'members'>;
 
 interface AuthContextType {
   user: User | null;
   member: Member | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<{ data: any; error: any }>;
-  createMember: (data: Omit<Member, 'id' | 'role' | 'status'>) => Promise<{ data: any; error: any }>;
+  signUp: (email: string, password: string, metadata?: any) => Promise<{ data: any; error: any }>;
+  createMember: (data: Omit<MemberInsert, 'id' | 'role' | 'status'>) => Promise<{ data: any; error: any }>;
   signIn: (email: string, password: string) => Promise<any>;
-  signOut: () => Promise<void>;
+  signOut: () => Promise<{ error: any }>;
   isSecretary: boolean;
   isPending: boolean;
   isActive: boolean;
+  isVerified: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -77,11 +67,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(false);
   };
 
-  const signUp = (email: string, password: string) =>
-    supabase.auth.signUp({ email, password });
+  const signUp = (email: string, password: string, metadata?: any) =>
+    supabase.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        data: metadata,
+        emailRedirectTo: `${window.location.origin}/upload-documents`
+      }
+    });
 
-  const createMember = (data: Omit<Member, 'id' | 'role' | 'status'>) =>
-    supabase.from('members').insert([{ ...data, status: 'Pending', role: 'member' }]);
+  const createMember = async (data: Omit<MemberInsert, 'id' | 'role' | 'status'>) => {
+    const insertData: MemberInsert = { 
+      ...data, 
+      status: 'Pending', 
+      role: 'member'
+    };
+    return await supabase.from('members').insert([insertData]);
+  };
 
   const signIn = (email: string, password: string) =>
     supabase.auth.signInWithPassword({ email, password });
@@ -102,6 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isSecretary: member?.role === 'secretary',
         isPending: member?.status === 'Pending',
         isActive: member?.status === 'Active',
+        isVerified: user?.email_confirmed_at ? true : false,
       }}
     >
       {children}
