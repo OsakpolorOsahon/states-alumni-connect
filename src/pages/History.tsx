@@ -15,18 +15,16 @@ const History = () => {
         <section className="relative bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900 py-16 rounded-lg mb-8">
           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1562774053-701939374585?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center opacity-20 rounded-lg"></div>
           <div className="absolute inset-0 bg-[#E10600] opacity-10 rounded-lg"></div>
-          
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <Link to="/">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 className="text-white hover:bg-white/10 mb-8"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Home
               </Button>
             </Link>
-            
             <div className="text-center">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
                 Our Journey Through the Years
@@ -38,10 +36,14 @@ const History = () => {
           </div>
         </section>
 
-        {/* Timeline Section */}
+        {/* Timeline Section with horizontal scroll on desktop */}
         <section className="py-16 lg:py-24 bg-muted/30 dark:bg-muted/10 rounded-lg mb-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <InteractiveTimeline />
+            <div className="overflow-x-auto">
+              <div className="inline-flex space-x-12 min-w-[800px]">
+                <InteractiveTimeline />
+              </div>
+            </div>
           </div>
         </section>
 
@@ -52,15 +54,15 @@ const History = () => {
               A Legacy of Excellence
             </h2>
             <p className="text-lg text-muted-foreground dark:text-muted-foreground leading-relaxed mb-8">
-              From our humble beginnings in 1970 to our current status as a premier alumni network, 
-              SMMOWCUB has consistently upheld the highest standards of leadership, integrity, and service. 
-              Our journey reflects not just institutional growth, but the collective achievements of 
-              thousands of Statesmen who have carried our values into every corner of society.
+              From our humble beginnings in 1976 to our current status as a premier alumni network,
+              SMMOWCUB has consistently upheld the highest standards of leadership, integrity, and service.
+              Our journey reflects not just institutional growth, but the collective achievements of
+              hundreds of Statesmen who have carried our values into every corner of society.
             </p>
             <p className="text-lg text-muted-foreground dark:text-muted-foreground leading-relaxed">
-              As we look toward the future, we remain committed to fostering the next generation of leaders 
-              while honoring the traditions that have made us who we are. The spirit of Man O' War lives on 
-              in every graduate, every achievement, and every act of service to humanity.
+              As we look toward the future, we remain committed to fostering the next generation of leaders
+              while honoring the traditions that have made us who we are. The spirit of Man O' War lives on
+              in every statesman, every achievement, and every act of service to humanity.
             </p>
           </div>
         </section>
