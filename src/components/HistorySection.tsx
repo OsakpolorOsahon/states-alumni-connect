@@ -19,7 +19,7 @@ const HistorySection = () => {
       icon: Calendar
     },
     {
-      year: "2010",
+      year: "2025",
       title: "Digital Transformation",
       description: "Launch of online platform for member connectivity",
       icon: Trophy
