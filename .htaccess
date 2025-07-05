@@ -1,28 +1,49 @@
-# Correct MIME types for JS, JSON, and other files
-AddType application/javascript .js
-AddType application/javascript .mjs
-AddType text/javascript .js
-AddType text/javascript .mjs
-AddType application/json .json
-AddType text/css .css
-AddType image/png .png
-AddType image/svg+xml .svg
-AddType image/webp .webp
+# Force correct MIME types for all file types
+<IfModule mod_mime.c>
+  # JavaScript files
+  AddType application/javascript .js
+  AddType application/javascript .mjs
+  AddType text/javascript .js
+  AddType text/javascript .mjs
+  
+  # JSON and other data files
+  AddType application/json .json
+  AddType application/json .webmanifest
+  
+  # CSS and fonts
+  AddType text/css .css
+  AddType font/woff2 .woff2
+  AddType font/woff .woff
+  
+  # Images
+  AddType image/png .png
+  AddType image/svg+xml .svg
+  AddType image/webp .webp
+  AddType image/jpeg .jpg
+  AddType image/jpeg .jpeg
+  AddType image/x-icon .ico
+</IfModule>
 
-# Handle Vite build files
-<Files "*.js">
-  Header set Content-Type "application/javascript"
-</Files>
-
-<Files "*.mjs">
-  Header set Content-Type "application/javascript"
-</Files>
-
-# Prevent script MIME errors
+# Override server MIME type detection and security headers
 <IfModule mod_headers.c>
+  # Force JavaScript MIME type
+  <FilesMatch "\.(js|mjs)$">
+    Header set Content-Type "application/javascript; charset=utf-8"
+  </FilesMatch>
+  
+  # Force JSON MIME type
+  <FilesMatch "\.(json|webmanifest)$">
+    Header set Content-Type "application/json; charset=utf-8"
+  </FilesMatch>
+  
+  # Force CSS MIME type
+  <FilesMatch "\.css$">
+    Header set Content-Type "text/css; charset=utf-8"
+  </FilesMatch>
+  
+  # Security headers
   Header set X-Content-Type-Options nosniff
   Header always set X-Frame-Options DENY
-  Header always set X-Content-Type-Options nosniff
 </IfModule>
 
 # Enable compression for better performance
@@ -38,9 +59,13 @@ AddType image/webp .webp
   AddOutputFilterByType DEFLATE application/x-javascript
 </IfModule>
 
-# Handle SPA routing - redirect all non-file requests to index.html
+# Handle SPA routing and HTTPS redirect
 <IfModule mod_rewrite.c>
   RewriteEngine On
+  
+  # Redirect HTTP to HTTPS (optional but recommended)
+  RewriteCond %{HTTPS} off
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
   
   # Handle Angular and React router
   # If an existing asset or directory is requested go to it as it is
@@ -51,8 +76,3 @@ AddType image/webp .webp
   # If the requested resource doesn't exist, use index.html
   RewriteRule ^ /index.html [L]
 </IfModule>
-
-# Redirect HTTP to HTTPS (optional but recommended)
-RewriteEngine On
-RewriteCond %{HTTPS} off
-RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
