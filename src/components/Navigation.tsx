@@ -199,7 +199,7 @@ const Navigation = () => {
                 </Link>
                 <Link to="/signup">
                   <Button className="bg-[#E10600] hover:bg-[#C10500]">
-                    Join Us
+                    Signup
                   </Button>
                 </Link>
               </div>
