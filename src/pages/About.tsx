@@ -87,7 +87,7 @@ const About = () => {
               className="relative"
             >
               <img
-                src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                src="https://imgur.com/a/OP8T12Q"
                 alt="SMMOWCUB gathering"
                 className="rounded-lg shadow-lg"
               />
