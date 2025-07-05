@@ -7,12 +7,12 @@ const FeaturesSection = () => {
     {
       icon: Users,
       title: "Networking",
-      description: "Connect with fellow Statesmen in a private, secure environment designed specifically for our community. Access member-only resources, networking opportunities, and maintain lifelong bonds with your fellow Statesmen."
+      description: "Connect with fellow Statesmen in a private, secure environment designed specifically for our community. Access member-only resources, networking opportunities, and maintain lifelong bonds with fellow Statesmen."
     },
     {
       icon: BookOpen,
       title: "Empowerment & Resources",
-      description: "Access professional development opportunities, mentorship programs, and resources to advance your career and personal growth. Benefit from workshops, seminars, and educational content curated for our distinguished alumni network."
+      description: "Access professional development opportunities, mentorship programs, and resources to advance your career and personal growth. Benefit from workshops, seminars, and educational content curated for our distinguished network."
     },
     {
       icon: Award,
