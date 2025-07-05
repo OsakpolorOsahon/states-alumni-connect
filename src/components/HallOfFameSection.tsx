@@ -39,8 +39,8 @@ const HallOfFameSection = () => {
             Hall of <span className="text-[#E10600]">Fame</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Celebrating the extraordinary achievements of our distinguished alumni who have made 
-            significant contributions to society and brought honor to our brotherhood.
+            Celebrating the extraordinary achievements of our distinguished statesmen who have made 
+            significant contributions to society and brought honor to our Organisation.
           </p>
         </motion.div>
 
