@@ -44,7 +44,7 @@ const DirectorySection = () => {
               Connect with Fellow <span className="text-[#E10600]">Statesmen</span>
             </h2>
             <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-              Our exclusive member directory connects you with distinguished alumni across the globe. 
+              Our exclusive member directory connects you with distinguished statesmen across the globe. 
               Network, mentor, and collaborate with fellow statesmen who share your values and heritage.
             </p>
             
