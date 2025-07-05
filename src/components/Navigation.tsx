@@ -47,11 +47,10 @@ const Navigation = () => {
   ];
 
   const socialLinks = [
-    { icon: Facebook, href: "#", label: "Facebook" },
-    { icon: Twitter, href: "#", label: "Twitter" },
-    { icon: Instagram, href: "#", label: "Instagram" },
-    { icon: Linkedin, href: "#", label: "LinkedIn" },
-    { icon: Youtube, href: "#", label: "YouTube" },
+    { icon: Facebook, href: "https://www.facebook.com/csmowcub1154", label: "Facebook" },
+    { icon: Twitter, href: "https://www.x.com/csmowcub1154", label: "Twitter" },
+    { icon: Instagram, href: "https://www.instagram.com/csmowcub1154", label: "Instagram" },
+    { icon: Linkedin, href: "https://www.linkedin.com/in/csmowcub1154", label: "LinkedIn" },
   ];
   
   const isActive = (path: string) => location.pathname === path;
