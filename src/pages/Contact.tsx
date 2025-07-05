@@ -207,30 +207,6 @@ const Contact = () => {
                 </div>
               </CardContent>
             </Card>
-
-            <Card className="dark:bg-card dark:border-border">
-              <CardHeader>
-                <CardTitle className="text-xl font-bold text-foreground dark:text-foreground">
-                  Office Hours
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-foreground dark:text-foreground">Monday - Friday</span>
-                    <span className="text-muted-foreground">9:00 AM - 5:00 PM</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-foreground dark:text-foreground">Saturday</span>
-                    <span className="text-muted-foreground">10:00 AM - 2:00 PM</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-foreground dark:text-foreground">Sunday</span>
-                    <span className="text-muted-foreground">Closed</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </main>
