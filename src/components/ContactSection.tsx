@@ -9,13 +9,13 @@ const ContactSection = () => {
     {
       icon: Mail,
       title: "Email Us",
-      info: "secretary@smmowcub.org",
+      info: "csmowcub1154@gmail.com",
       description: "Get in touch with our secretariat"
     },
     {
       icon: Phone,
       title: "Call Us",
-      info: "+234 (0) 803 xxx xxxx",
+      info: "+234 801 111 764",
       description: "Speak directly with our team"
     },
     {
