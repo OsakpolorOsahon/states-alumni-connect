@@ -22,10 +22,10 @@ const AboutSection = () => {
                 The Senior Members of the Man O' War Club University of Benin (SMMOWCUB) stands as a beacon of leadership, discipline, and excellence. Founded on the principles of character development and service to humanity, our organization has been shaping future leaders for over five decades.
               </p>
               <p className="text-lg text-muted-foreground dark:text-muted-foreground leading-relaxed mb-8">
-                Our alumni, known as Statesmen, have gone on to become influential leaders across various sectors—from government and military to business and academia. This exclusive portal serves as a bridge connecting our distinguished graduates, fostering continued growth, mentorship, and professional development.
+                Our alumni, known as Statesmen, have gone on to become influential leaders across various sectors from government and military to business and academia. This exclusive portal serves as a bridge connecting our distinguished statesmen, fostering continued growth, mentorship, and professional development.
               </p>
               <p className="text-lg text-muted-foreground dark:text-muted-foreground leading-relaxed mb-12">
-                Through shared values of integrity, courage, and service, we continue to uphold the legacy that defines the Man O' War tradition, ensuring that the spirit of excellence lives on in every generation of UNIBEN graduates.
+                Through shared values of integrity, courage, and service, we continue to uphold the legacy that defines the Man O' War tradition, ensuring that the spirit of excellence lives on in every generation of Statesmen.
               </p>
               
               <Link to="/history">
