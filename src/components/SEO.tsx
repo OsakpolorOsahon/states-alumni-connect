@@ -16,7 +16,7 @@ const SEO = ({
   pathname = "",
   type = "website"
 }: SEOProps) => {
-  const siteUrl = "https://your-domain.com"; // Replace with actual domain
+  const siteUrl = "https://smmowcub.org";
   const fullUrl = `${siteUrl}${pathname}`;
   const fullImage = image.startsWith('http') ? image : `${siteUrl}${image}`;
 
