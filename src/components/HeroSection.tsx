@@ -28,8 +28,8 @@ const HeroSection = () => {
       {/* Content */}
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-          Bringing Together the Legacy and Leadership of{" "}
-          <span className="text-[#E10600]">UNIBEN's Man O' War Alumni</span>
+          Senior Members Man O' War Club{" "}
+          <span className="text-[#E10600]">University Of Benin</span>
         </h1>
         
         <p className="text-xl md:text-2xl text-gray-200 mb-8 max-w-3xl mx-auto leading-relaxed">
