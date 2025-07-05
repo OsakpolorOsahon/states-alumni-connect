@@ -1,6 +1,7 @@
+
 # Force correct MIME types for all file types
 <IfModule mod_mime.c>
-  # JavaScript files
+  # JavaScript files - multiple declarations for better compatibility
   AddType application/javascript .js
   AddType application/javascript .mjs
   AddType text/javascript .js
@@ -24,27 +25,46 @@
   AddType image/x-icon .ico
 </IfModule>
 
-# Override server MIME type detection and security headers
+# Force MIME types even if mod_mime fails
 <IfModule mod_headers.c>
-  # Force JavaScript MIME type
+  # Force JavaScript MIME type with multiple methods
   <FilesMatch "\.(js|mjs)$">
+    Header always set Content-Type "application/javascript; charset=utf-8"
+    Header unset Content-Type
     Header set Content-Type "application/javascript; charset=utf-8"
   </FilesMatch>
   
   # Force JSON MIME type
   <FilesMatch "\.(json|webmanifest)$">
-    Header set Content-Type "application/json; charset=utf-8"
+    Header always set Content-Type "application/json; charset=utf-8"
   </FilesMatch>
   
   # Force CSS MIME type
   <FilesMatch "\.css$">
-    Header set Content-Type "text/css; charset=utf-8"
+    Header always set Content-Type "text/css; charset=utf-8"
   </FilesMatch>
   
   # Security headers
   Header set X-Content-Type-Options nosniff
   Header always set X-Frame-Options DENY
 </IfModule>
+
+# Alternative method - force MIME types through file handling
+<Files "*.js">
+  ForceType application/javascript
+</Files>
+
+<Files "*.mjs">
+  ForceType application/javascript
+</Files>
+
+<Files "*.json">
+  ForceType application/json
+</Files>
+
+<Files "manifest.json">
+  ForceType application/json
+</Files>
 
 # Enable compression for better performance
 <IfModule mod_deflate.c>
