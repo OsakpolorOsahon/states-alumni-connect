@@ -73,7 +73,7 @@ const About = () => {
               <h2 className="text-3xl font-bold mb-6">Our Mission</h2>
               <p className="text-muted-foreground mb-6 leading-relaxed">
                 To foster continued growth, mentorship, and professional development among our distinguished 
-                alumni while upholding the traditions and values that define the Man O' War spirit.
+                statesmen while upholding the traditions and values that define the Man O' War spirit.
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 Through this exclusive digital platform, we connect Statesmen across the globe, creating 
@@ -146,12 +146,12 @@ const About = () => {
             <h2 className="text-3xl font-bold mb-6">Our Legacy</h2>
             <p className="text-muted-foreground mb-8 leading-relaxed">
               Founded on the principles of character development and service to humanity, SMMOWCUB has been 
-              shaping future leaders for generations. Our alumni have gone on to become influential figures 
+              shaping future leaders for generations. Our Statesmen have gone on to become influential figures 
               across various sectors—from government and military to business and academia.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              This exclusive portal serves as a bridge connecting our distinguished graduates, ensuring that 
-              the spirit of excellence and the Man O' War tradition lives on in every generation of UNIBEN graduates.
+              This exclusive portal serves as a bridge connecting our distinguished statesmen, ensuring that 
+              the spirit of excellence and the Man O' War tradition lives on in every generation of statesmen.
             </p>
           </motion.div>
         </div>
