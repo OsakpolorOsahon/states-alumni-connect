@@ -53,10 +53,9 @@ const Directory = () => {
   }
 
   return (
-    <AuthGuard requireAuth requireActive>
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <div className="container mx-auto py-8 px-4">
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      <div className="container mx-auto py-8 px-4">
           <div className="space-y-8">
             {/* Header */}
             <div className="text-center space-y-4">
@@ -209,7 +208,6 @@ const Directory = () => {
         </div>
         <Footer />
       </div>
-    </AuthGuard>
   );
 };
 

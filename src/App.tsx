@@ -30,6 +30,9 @@ const MemberDashboard = lazy(() => import('./pages/MemberDashboard'))
 const SecretaryDashboard = lazy(() => import('./pages/SecretaryDashboard'))
 const HallOfFame = lazy(() => import('./pages/HallOfFame'))
 const NewsEvents = lazy(() => import('./pages/NewsEvents'))
+const Jobs = lazy(() => import('./pages/Jobs'))
+const Forums = lazy(() => import('./pages/Forums'))
+const Mentorship = lazy(() => import('./pages/Mentorship'))
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 const TermsOfUse = lazy(() => import('./pages/TermsOfUse'))
 const Guidelines = lazy(() => import('./pages/Guidelines'))
@@ -84,15 +87,10 @@ export default function App() {
                     }
                   />
 
+                  {/* Public directory */}
+                  <Route path="/directory" element={<Directory />} />
+                  
                   {/* member-only */}
-                  <Route
-                    path="/directory"
-                    element={
-                      <ProtectedRoute>
-                        <Directory />
-                      </ProtectedRoute>
-                    }
-                  />
                   <Route
                     path="/directory/:id"
                     element={
@@ -122,6 +120,30 @@ export default function App() {
                     element={
                       <ProtectedRoute>
                         <MemberDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/jobs"
+                    element={
+                      <ProtectedRoute>
+                        <Jobs />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/forums"
+                    element={
+                      <ProtectedRoute>
+                        <Forums />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/mentorship"
+                    element={
+                      <ProtectedRoute>
+                        <Mentorship />
                       </ProtectedRoute>
                     }
                   />

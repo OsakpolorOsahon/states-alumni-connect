@@ -227,6 +227,54 @@ export type Database = {
           },
         ]
       }
+      job_applications: {
+        Row: {
+          applicant_id: string | null
+          cover_letter: string | null
+          created_at: string | null
+          id: string
+          job_id: string | null
+          resume_url: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          applicant_id?: string | null
+          cover_letter?: string | null
+          created_at?: string | null
+          id?: string
+          job_id?: string | null
+          resume_url?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          applicant_id?: string | null
+          cover_letter?: string | null
+          created_at?: string | null
+          id?: string
+          job_id?: string | null
+          resume_url?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_applications_applicant_id_fkey"
+            columns: ["applicant_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "job_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_posts: {
         Row: {
           company: string
@@ -483,6 +531,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["user_role"]
       }
+      get_member_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          total_members: number
+          active_members: number
+          pending_members: number
+          hall_of_fame_count: number
+          recent_members: number
+        }[]
+      }
       get_nearby_members: {
         Args: { target_lat: number; target_lng: number; radius_km?: number }
         Returns: {
@@ -493,6 +551,10 @@ export type Database = {
           longitude: number
           distance_km: number
         }[]
+      }
+      handover_secretary_role: {
+        Args: { new_secretary_id: string }
+        Returns: boolean
       }
       is_secretary: {
         Args: Record<PropertyKey, never>
