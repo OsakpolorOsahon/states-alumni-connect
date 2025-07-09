@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/lib/api';
 import { createRealtimeSubscription } from '@/lib/realtime';
 
 interface ForumThread {
@@ -27,45 +27,8 @@ export const useForumThreads = () => {
   const fetchThreads = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('forum_threads')
-        .select(`
-          *,
-          members:author_id (
-            full_name,
-            photo_url,
-            nickname
-          )
-        `)
-        .order('is_pinned', { ascending: false })
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      
-      // Get reply counts for each thread
-      const threadsWithCounts = await Promise.all(
-        (data || []).map(async (thread) => {
-          const { count } = await supabase
-            .from('forum_replies')
-            .select('*', { count: 'exact', head: true })
-            .eq('thread_id', thread.id);
-          
-          const { data: lastReply } = await supabase
-            .from('forum_replies')
-            .select('created_at')
-            .eq('thread_id', thread.id)
-            .order('created_at', { ascending: false })
-            .limit(1);
-
-          return {
-            ...thread,
-            reply_count: count || 0,
-            last_reply: lastReply?.[0]?.created_at || thread.created_at
-          };
-        })
-      );
-
-      setThreads(threadsWithCounts);
+      const data = await api.getAllForumThreads();
+      setThreads(data || []);
       setError(null);
     } catch (err) {
       console.error('Error fetching threads:', err);
@@ -90,30 +53,22 @@ export const useForumThreads = () => {
     });
 
     return () => {
-      supabase.removeChannel(threadsChannel);
-      supabase.removeChannel(repliesChannel);
+      if (threadsChannel && typeof threadsChannel.unsubscribe === 'function') {
+        threadsChannel.unsubscribe();
+      }
+      if (repliesChannel && typeof repliesChannel.unsubscribe === 'function') {
+        repliesChannel.unsubscribe();
+      }
     };
   }, []);
 
   const createThread = async (threadData: { title: string; content: string }) => {
     try {
-      const { data: member } = await supabase
-        .from('members')
-        .select('id')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .single();
-
-      if (!member) throw new Error('Member not found');
-
-      const { error } = await supabase
-        .from('forum_threads')
-        .insert([{ ...threadData, author_id: member.id }]);
-
-      if (error) throw error;
-      return { success: true };
+      const result = await api.createForumThread(threadData);
+      return { success: true, data: result };
     } catch (error) {
       console.error('Error creating thread:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   };
 

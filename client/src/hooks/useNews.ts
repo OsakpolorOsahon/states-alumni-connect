@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/lib/api';
 import { createRealtimeSubscription } from '@/lib/realtime';
 
 interface NewsItem {
@@ -24,19 +24,7 @@ export const useNews = () => {
   const fetchNews = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('news')
-        .select(`
-          *,
-          members!author_id (
-            full_name,
-            photo_url
-          )
-        `)
-        .eq('is_published', true)
-        .order('published_at', { ascending: false });
-
-      if (error) throw error;
+      const data = await api.getPublishedNews();
       setNews(data || []);
       setError(null);
     } catch (err) {
@@ -57,7 +45,9 @@ export const useNews = () => {
     });
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel && typeof channel.unsubscribe === 'function') {
+        channel.unsubscribe();
+      }
     };
   }, []);
 

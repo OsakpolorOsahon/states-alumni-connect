@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/lib/api';
 import { createRealtimeSubscription } from '@/lib/realtime';
 
 interface MentorshipRequest {
@@ -34,28 +34,7 @@ export const useMentorshipRequests = () => {
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('mentorship_requests')
-        .select(`
-          *,
-          mentee:members!mentee_id (
-            full_name,
-            photo_url,
-            nickname,
-            stateship_year,
-            last_mowcub_position
-          ),
-          mentor:members!mentor_id (
-            full_name,
-            photo_url,
-            nickname,
-            stateship_year,
-            last_mowcub_position
-          )
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
+      const data = await api.getAllMentorshipRequests();
       setRequests(data || []);
       setError(null);
     } catch (err) {
@@ -76,51 +55,32 @@ export const useMentorshipRequests = () => {
     });
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel && typeof channel.unsubscribe === 'function') {
+        channel.unsubscribe();
+      }
     };
   }, []);
 
   const createRequest = async (mentorId: string, message: string) => {
     try {
-      const { data: member } = await supabase
-        .from('members')
-        .select('id')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .single();
-
-      if (!member) throw new Error('Member not found');
-
-      const { error } = await supabase
-        .from('mentorship_requests')
-        .insert([{
-          mentee_id: member.id,
-          mentor_id: mentorId,
-          request_message: message
-        }]);
-
-      if (error) throw error;
-      return { success: true };
+      const result = await api.createMentorshipRequest({
+        mentorId,
+        requestMessage: message
+      });
+      return { success: true, data: result };
     } catch (error) {
       console.error('Error creating mentorship request:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   };
 
   const respondToRequest = async (requestId: string, status: 'active' | 'completed') => {
     try {
-      const { error } = await supabase
-        .from('mentorship_requests')
-        .update({
-          status,
-          responded_at: new Date().toISOString()
-        })
-        .eq('id', requestId);
-
-      if (error) throw error;
-      return { success: true };
+      const result = await api.updateMentorshipRequest(requestId, { status });
+      return { success: true, data: result };
     } catch (error) {
       console.error('Error responding to mentorship request:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   };
 

@@ -1,0 +1,151 @@
+# SMMOWCUB - Senior Members Man O' War Club University of Benin
+
+## Overview
+
+SMMOWCUB is a full-stack web application designed as an exclusive portal for alumni of the Man O' War Club at the University of Benin. The application serves as a comprehensive platform for networking, member management, and community engagement among "Statesmen" (alumni members).
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+## System Architecture
+
+### Frontend Architecture
+- **Framework**: React with TypeScript
+- **Styling**: Tailwind CSS with shadcn/ui components
+- **State Management**: React Context API for authentication, TanStack Query for server state
+- **Routing**: React Router DOM for client-side navigation
+- **Build Tool**: Vite for fast development and optimized builds
+- **UI Components**: Radix UI primitives with custom styling
+
+### Backend Architecture
+- **Runtime**: Node.js with Express.js
+- **Database**: PostgreSQL with Drizzle ORM
+- **Database Provider**: Neon Database (serverless PostgreSQL)
+- **API Design**: RESTful API with `/api` prefix
+- **Session Management**: PostgreSQL session store
+- **File Storage**: Supabase for file uploads (photos, documents)
+
+### Key Components
+
+#### Authentication System
+- Email/password authentication via Supabase Auth
+- Role-based access control (Member, Secretary)
+- Multi-step registration process with email verification
+- Document upload requirement for membership approval
+
+#### Member Management
+- Comprehensive member profiles with photos and professional details
+- Stateship year tracking (1976-2026)
+- MOWCUB position hierarchy system
+- Current council office tracking
+- Member status management (Pending, Active, Inactive)
+
+#### Geographic Features
+- Interactive Google Maps integration for member location tracking
+- Real-time member location updates
+- Map-based member discovery
+
+#### Content Management
+- News and announcements system
+- Forum discussions with threaded conversations
+- Hall of Fame recognition system
+- Badge and achievement system
+
+#### Communication Features
+- Push notifications system
+- Real-time updates using Supabase subscriptions
+- Email notifications for important events
+
+## Data Flow
+
+### Registration Flow
+1. User creates account with basic information
+2. Email verification required
+3. Document upload (photo, dues proof)
+4. Secretary approval process
+5. Account activation
+
+### Member Directory Access
+1. Authentication verification
+2. Active member status check
+3. Real-time member data fetching
+4. Geographic location integration
+
+### Content Publishing
+1. Secretary role verification for news/announcements
+2. Content creation and editing
+3. Real-time distribution to members
+4. Notification system activation
+
+## External Dependencies
+
+### Third-Party Services
+- **Supabase**: Authentication, real-time subscriptions, file storage
+- **Neon Database**: Serverless PostgreSQL hosting
+- **Google Maps API**: Interactive mapping features
+- **Replit**: Development environment integration
+
+### NPM Packages
+- **UI/Styling**: @radix-ui components, tailwindcss, lucide-react icons
+- **Form Handling**: react-hook-form, @hookform/resolvers
+- **Data Fetching**: @tanstack/react-query
+- **Database**: drizzle-orm, @neondatabase/serverless
+- **Utilities**: date-fns, clsx, class-variance-authority
+
+## Deployment Strategy
+
+### Development Environment
+- Vite development server for frontend
+- Express server with hot reload via tsx
+- Environment variables for database and API keys
+- Replit integration for cloud development
+
+### Production Build
+- Vite build process for frontend optimization
+- esbuild for server-side compilation
+- Static file serving through Express
+- Environment-specific configuration
+
+### Database Management
+- Drizzle migrations for schema changes
+- PostgreSQL connection pooling
+- Real-time subscriptions for live updates
+
+### Security Considerations
+- JWT-based authentication
+- Role-based access control
+- File upload validation and sanitization
+- Environment variable protection for sensitive data
+
+### PWA Features
+- Service worker for offline functionality
+- App manifest for installability
+- Push notification capabilities
+- Responsive design for mobile devices
+
+## Key Features
+
+### Member Portal
+- Personal dashboard with activity feed
+- Directory search and filtering
+- Profile management and updates
+- Document management system
+
+### Administrative Features
+- Secretary dashboard for member approval
+- Badge and recognition management
+- Content moderation tools
+- Analytics and reporting
+
+### Community Features
+- Forum discussions and threads
+- Mentorship program matching
+- Job board for career opportunities
+- Event management and RSVPs
+
+### Technical Features
+- Real-time data synchronization
+- Offline capability through PWA
+- Responsive design for all devices
+- SEO optimization for public pages

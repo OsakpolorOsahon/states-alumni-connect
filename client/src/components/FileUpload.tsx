@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Upload, X } from 'lucide-react';
-import { uploadFile } from '@/integrations/supabase/fileUpload';
+import { uploadFile } from '@/lib/fileUpload';
 
 interface FileUploadProps {
   label: string;

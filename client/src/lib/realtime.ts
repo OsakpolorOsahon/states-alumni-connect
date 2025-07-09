@@ -1,6 +1,5 @@
 
-import { supabase } from "@/integrations/supabase/client";
-
+// Mock realtime service for the migrated application
 export interface RealtimeSubscriptionConfig {
   table: string;
   event?: 'INSERT' | 'UPDATE' | 'DELETE' | '*';
@@ -11,22 +10,14 @@ export interface RealtimeSubscriptionConfig {
 export const createRealtimeSubscription = (config: RealtimeSubscriptionConfig) => {
   const { table, event = '*', filter, callback } = config;
   
-  const channelConfig: any = {
-    event,
-    schema: 'public',
-    table
+  // For now, return a mock subscription that doesn't do anything
+  console.log(`Mock realtime subscription created for table: ${table}, event: ${event}, filter: ${filter}`);
+  
+  return {
+    unsubscribe: () => {
+      console.log(`Mock subscription unsubscribed for table: ${table}`);
+    }
   };
-
-  if (filter) {
-    channelConfig.filter = filter;
-  }
-
-  const channel = supabase
-    .channel(`${table}-changes`)
-    .on('postgres_changes', channelConfig, callback)
-    .subscribe();
-
-  return channel;
 };
 
 export const subscribeToMembers = (callback: (payload: any) => void) => {
@@ -61,6 +52,8 @@ export const subscribeToNotifications = (memberId: string, callback: (payload: a
 // Utility to clean up subscriptions
 export const cleanupSubscriptions = (channels: any[]) => {
   channels.forEach(channel => {
-    supabase.removeChannel(channel);
+    if (channel && typeof channel.unsubscribe === 'function') {
+      channel.unsubscribe();
+    }
   });
 };

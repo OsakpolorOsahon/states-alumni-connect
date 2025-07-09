@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Bell, X, Check } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -30,24 +30,16 @@ const NotificationBell = () => {
       fetchNotifications();
       
       // Set up real-time subscription for notifications
-      const channel = supabase
-        .channel('notifications-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'notifications',
-            filter: `member_id=eq.${member.id}`
-          },
-          () => {
-            fetchNotifications();
-          }
-        )
-        .subscribe();
+      const channel = createRealtimeSubscription({
+        table: 'notifications',
+        filter: `member_id=eq.${member.id}`,
+        callback: () => fetchNotifications()
+      });
 
       return () => {
-        supabase.removeChannel(channel);
+        if (channel && typeof channel.unsubscribe === 'function') {
+          channel.unsubscribe();
+        }
       };
     }
   }, [member]);
@@ -56,17 +48,9 @@ const NotificationBell = () => {
     if (!member) return;
 
     try {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('member_id', member.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (error) throw error;
-
+      const data = await api.getNotificationsByMemberId(member.id);
       setNotifications(data || []);
-      setUnreadCount(data?.filter(n => !n.is_read).length || 0);
+      setUnreadCount(data?.filter(n => !n.isRead).length || 0);
     } catch (error) {
       console.error('Error fetching notifications:', error);
     }
@@ -74,10 +58,7 @@ const NotificationBell = () => {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      await supabase
-        .from('notifications')
-        .update({ is_read: true })
-        .eq('id', notificationId);
+      await api.markNotificationAsRead(notificationId);
 
       fetchNotifications();
     } catch (error) {
@@ -89,11 +70,7 @@ const NotificationBell = () => {
     if (!member) return;
 
     try {
-      await supabase
-        .from('notifications')
-        .update({ is_read: true })
-        .eq('member_id', member.id)
-        .eq('is_read', false);
+      await api.markAllNotificationsAsRead(member.id);
 
       fetchNotifications();
       toast({

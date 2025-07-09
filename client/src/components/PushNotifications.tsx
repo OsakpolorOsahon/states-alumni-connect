@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,14 +36,7 @@ const PushNotifications = () => {
     if (!member) return;
 
     try {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('member_id', member.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (error) throw error;
+      const data = await api.getNotificationsByMemberId(member.id);
       setNotifications(data || []);
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -55,39 +48,11 @@ const PushNotifications = () => {
   const setupRealtimeSubscription = () => {
     if (!member) return;
 
-    const channel = supabase
-      .channel('notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `member_id=eq.${member.id}`
-        },
-        (payload) => {
-          const newNotification = payload.new as Notification;
-          setNotifications(prev => [newNotification, ...prev.slice(0, 9)]);
-          
-          // Show browser notification if enabled
-          if (notificationsEnabled && 'Notification' in window) {
-            new Notification(newNotification.title, {
-              body: newNotification.message,
-              icon: '/favicon.ico'
-            });
-          }
-
-          // Show toast notification
-          toast({
-            title: newNotification.title,
-            description: newNotification.message,
-          });
-        }
-      )
-      .subscribe();
+    // Mock subscription for now
+    const channel = { unsubscribe: () => {} };
 
     return () => {
-      supabase.removeChannel(channel);
+      channel.unsubscribe();
     };
   };
 
@@ -113,13 +78,7 @@ const PushNotifications = () => {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ is_read: true })
-        .eq('id', notificationId);
-
-      if (error) throw error;
-
+      await api.markNotificationAsRead(notificationId);
       setNotifications(prev => 
         prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
       );
@@ -132,14 +91,7 @@ const PushNotifications = () => {
     if (!member) return;
 
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ is_read: true })
-        .eq('member_id', member.id)
-        .eq('is_read', false);
-
-      if (error) throw error;
-
+      await api.markAllNotificationsAsRead(member.id);
       setNotifications(prev => 
         prev.map(n => ({ ...n, is_read: true }))
       );

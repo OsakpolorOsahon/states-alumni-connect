@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/lib/api';
 import { createRealtimeSubscription } from '@/lib/realtime';
 
 interface Member {
@@ -43,25 +43,16 @@ export const useMembers = (filters: FiltersType = { search: '', year: '', positi
     });
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel && typeof channel.unsubscribe === 'function') {
+        channel.unsubscribe();
+      }
     };
   }, []);
 
   const fetchMembers = async () => {
     try {
       setLoading(true);
-      let query = supabase
-        .from('members')
-        .select('*')
-        .eq('status', 'Active')
-        .order('current_council_office')
-        .order('stateship_year')
-        .order('last_mowcub_position');
-
-      const { data, error: queryError } = await query;
-
-      if (queryError) throw queryError;
-
+      const data = await api.getActiveMembers();
       setMembers(data || []);
       setError(null);
     } catch (err) {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/lib/api';
 import { createRealtimeSubscription } from '@/lib/realtime';
 
 interface JobPost {
@@ -27,19 +27,7 @@ export const useJobPosts = () => {
   const fetchJobs = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('job_posts')
-        .select(`
-          *,
-          members:posted_by (
-            full_name,
-            photo_url
-          )
-        `)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
+      const data = await api.getActiveJobPosts();
       setJobs(data || []);
       setError(null);
     } catch (err) {
@@ -60,29 +48,19 @@ export const useJobPosts = () => {
     });
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel && typeof channel.unsubscribe === 'function') {
+        channel.unsubscribe();
+      }
     };
   }, []);
 
   const createJob = async (jobData: Omit<JobPost, 'id' | 'created_at' | 'posted_by' | 'members'>) => {
     try {
-      const { data: member } = await supabase
-        .from('members')
-        .select('id')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .single();
-
-      if (!member) throw new Error('Member not found');
-
-      const { error } = await supabase
-        .from('job_posts')
-        .insert([{ ...jobData, posted_by: member.id }]);
-
-      if (error) throw error;
-      return { success: true };
+      const result = await api.createJobPost(jobData);
+      return { success: true, data: result };
     } catch (error) {
       console.error('Error creating job:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   };
 
