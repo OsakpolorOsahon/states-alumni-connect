@@ -4,26 +4,28 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin, Users, Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRealTimeStats } from "@/hooks/useRealTimeStats";
 
 const DirectorySection = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { stats, loading } = useRealTimeStats();
 
-  const stats = [
+  const statisticsData = [
     {
-      number: "500+",
+      number: loading ? "..." : (stats.activeMembers || 0),
       label: "Active Members",
       icon: Users
     },
     {
-      number: "15+",
-      label: "Countries",
-      icon: Globe
+      number: loading ? "..." : (stats.totalMembers || 0),
+      label: "Total Members",
+      icon: Users
     },
     {
-      number: "50+",
-      label: "Cities",
-      icon: MapPin
+      number: loading ? "..." : (stats.recentMembers || 0),
+      label: "Recent Members",
+      icon: Globe
     }
   ];
 
@@ -49,7 +51,7 @@ const DirectorySection = () => {
             </p>
             
             <div className="grid grid-cols-3 gap-6 mb-8">
-              {stats.map((stat, index) => {
+              {statisticsData.map((stat, index) => {
                 const IconComponent = stat.icon;
                 return (
                   <motion.div

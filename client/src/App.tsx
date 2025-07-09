@@ -31,7 +31,7 @@ const SecretaryDashboard = lazy(() => import('./pages/SecretaryDashboard'))
 const HallOfFame = lazy(() => import('./pages/HallOfFame'))
 const NewsEvents = lazy(() => import('./pages/NewsEvents'))
 const Jobs = lazy(() => import('./pages/Jobs'))
-const Forums = lazy(() => import('./pages/Forums'))
+const Forum = lazy(() => import('./pages/Forum'))
 const Mentorship = lazy(() => import('./pages/Mentorship'))
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 const TermsOfUse = lazy(() => import('./pages/TermsOfUse'))
@@ -132,10 +132,10 @@ export default function App() {
                     }
                   />
                   <Route
-                    path="/forums"
+                    path="/forum"
                     element={
                       <ProtectedRoute>
-                        <Forums />
+                        <Forum />
                       </ProtectedRoute>
                     }
                   />

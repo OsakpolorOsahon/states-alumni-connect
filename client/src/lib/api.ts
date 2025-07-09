@@ -94,7 +94,7 @@ class ApiClient {
   }
 
   // News API
-  async getNews() {
+  async getAllNews() {
     return this.request('/news');
   }
 
@@ -127,7 +127,7 @@ class ApiClient {
   }
 
   // Forum API
-  async getForumThreads() {
+  async getAllForumThreads() {
     return this.request('/forum/threads');
   }
 
@@ -156,7 +156,7 @@ class ApiClient {
   }
 
   async getForumReplies(threadId: string) {
-    return this.request(`/forum/replies/thread/${threadId}`);
+    return this.request(`/forum/threads/${threadId}/replies`);
   }
 
   async createForumReply(data: any) {
@@ -173,45 +173,40 @@ class ApiClient {
   }
 
   // Job API
-  async getJobs() {
+  async getAllJobPosts() {
     return this.request('/jobs');
   }
 
-  async getActiveJobs() {
+  async getActiveJobPosts() {
     return this.request('/jobs/active');
   }
 
-  async getJob(id: string) {
+  async getJobPost(id: string) {
     return this.request(`/jobs/${id}`);
   }
 
-  async createJob(data: any) {
+  async createJobPost(data: any) {
     return this.request('/jobs', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async updateJob(id: string, data: any) {
+  async updateJobPost(id: string, data: any) {
     return this.request(`/jobs/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   }
 
-  async deleteJob(id: string) {
+  async deleteJobPost(id: string) {
     return this.request(`/jobs/${id}`, {
       method: 'DELETE',
     });
   }
 
-  // Job Applications API
-  async getJobApplicationsByJob(jobId: string) {
-    return this.request(`/job-applications/job/${jobId}`);
-  }
-
-  async getJobApplicationsByApplicant(applicantId: string) {
-    return this.request(`/job-applications/applicant/${applicantId}`);
+  async getJobApplications(jobId: string) {
+    return this.request(`/jobs/${jobId}/applications`);
   }
 
   async createJobApplication(data: any) {
@@ -230,44 +225,44 @@ class ApiClient {
 
   // Mentorship API
   async getMentorshipRequests() {
-    return this.request('/mentorship');
+    return this.request('/mentorship/requests');
   }
 
   async getMentorshipRequestsByMentee(menteeId: string) {
-    return this.request(`/mentorship/mentee/${menteeId}`);
+    return this.request(`/mentorship/requests/mentee/${menteeId}`);
   }
 
   async getMentorshipRequestsByMentor(mentorId: string) {
-    return this.request(`/mentorship/mentor/${mentorId}`);
+    return this.request(`/mentorship/requests/mentor/${mentorId}`);
   }
 
   async createMentorshipRequest(data: any) {
-    return this.request('/mentorship', {
+    return this.request('/mentorship/requests', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   async updateMentorshipRequest(id: string, data: any) {
-    return this.request(`/mentorship/${id}`, {
+    return this.request(`/mentorship/requests/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   }
 
   async deleteMentorshipRequest(id: string) {
-    return this.request(`/mentorship/${id}`, {
+    return this.request(`/mentorship/requests/${id}`, {
       method: 'DELETE',
     });
   }
 
-  // Notifications API
+  // Notification API
   async getNotifications(memberId: string) {
-    return this.request(`/notifications/${memberId}`);
+    return this.request(`/notifications/member/${memberId}`);
   }
 
   async getUnreadNotifications(memberId: string) {
-    return this.request(`/notifications/${memberId}/unread`);
+    return this.request(`/notifications/member/${memberId}/unread`);
   }
 
   async createNotification(data: any) {
@@ -279,18 +274,18 @@ class ApiClient {
 
   async markNotificationAsRead(id: string) {
     return this.request(`/notifications/${id}/read`, {
-      method: 'PUT',
+      method: 'POST',
     });
   }
 
   async markAllNotificationsAsRead(memberId: string) {
-    return this.request(`/notifications/${memberId}/read-all`, {
-      method: 'PUT',
+    return this.request(`/notifications/member/${memberId}/read-all`, {
+      method: 'POST',
     });
   }
 
   // Events API
-  async getEvents() {
+  async getAllEvents() {
     return this.request('/events');
   }
 
@@ -320,6 +315,23 @@ class ApiClient {
     return this.request(`/events/${id}`, {
       method: 'DELETE',
     });
+  }
+
+  // Helper methods for compatibility
+  async getMembers() {
+    return this.getAllMembers();
+  }
+
+  async getAllMembers() {
+    return this.request('/members');
+  }
+
+  async getHallOfFame() {
+    return this.getAllHallOfFame();
+  }
+
+  async getAllHallOfFame() {
+    return this.request('/hall-of-fame');
   }
 }
 

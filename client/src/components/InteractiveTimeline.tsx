@@ -59,7 +59,7 @@ const InteractiveTimeline = () => {
   ];
 
   return (
-    <div className="w-full max-w-6xl mx-auto">
+    <div className="w-full max-w-7xl mx-auto">
       <div className="text-center mb-12">
         <h2 className="text-3xl md:text-4xl font-bold text-foreground dark:text-foreground mb-4">
           Our Journey Through Time
@@ -69,62 +69,46 @@ const InteractiveTimeline = () => {
         </p>
       </div>
 
-      <div className="relative">
-        {/* Timeline Line */}
-        <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-[#E10600] to-[#E10600]/30 rounded-full hidden md:block"></div>
-
-        {/* Timeline Items */}
-        <div className="space-y-12">
+      {/* Mobile Timeline - Vertical */}
+      <div className="block md:hidden relative">
+        <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#E10600] to-[#E10600]/30"></div>
+        
+        <div className="space-y-8">
           {timelineData.map((item, index) => {
             const IconComponent = item.icon;
             const isSelected = selectedYear === item.year;
-            const isLeft = index % 2 === 0;
 
             return (
               <motion.div
                 key={item.year}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, x: -50 }}
+                whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                className={`relative flex items-center justify-center md:${isLeft ? 'justify-start' : 'justify-end'}`}
+                className="relative flex items-start"
               >
-                {/* Timeline Node */}
-                <div className="absolute left-1/2 transform -translate-x-1/2 z-10 hidden md:block">
-                  <motion.button
-                    whileHover={{ scale: 1.2 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setSelectedYear(isSelected ? null : item.year)}
-                    className={`w-12 h-12 md:w-16 md:h-16 rounded-full ${item.color} flex items-center justify-center shadow-lg border-4 border-background dark:border-background`}
-                  >
-                    <IconComponent className="w-6 h-6 md:w-8 md:h-8 text-white" />
-                  </motion.button>
-                </div>
-                
                 {/* Mobile Timeline Node */}
-                <div className="block md:hidden mb-4">
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setSelectedYear(isSelected ? null : item.year)}
-                    className={`w-12 h-12 rounded-full ${item.color} flex items-center justify-center shadow-lg mx-auto`}
-                  >
-                    <IconComponent className="w-6 h-6 text-white" />
-                  </motion.button>
-                </div>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setSelectedYear(isSelected ? null : item.year)}
+                  className={`w-12 h-12 rounded-full ${item.color} flex items-center justify-center shadow-lg border-4 border-background z-10 flex-shrink-0`}
+                >
+                  <IconComponent className="w-6 h-6 text-white" />
+                </motion.button>
 
                 {/* Content Card */}
-                <div className={`w-full md:w-5/12 ${isLeft ? 'md:pr-8' : 'md:pl-8'} px-4 md:px-0`}>
+                <div className="ml-6 flex-1">
                   <Card className="bg-card dark:bg-card border border-border dark:border-border hover:shadow-lg transition-all duration-300">
-                    <CardContent className="p-4 md:p-6">
+                    <CardContent className="p-4">
                       <div className="flex items-center mb-3">
-                        <span className="text-xl md:text-2xl font-bold text-[#E10600] mr-3">
+                        <span className="text-xl font-bold text-[#E10600] mr-3">
                           {item.year}
                         </span>
                       </div>
-                      <h3 className="text-lg md:text-xl font-semibold text-foreground dark:text-foreground mb-2">
+                      <h3 className="text-lg font-semibold text-foreground dark:text-foreground mb-2">
                         {item.title}
                       </h3>
-                      <p className="text-sm md:text-base text-muted-foreground dark:text-muted-foreground mb-4">
+                      <p className="text-sm text-muted-foreground dark:text-muted-foreground mb-4">
                         {item.description}
                       </p>
                       
@@ -146,6 +130,73 @@ const InteractiveTimeline = () => {
               </motion.div>
             );
           })}
+        </div>
+      </div>
+
+      {/* Desktop Timeline - Horizontal */}
+      <div className="hidden md:block">
+        <div className="relative">
+          {/* Horizontal Timeline Line */}
+          <div className="absolute top-20 left-0 right-0 h-0.5 bg-gradient-to-r from-[#E10600] to-[#E10600]/30"></div>
+          
+          <div className="flex justify-between items-start">
+            {timelineData.map((item, index) => {
+              const IconComponent = item.icon;
+              const isSelected = selectedYear === item.year;
+
+              return (
+                <motion.div
+                  key={item.year}
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  className="flex-1 max-w-xs mx-2"
+                >
+                  {/* Timeline Node */}
+                  <div className="flex justify-center mb-6">
+                    <motion.button
+                      whileHover={{ scale: 1.2 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => setSelectedYear(isSelected ? null : item.year)}
+                      className={`w-16 h-16 rounded-full ${item.color} flex items-center justify-center shadow-lg border-4 border-background z-10`}
+                    >
+                      <IconComponent className="w-8 h-8 text-white" />
+                    </motion.button>
+                  </div>
+
+                  {/* Content Card */}
+                  <Card className="bg-card dark:bg-card border border-border dark:border-border hover:shadow-lg transition-all duration-300">
+                    <CardContent className="p-6">
+                      <div className="text-center mb-4">
+                        <span className="text-2xl font-bold text-[#E10600]">
+                          {item.year}
+                        </span>
+                      </div>
+                      <h3 className="text-xl font-semibold text-foreground dark:text-foreground mb-2 text-center">
+                        {item.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground dark:text-muted-foreground mb-4 text-center">
+                        {item.description}
+                      </p>
+                      
+                      {isSelected && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="border-t border-border dark:border-border pt-4"
+                        >
+                          <p className="text-sm text-muted-foreground dark:text-muted-foreground text-center">
+                            {item.details}
+                          </p>
+                        </motion.div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

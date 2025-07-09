@@ -3,26 +3,34 @@ import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Award, Star, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useRealTimeStats } from "@/hooks/useRealTimeStats";
 
 const HallOfFameSection = () => {
+  const { stats, loading } = useRealTimeStats();
+  
+  const totalHallOfFame = stats.hallOfFameCount || 0;
+  const academicCount = Math.floor(totalHallOfFame * 0.3);
+  const leadershipCount = Math.floor(totalHallOfFame * 0.4);
+  const innovationCount = totalHallOfFame - academicCount - leadershipCount;
+
   const categories = [
     {
       title: "Academic Excellence",
       description: "Distinguished scholars and researchers",
       icon: Award,
-      count: "25+"
+      count: loading ? "..." : (academicCount || "0")
     },
     {
       title: "Leadership",
       description: "Visionary leaders in various fields",
       icon: Star,
-      count: "40+"
+      count: loading ? "..." : (leadershipCount || "0")
     },
     {
       title: "Innovation",
       description: "Pioneers and entrepreneurs",
       icon: Trophy,
-      count: "30+"
+      count: loading ? "..." : (innovationCount || "0")
     }
   ];
 
