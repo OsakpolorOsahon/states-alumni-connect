@@ -7,6 +7,7 @@ import { Bell, Users, MapPin, Award, FileText, MessageSquare, Briefcase, BookOpe
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import PushNotifications from "@/components/PushNotifications";
+import { useRealTimeStats } from '@/hooks/useRealTimeStats';
 
 const MemberDashboard = () => {
   const { user, member, signOut, isSecretary } = useAuth();
@@ -19,6 +20,8 @@ const MemberDashboard = () => {
     { title: "Job Board", description: "Explore career opportunities", icon: Briefcase, href: "/jobs" },
     { title: "Discussion Forums", description: "Connect with fellow members", icon: MessageSquare, href: "/forums" }
   ];
+
+  const { stats, loading: statsLoading, error: statsError } = useRealTimeStats();
 
   return (
     <div className="min-h-screen bg-background dark:bg-background">
@@ -58,6 +61,10 @@ const MemberDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Active Members</p>
+                  {statsLoading ? (
+                    <div className="animate-pulse h-6 w-12 bg-gray-200 rounded"></div>
+                  ) : (
+                    <p className="text-2xl font-bold">{stats.activeMembers.toLocaleString()}</p>)}
                   <p className="text-2xl font-bold">1,247</p>
                 </div>
                 <Users className="h-8 w-8 text-[#E10600]" />
@@ -70,6 +77,10 @@ const MemberDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Hall of Fame</p>
+                  {statsLoading ? (
+                    <div className="animate-pulse h-6 w-12 bg-gray-200 rounded"></div>
+                  ) : (
+                    <p className="text-2xl font-bold">{stats.hallOfFameCount.toLocaleString()}</p>)}
                   <p className="text-2xl font-bold">23</p>
                 </div>
                 <Award className="h-8 w-8 text-[#E10600]" />

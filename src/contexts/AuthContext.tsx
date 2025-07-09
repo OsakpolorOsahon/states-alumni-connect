@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert } from '@/integrations/supabase/types';
+import { useToast } from '@/hooks/use-toast';
 
 type Member = Tables<'members'>;
 type MemberInsert = TablesInsert<'members'>;
@@ -18,6 +19,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<any>;
   signOut: () => Promise<{ error: any }>;
   isSecretary: boolean;
+  handoverSecretaryRole: (newSecretaryMemberId: string) => Promise<void>;
   isPending: boolean;
   isActive: boolean;
   isVerified: boolean;
@@ -36,6 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [member, setMember] = useState<Member | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -91,6 +94,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = () => supabase.auth.signOut();
 
+  const handoverSecretaryRole = async (newSecretaryMemberId: string) => {
+    if (!member || member.role !== 'secretary') {
+      toast({ title: 'Error', description: 'Only the current secretary can hand over the role.', variant: 'destructive' });
+      return;
+    }
+
+    const confirmed = window.confirm('Are you sure you want to hand over the secretary role? This action cannot be undone.');
+    if (!confirmed) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Set current secretary's role to 'member'
+      const { error: currentError } = await supabase
+        .from('members')
+        .update({ role: 'member' })
+        .eq('id', member.id);
+      if (currentError) throw currentError;
+
+      // Set new secretary's role to 'secretary'
+      const { error: newError } = await supabase
+        .from('members')
+        .update({ role: 'secretary' })
+        .eq('id', newSecretaryMemberId);
+      if (newError) throw newError;
+
+      toast({ title: 'Success', description: 'Secretary role handed over successfully.' });
+      // Refresh session and member data to reflect the role change
+      await supabase.auth.getSession().then(({ data: { session } => session && fetchMemberData(session.user.id)));
+    } catch (error: any) {
+      toast({ title: 'Error', description: `Failed to hand over role: ${error.message}`, variant: 'destructive' });
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <AuthContext.Provider
       value={{
@@ -103,6 +142,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signIn,
         signOut,
         isSecretary: member?.role === 'secretary',
+        handoverSecretaryRole,
         isPending: member?.status === 'Pending',
         isActive: member?.status === 'Active',
         isVerified: user?.email_confirmed_at ? true : false,

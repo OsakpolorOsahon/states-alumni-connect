@@ -30,6 +30,29 @@ export const useMembers = (filters: FiltersType = { search: '', year: '', positi
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Define sorting order for Council Offices
+  const councilOfficeOrder: { [key: string]: number } = {
+    'President': 1,
+    'Vice President': 2, // Assuming a standard hierarchy
+    'Secretary': 3,
+    'Treasurer': 4,
+    'PRO': 5,
+    'None': 999, // Put 'None' at the end
+    '': 1000, // Handle empty string if necessary
+  };
+
+  // Define sorting order for MOWCUB Positions
+  // Assuming MOWCUB_POSITIONS is an array of objects with code and title
+  // We need to define the specific order from Commander In Chief to Director of Intelligence
+  // I'll create a mapping based on the order you specified and a likely full list
+  const mowcubPositionOrder: { [key: string]: number } = {
+    'Commander In Chief': 1,
+    'Chief of Staff': 2,
+    'Chief of Operations': 3,
+    'Director of Intelligence': 4,
+    'Statesman': 5, // Assuming Statesman is a general position
+    '': 999, // Handle empty string if necessary
+  };
   useEffect(() => {
     fetchMembers();
     
@@ -37,8 +60,27 @@ export const useMembers = (filters: FiltersType = { search: '', year: '', positi
     const channel = createRealtimeSubscription({
       table: 'members',
       callback: (payload) => {
-        console.log('Member change:', payload);
-        fetchMembers(); // Refetch to get latest data
+        const newMember = payload.new as Member;
+        const oldMember = payload.old as Member;
+
+        setMembers(prevMembers => {
+          switch (payload.eventType) {
+            case 'INSERT':
+              // Only add active members
+              if (newMember.status === 'Active') {
+                return [...prevMembers, newMember];
+              }
+              return prevMembers;
+            case 'UPDATE':
+              // Replace if active, remove if status changed from Active to something else
+              if (newMember.status === 'Active') {
+                return prevMembers.map(member => member.id === newMember.id ? newMember : member);
+              } else {
+                 return prevMembers.filter(member => member.id !== oldMember.id);
+              }
+            case 'DELETE':
+              return prevMembers.filter(member => member.id !== oldMember.id);
+            default: return prevMembers;}});
       }
     });
 
@@ -85,8 +127,31 @@ export const useMembers = (filters: FiltersType = { search: '', year: '', positi
     return matchesSearch && matchesYear && matchesPosition && matchesOffice;
   });
 
+  // Apply custom sorting
+  const sortedMembers = filteredMembers.sort((a, b) => {
+    // 1. Sort by Council Position
+    const aOfficeOrder = councilOfficeOrder[a.current_council_office || ''] || 1000;
+    const bOfficeOrder = councilOfficeOrder[b.current_council_office || ''] || 1000;
+    if (aOfficeOrder !== bOfficeOrder) {
+      return aOfficeOrder - bOfficeOrder;
+    }
+
+    // 2. Sort by Year of Statesmanship (Oldest to Youngest)
+    // Assuming year is in 'YYYY/YYYY' format, compare the first year
+    const aYear = parseInt(a.stateship_year.split('/')[0], 10);
+    const bYear = parseInt(b.stateship_year.split('/')[0], 10);
+    if (aYear !== bYear) {
+      return aYear - bYear;
+    }
+
+    // 3. Sort by Last MOWCUB Position
+    const aPositionOrder = mowcubPositionOrder[a.last_mowcub_position || ''] || 999;
+    const bPositionOrder = mowcubPositionOrder[b.last_mowcub_position || ''] || 999;
+    return aPositionOrder - bPositionOrder;
+  });
+
   return {
-    members: filteredMembers,
+    members: sortedMembers,
     loading,
     error,
     refetch: fetchMembers

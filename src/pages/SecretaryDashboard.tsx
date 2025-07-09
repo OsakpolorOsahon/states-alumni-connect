@@ -91,7 +91,7 @@ const SecretaryDashboard = () => {
 
         {/* Main Dashboard Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="management">Member Management</TabsTrigger>
             <TabsTrigger value="content">Content Management</TabsTrigger>
             <TabsTrigger value="badges">Badge Management</TabsTrigger>
@@ -151,6 +151,19 @@ const SecretaryDashboard = () => {
                 <p className="text-muted-foreground">
                   Analytics dashboard will be implemented here.
                   This will include membership growth, engagement metrics, and detailed reports.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="role-management" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Secretary Role Handover</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Member selection and handover functionality will be implemented here.
                 </p>
               </CardContent>
             </Card>
