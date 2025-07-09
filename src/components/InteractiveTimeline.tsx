@@ -69,7 +69,7 @@ const InteractiveTimeline = () => {
         </p>
       </div>
 
-      <div className="relative flex flex-col items-center md:flex-row md:items-stretch">
+      <div className="relative">
         {/* Timeline Line */}
         <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-[#E10600] to-[#E10600]/30 rounded-full hidden md:block"></div>
 
@@ -86,7 +86,7 @@ const InteractiveTimeline = () => {
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="relative flex flex-col items-center w-full md:flex-row md:w-1/2 md:items-stretch"
+                className={`relative flex items-center justify-center md:${isLeft ? 'justify-start' : 'justify-end'}`}
               >
                 {/* Timeline Node */}
                 <div className="absolute left-1/2 transform -translate-x-1/2 z-10 hidden md:block">
@@ -113,7 +113,7 @@ const InteractiveTimeline = () => {
                 </div>
 
                 {/* Content Card */}
-                <div className={`w-full md:w-full ${isLeft ? \'md:pr-8\' : \'md:pl-8\'} px-4 md:px-0`}>
+                <div className={`w-full md:w-5/12 ${isLeft ? 'md:pr-8' : 'md:pl-8'} px-4 md:px-0`}>
                   <Card className="bg-card dark:bg-card border border-border dark:border-border hover:shadow-lg transition-all duration-300">
                     <CardContent className="p-4 md:p-6">
                       <div className="flex items-center mb-3">

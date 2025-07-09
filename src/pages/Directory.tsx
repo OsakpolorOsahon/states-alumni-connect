@@ -159,13 +159,16 @@ const Directory = () => {
                           <CardContent className="p-6">
                             <div className="flex items-start gap-4">
                               <Avatar className="w-16 h-16">
-                                <AvatarImage src={member.photo_url || '/images/logo-transparent.png'} alt={member.full_name} />
+                                <AvatarImage src={member.photo_url} alt={member.full_name} />
                                 <AvatarFallback className="bg-[#E10600] text-white">
                                   {getInitials(member.full_name)}
                                 </AvatarFallback>
                               </Avatar>
                               
                               <div className="flex-1 min-w-0">
+                                <h3 className="font-semibold text-lg truncate">
+                                  {member.full_name}
+                                </h3>
                                 {member.nickname && (
                                   <p className="text-sm text-muted-foreground">"{member.nickname}"</p>
                                 )}
@@ -174,12 +177,14 @@ const Directory = () => {
                                   <p className="text-sm">
                                     <span className="font-medium">Year:</span> {member.stateship_year}
                                   </p>
+                                  <p className="text-sm">
+                                    <span className="font-medium">Position:</span> {getPositionTitle(member.last_mowcub_position)}
+                                  </p>
                                   {member.current_council_office && member.current_council_office !== 'None' && (
                                     <Badge variant="secondary" className="text-xs">
                                       {member.current_council_office}
                                     </Badge>
                                   )}
-                                  <p className="text-sm font-semibold">{member.full_name} Statesman {getPositionTitle(member.last_mowcub_position)} {member.stateship_year}</p>
                                 </div>
 
                                 <div className="mt-4">
