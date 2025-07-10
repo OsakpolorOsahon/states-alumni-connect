@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/mockSupabase';
+import { firebaseApi } from '@/lib/firebaseApi';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,13 +36,7 @@ const SecretaryMemberManagement = () => {
 
   const fetchPendingMembers = async () => {
     try {
-      const { data, error } = await supabase
-        .from('members')
-        .select('*')
-        .eq('status', 'Pending')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
+      const data = await firebaseApi.getPendingMembers();
       setPendingMembers(data || []);
     } catch (error) {
       console.error('Error fetching pending members:', error);
@@ -58,8 +52,8 @@ const SecretaryMemberManagement = () => {
 
   const approveMember = async (memberId: string) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('No session');
+      // Use Firebase for member approval
+      await firebaseApi.updateMember(memberId, { status: 'active' });
 
       const response = await fetch(`https://ojxgyaylosexrbvvllzg.supabase.co/functions/v1/approveMember`, {
         method: 'POST',

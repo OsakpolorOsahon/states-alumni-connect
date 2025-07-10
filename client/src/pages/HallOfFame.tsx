@@ -51,22 +51,7 @@ const HallOfFame = () => {
 
   const fetchHallOfFame = async () => {
     try {
-      const { data, error } = await supabase
-        .from('hall_of_fame')
-        .select(`
-          *,
-          members (
-            full_name,
-            nickname,
-            photo_url,
-            stateship_year,
-            current_council_office
-          )
-        `)
-        .order('achievement_date', { ascending: false, nullsFirst: true })
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
+      const data = await firebaseApi.getAllHallOfFame();
       setHallOfFameMembers(data || []);
     } catch (error) {
       console.error('Error fetching hall of fame:', error);

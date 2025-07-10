@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { MapPin, User, AlertTriangle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { firebaseApi } from "@/lib/firebaseApi";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import MemberProfileBadges from "@/components/MemberProfileBadges";
@@ -36,14 +36,7 @@ const MemberProfile = () => {
       if (!id) return;
 
       try {
-        const { data: memberData, error: memberError } = await supabase
-          .from('members')
-          .select('id, full_name, nickname, stateship_year, last_mowcub_position, current_council_office, photo_url, latitude, longitude, paid_through')
-          .eq('id', id)
-          .eq('status', 'Active')
-          .single();
-
-        if (memberError) throw memberError;
+        const memberData = await firebaseApi.getMember(id);
         setMember(memberData);
       } catch (error) {
         console.error('Error fetching member data:', error);

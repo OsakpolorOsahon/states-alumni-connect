@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Award, Plus, X, User } from 'lucide-react';
-import { supabase } from '@/lib/mockSupabase';
+import { firebaseApi } from '@/lib/firebaseApi';
 
 interface Member {
   id: string;
@@ -58,13 +58,7 @@ const BadgeManagement = () => {
 
   const fetchMembers = async () => {
     try {
-      const { data, error } = await supabase
-        .from('members')
-        .select('id, full_name, nickname, stateship_year')
-        .eq('status', 'Active')
-        .order('full_name');
-
-      if (error) throw error;
+      const data = await firebaseApi.getActiveMembers();
       setMembers(data || []);
     } catch (error) {
       console.error('Error fetching members:', error);
@@ -73,13 +67,9 @@ const BadgeManagement = () => {
 
   const fetchBadges = async () => {
     try {
-      // First fetch badges
-      const { data: badgesData, error: badgesError } = await supabase
-        .from('badges')
-        .select('*')
-        .order('awarded_at', { ascending: false });
-
-      if (badgesError) throw badgesError;
+      // Firebase doesn't have joins, so we'll get all badges and merge member data
+      const allMembers = await firebaseApi.getAllMembers();
+      const allBadges = await firebaseApi.getAllBadges ? await firebaseApi.getAllBadges() : [];
 
       // Then fetch member details for each badge
       const badgesWithMembers = await Promise.all(

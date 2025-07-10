@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { firebaseApi } from '@/lib/firebaseApi';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Award } from "lucide-react";
@@ -27,13 +27,7 @@ const MemberProfileBadges = ({ memberId }: MemberProfileBadgesProps) => {
 
   const fetchMemberBadges = async () => {
     try {
-      const { data, error } = await supabase
-        .from('badges')
-        .select('*')
-        .eq('member_id', memberId)
-        .order('awarded_at', { ascending: false });
-
-      if (error) throw error;
+      const data = await firebaseApi.getBadgesByMember(memberId);
       setBadges(data || []);
     } catch (error) {
       console.error('Error fetching member badges:', error);
