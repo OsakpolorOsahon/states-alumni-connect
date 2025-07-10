@@ -149,8 +149,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, memberData?: any) => {
     try {
       setLoading(true);
+      console.log('Starting signup process for:', email);
+      
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      console.log('Firebase Auth user created successfully:', user.uid);
 
       // Create member document in Firestore
       if (memberData) {
@@ -174,7 +177,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           updatedAt: new Date().toISOString()
         };
 
-        await setDoc(doc(db, 'members', user.uid), memberDoc);
+        console.log('Creating member document:', memberDoc);
+        try {
+          await setDoc(doc(db, 'members', user.uid), memberDoc);
+          console.log('Member document created successfully');
+        } catch (firestoreError) {
+          console.error('Firestore document creation failed:', firestoreError);
+          // If Firestore fails, we still return success since the Firebase Auth user was created
+          // The user can complete their profile later
+          return { 
+            data: user, 
+            error: null,
+            warning: 'Account created but profile data could not be saved. You may need to complete your profile later.'
+          };
+        }
       }
 
       return { data: user, error: null };

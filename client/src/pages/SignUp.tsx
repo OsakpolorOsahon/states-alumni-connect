@@ -67,7 +67,7 @@ export default function SignUp() {
 
     setLoading(true)
     try {
-      const { error } = await signUp(
+      const result = await signUp(
         formData.email,
         formData.password,
         {
@@ -80,16 +80,26 @@ export default function SignUp() {
           longitude: formData.longitude,
         }
       )
-      if (error) {
-        toast({ title: 'Sign Up Failed', description: error.message, variant: 'destructive' })
+      
+      if (result.error) {
+        toast({ title: 'Sign Up Failed', description: result.error, variant: 'destructive' })
       } else {
-        toast({
-          title: 'Account Created Successfully!',
-          description: 'Please check your email and click the verification link to continue.',
-        })
+        if (result.warning) {
+          toast({ 
+            title: 'Account Created with Warning', 
+            description: result.warning, 
+            variant: 'default'
+          })
+        } else {
+          toast({
+            title: 'Account Created Successfully!',
+            description: 'Please check your email and click the verification link to continue.',
+          })
+        }
         navigate('/email-verification');
       }
     } catch (err: any) {
+      console.error('Signup form error:', err);
       toast({ title: 'Error', description: err.message || 'Unexpected error', variant: 'destructive' })
     } finally {
       setLoading(false)
