@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from 'next-themes'
 import { HelmetProvider } from 'react-helmet-async'
+import { AuthProvider } from '@/contexts/AuthContext'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import PWAInstallBanner from '@/components/PWAInstallBanner'
 import LoadingSpinner from '@/components/LoadingSpinner'
@@ -54,9 +55,10 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+          <AuthProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
               <Suspense fallback={<LoadingFallback />}>
                 <Routes>
                   {/* public */}
@@ -172,6 +174,7 @@ export default function App() {
               </Suspense>
               <PWAInstallBanner />
             </BrowserRouter>
+          </AuthProvider>
         </ThemeProvider>
       </HelmetProvider>
     </QueryClientProvider>
