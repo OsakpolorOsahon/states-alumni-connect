@@ -1,14 +1,27 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, Mail, Phone } from 'lucide-react';
+import { Clock, Mail, Phone, RefreshCw } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const PendingApproval = () => {
-  const { signOut } = useAuth();
+  const { signOut, member, refreshUserData, isActive } = useAuth();
+  const navigate = useNavigate();
+
+  // Check if user is now active and redirect to dashboard
+  useEffect(() => {
+    if (isActive) {
+      navigate('/dashboard');
+    }
+  }, [isActive, navigate]);
+
+  const handleRefresh = async () => {
+    await refreshUserData();
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -52,9 +65,15 @@ const PendingApproval = () => {
                 </div>
               </div>
 
-              <Button variant="outline" onClick={signOut}>
-                Sign Out
-              </Button>
+              <div className="flex gap-2 justify-center">
+                <Button variant="outline" onClick={handleRefresh}>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Check Status
+                </Button>
+                <Button variant="outline" onClick={signOut}>
+                  Sign Out
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>

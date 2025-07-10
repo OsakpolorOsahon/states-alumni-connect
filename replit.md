@@ -20,11 +20,11 @@ Preferred communication style: Simple, everyday language.
 
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js (legacy endpoints)
-- **Database**: Firebase Firestore (NoSQL document database)
+- **Database**: Firebase Firestore (NoSQL document database) + PostgreSQL (Drizzle ORM)
 - **Authentication**: Firebase Auth with email/password
-- **API Design**: Firebase SDK with real-time capabilities
+- **API Design**: Firebase SDK with real-time capabilities + REST API endpoints
 - **Session Management**: Firebase Auth tokens
-- **File Storage**: Firebase Storage for file uploads (photos, documents)
+- **File Storage**: UploadThing for file uploads (photos, documents)
 
 ### Key Components
 
@@ -123,6 +123,21 @@ Preferred communication style: Simple, everyday language.
 - App manifest for installability
 - Push notification capabilities
 - Responsive design for mobile devices
+
+## Recent Changes
+
+### January 2025 - Complete Registration Flow Implementation
+- **UploadThing Integration**: Replaced Firebase Storage with UploadThing for file uploads
+- **Email Verification Flow**: Email verification now redirects to upload documents page
+- **Complete Registration Process**: 
+  1. User signup → Email verification
+  2. Email link → Upload documents page
+  3. Document upload → Pending approval page
+  4. Secretary approval → Email notification
+  5. Approved users → Full member access
+- **Email Notifications**: SendGrid integration for approval/rejection emails
+- **Authentication Guards**: Proper flow control based on user status
+- **Database Migration**: Added PostgreSQL with Drizzle ORM alongside Firebase
 
 ## Key Features
 

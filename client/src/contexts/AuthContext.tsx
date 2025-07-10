@@ -62,6 +62,7 @@ interface AuthContextType {
   isActive: boolean;
   isVerified: boolean;
   createMember: (data: any) => Promise<{ data: any; error: any }>;
+  refreshUserData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -83,6 +84,7 @@ export const useAuth = () => {
       isActive: false,
       isVerified: false,
       createMember: async () => ({ data: null, error: 'Not available' }),
+      refreshUserData: async () => {},
     };
   }
   return ctx;
@@ -194,9 +196,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      // Send email verification
+      // Send email verification with custom settings
       try {
-        await sendEmailVerification(user);
+        await sendEmailVerification(user, {
+          url: `${window.location.origin}/upload-documents`,
+          handleCodeInApp: true
+        });
         console.log('Email verification sent successfully');
       } catch (emailError) {
         console.error('Email verification failed:', emailError);
@@ -266,6 +271,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isActive,
         isVerified,
         createMember,
+        refreshUserData: () => fetchUserData(user?.id || '', user?.email || ''),
       }}
     >
       {children}

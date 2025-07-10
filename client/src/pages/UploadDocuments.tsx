@@ -1,29 +1,43 @@
 // src/pages/UploadDocuments.tsx
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import FileUpload from '@/components/FileUpload';
+import UploadThingFileUpload from '@/components/UploadThingFileUpload';
+import { updateDoc, doc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 export default function UploadDocuments() {
-  const { user, member, createMember, signOut, isVerified } = useAuth();
+  const { user, member, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const [photoUrl, setPhotoUrl] = useState('');
   const [duesUrl, setDuesUrl] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Check if user came from email verification
+  useEffect(() => {
+    if (location.search.includes('mode=verifyEmail')) {
+      toast({
+        title: 'Email Verified Successfully!',
+        description: 'Now please upload your documents to complete your registration.',
+      });
+    }
+  }, [location, toast]);
 
   if (!user) {
     navigate('/signup');
     return null;
   }
 
-  if (!isVerified) {
+  // Check if user email is verified
+  if (!user.emailVerified && !location.search.includes('mode=verifyEmail')) {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
@@ -51,10 +65,10 @@ export default function UploadDocuments() {
 
   // If user already has a member record, redirect to appropriate page
   if (member) {
-    if (member.status === 'Pending') {
+    if (member.status === 'pending') {
       navigate('/pending-approval');
       return null;
-    } else if (member.status === 'Active') {
+    } else if (member.status === 'active') {
       navigate('/dashboard');
       return null;
     }
@@ -66,31 +80,43 @@ export default function UploadDocuments() {
       toast({ title: 'Error', description: 'Both files are required', variant: 'destructive' });
       return;
     }
+    
     setLoading(true);
-    const geo = await new Promise<{ lat: number; lng: number }>((res) => {
-      navigator.geolocation.getCurrentPosition(
-        ({ coords }) => res({ lat: coords.latitude, lng: coords.longitude }),
-        () => res({ lat: 0, lng: 0 })
-      );
-    });
-    const { error } = await createMember({
-      user_id: user.id,
-      full_name: user.user_metadata.full_name || '',
-      nickname: user.user_metadata.nickname || '',
-      stateship_year: user.user_metadata.stateship_year || '',
-      last_mowcub_position: user.user_metadata.last_mowcub_position || '',
-      current_council_office: user.user_metadata.current_council_office || 'None',
-      photo_url: photoUrl,
-      dues_proof_url: duesUrl,
-      latitude: geo.lat,
-      longitude: geo.lng,
-    });
-    setLoading(false);
-    if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: 'Success', description: 'Documents submitted, awaiting approval.' });
+    
+    try {
+      // Get geolocation
+      const geo = await new Promise<{ lat: number; lng: number }>((resolve) => {
+        navigator.geolocation.getCurrentPosition(
+          ({ coords }) => resolve({ lat: coords.latitude, lng: coords.longitude }),
+          () => resolve({ lat: 0, lng: 0 })
+        );
+      });
+
+      // Update the existing member document in Firestore
+      if (member) {
+        await updateDoc(doc(db, 'members', user.id), {
+          photoUrl: photoUrl,
+          duesProofUrl: duesUrl,
+          latitude: geo.lat,
+          longitude: geo.lng,
+          updatedAt: new Date().toISOString()
+        });
+      }
+
+      toast({ 
+        title: 'Documents Uploaded Successfully!', 
+        description: 'Your application is now pending approval from the secretary.' 
+      });
       navigate('/pending-approval');
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({ 
+        title: 'Error', 
+        description: 'Failed to submit documents. Please try again.', 
+        variant: 'destructive' 
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -105,21 +131,19 @@ export default function UploadDocuments() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                <FileUpload
+                <UploadThingFileUpload
                   label="Profile Photo"
-                  accept="image/*"
-                  folder={`photos`}
-                  currentUrl={photoUrl}
+                  endpoint="memberPhotos"
                   onUpload={setPhotoUrl}
-                  maxSize={5}
+                  currentUrl={photoUrl}
+                  maxSize="4MB"
                 />
-                <FileUpload
+                <UploadThingFileUpload
                   label="Dues Payment Proof"
-                  accept=".pdf,image/*"
-                  folder={`dues`}
-                  currentUrl={duesUrl}
+                  endpoint="duesProofs"
                   onUpload={setDuesUrl}
-                  maxSize={10}
+                  currentUrl={duesUrl}
+                  maxSize="16MB"
                 />
                 <Button type="submit" className="w-full" disabled={loading || !photoUrl || !duesUrl}>
                   {loading ? 'Submitting...' : 'Submit Documents'}

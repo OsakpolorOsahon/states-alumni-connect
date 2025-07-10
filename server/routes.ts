@@ -1,8 +1,11 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { createRouteHandler } from "uploadthing/server";
+import { uploadRouter } from "./uploadthing";
 import { insertMemberSchema, insertBadgeSchema, insertHallOfFameSchema, insertNewsSchema, insertForumThreadSchema, insertForumReplySchema, insertJobPostSchema, insertJobApplicationSchema, insertMentorshipRequestSchema, insertNotificationSchema, insertEventSchema } from "@shared/schema";
 import { z } from "zod";
+import { sendApprovalEmail } from "./email";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Member routes
@@ -61,7 +64,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/members/:id", async (req, res) => {
     try {
       const validatedData = insertMemberSchema.partial().parse(req.body);
+      const originalMember = await storage.getMember(req.params.id);
       const member = await storage.updateMember(req.params.id, validatedData);
+      
+      // Send email notification if status changed to approved or rejected
+      if (originalMember && originalMember.status !== member.status && 
+          (member.status === 'active' || member.status === 'inactive')) {
+        const approved = member.status === 'active';
+        try {
+          await sendApprovalEmail(
+            member.email || '', 
+            member.full_name, 
+            approved
+          );
+        } catch (emailError) {
+          console.error('Failed to send approval email:', emailError);
+          // Don't fail the request if email fails
+        }
+      }
+      
       res.json(member);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -960,6 +981,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: error.message });
     }
   });
+
+  // UploadThing routes
+  const uploadthingHandler = createRouteHandler({
+    router: uploadRouter,
+  });
+  
+  app.all("/api/uploadthing", uploadthingHandler);
 
   const httpServer = createServer(app);
 
