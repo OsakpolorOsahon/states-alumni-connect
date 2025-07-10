@@ -36,6 +36,7 @@ const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 const TermsOfUse = lazy(() => import('./pages/TermsOfUse'))
 const Guidelines = lazy(() => import('./pages/Guidelines'))
 const UserManual = lazy(() => import('./pages/UserManual'))
+const TestLogin = lazy(() => import('./pages/TestLogin'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 
 const queryClient = new QueryClient()
@@ -68,6 +69,7 @@ export default function App() {
                   <Route path="/terms-of-use" element={<TermsOfUse />} />
                   <Route path="/guidelines" element={<Guidelines />} />
                   <Route path="/user-manual" element={<UserManual />} />
+                  <Route path="/test-login" element={<TestLogin />} />
 
                   {/* auth flows */}
                   <Route path="/signup" element={<SignUp />} />

@@ -156,30 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { data: null, error: error.message };
       }
 
-      // If signup successful and memberData provided, create member record
-      if (data.user && memberData) {
-        try {
-          const newMember = await api.createMember({
-            ...memberData,
-            userId: data.user.id,
-            status: 'pending'
-          });
-          
-          const userData: User = {
-            id: data.user.id,
-            email: data.user.email!,
-            role: 'member',
-            status: 'pending'
-          };
-          setUser(userData);
-          setMember(newMember);
-        } catch (memberError) {
-          console.error('Error creating member:', memberError);
-          // User created but member creation failed
-          return { data: data.user, error: 'Account created but member profile creation failed' };
-        }
-      }
-
+      // Return success immediately - member creation will happen after email verification
       return { data: data.user, error: null };
     } catch (error) {
       console.error('Signup error:', error);
