@@ -5,6 +5,7 @@ import {
   signInWithEmailAndPassword, 
   signOut as firebaseSignOut,
   onAuthStateChanged,
+  sendEmailVerification,
   User as FirebaseUser
 } from 'firebase/auth';
 import { 
@@ -191,6 +192,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             warning: 'Account created but profile data could not be saved. You may need to complete your profile later.'
           };
         }
+      }
+
+      // Send email verification
+      try {
+        await sendEmailVerification(user);
+        console.log('Email verification sent successfully');
+      } catch (emailError) {
+        console.error('Email verification failed:', emailError);
+        // Don't fail the signup if email verification fails
       }
 
       return { data: user, error: null };
