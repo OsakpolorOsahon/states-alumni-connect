@@ -9,11 +9,8 @@ const HeroSection = () => {
   const navigate = useNavigate();
 
   const handleDirectoryClick = () => {
-    if (user) {
-      navigate('/directory');
-    } else {
-      navigate('/login');
-    }
+    // Directory is public, always navigate to it
+    navigate('/directory');
   };
 
   return (

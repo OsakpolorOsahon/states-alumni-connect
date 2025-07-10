@@ -318,20 +318,12 @@ class ApiClient {
   }
 
   // Helper methods for compatibility
-  async getMembers() {
-    return this.getAllMembers();
-  }
-
   async getAllMembers() {
-    return this.request('/members');
-  }
-
-  async getHallOfFame() {
-    return this.getAllHallOfFame();
+    return this.getMembers();
   }
 
   async getAllHallOfFame() {
-    return this.request('/hall-of-fame');
+    return this.getHallOfFame();
   }
 }
 

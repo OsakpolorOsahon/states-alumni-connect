@@ -17,9 +17,9 @@ import { STATESHIP_YEARS, MOWCUB_POSITIONS, COUNCIL_OFFICES } from '@/data/membe
 const Directory = () => {
   const [filters, setFilters] = useState({
     search: '',
-    year: '',
-    position: '',
-    office: ''
+    year: 'all',
+    position: 'all',
+    office: 'all'
   });
   const [showMap, setShowMap] = useState(false);
   const [viewType, setViewType] = useState<'grid' | 'list'>('grid');
@@ -178,7 +178,7 @@ const Directory = () => {
                   <SelectValue placeholder="Stateship Year" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Years</SelectItem>
+                  <SelectItem value="all">All Years</SelectItem>
                   {STATESHIP_YEARS.map(year => (
                     <SelectItem key={year.value} value={year.value}>{year.label}</SelectItem>
                   ))}
@@ -190,7 +190,7 @@ const Directory = () => {
                   <SelectValue placeholder="MOWCUB Position" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Positions</SelectItem>
+                  <SelectItem value="all">All Positions</SelectItem>
                   {MOWCUB_POSITIONS.map(position => (
                     <SelectItem key={position.code} value={position.code}>{position.title}</SelectItem>
                   ))}
@@ -202,7 +202,7 @@ const Directory = () => {
                   <SelectValue placeholder="Council Office" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Offices</SelectItem>
+                  <SelectItem value="all">All Offices</SelectItem>
                   {COUNCIL_OFFICES.map(office => (
                     <SelectItem key={office.value} value={office.value}>{office.label}</SelectItem>
                   ))}

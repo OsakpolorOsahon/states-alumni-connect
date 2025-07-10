@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { authService } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 import { api } from '@/lib/api';
 
 interface User {
@@ -73,65 +73,150 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Initialize auth state
-    authService.checkAuth();
-    
-    const unsubscribe = authService.subscribe((state) => {
-      setUser(state.user);
-      setLoading(state.loading);
-      
-      // Fetch member data when user is authenticated
-      if (state.user && !state.loading) {
-        fetchMemberData(state.user.id);
-      } else if (!state.user) {
+    // Get initial session
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await fetchUserData(session.user.id, session.user.email);
+      }
+      setLoading(false);
+    };
+
+    getSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        await fetchUserData(session.user.id, session.user.email);
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
         setMember(null);
       }
+      setLoading(false);
     });
 
-    return unsubscribe;
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const fetchMemberData = async (userId: string) => {
+  const fetchUserData = async (userId: string, email: string) => {
     try {
-      // For now, create a mock member since we don't have the full auth system
-      const mockMember: Member = {
-        id: '1',
-        userId: userId,
-        fullName: 'John Doe',
-        stateshipYear: '2020',
-        lastMowcubPosition: 'Captain',
-        role: 'member',
-        status: 'active',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      setMember(mockMember);
+      // Try to get existing member data
+      const members = await api.getAllMembers();
+      const existingMember = members.find(m => m.userId === userId);
+      
+      if (existingMember) {
+        const userData: User = {
+          id: userId,
+          email: email,
+          role: existingMember.role,
+          status: existingMember.status
+        };
+        setUser(userData);
+        setMember(existingMember);
+      } else {
+        // Create temporary user without member data
+        const userData: User = {
+          id: userId,
+          email: email,
+          role: 'member',
+          status: 'pending'
+        };
+        setUser(userData);
+        setMember(null);
+      }
     } catch (error) {
-      console.error('Error fetching member data:', error);
+      console.error('Error fetching user data:', error);
+      // Set basic user data even if member fetch fails
+      const userData: User = {
+        id: userId,
+        email: email,
+        role: 'member',
+        status: 'pending'
+      };
+      setUser(userData);
+      setMember(null);
     }
   };
 
   const signUp = async (email: string, password: string, memberData?: any) => {
     try {
-      const result = await authService.signUp(email, password, memberData);
-      return { data: result.success ? { user: authService.getState().user } : null, error: result.error };
+      setLoading(true);
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: memberData
+        }
+      });
+
+      if (error) {
+        console.error('Signup error:', error);
+        return { data: null, error: error.message };
+      }
+
+      // If signup successful and memberData provided, create member record
+      if (data.user && memberData) {
+        try {
+          const newMember = await api.createMember({
+            ...memberData,
+            userId: data.user.id,
+            status: 'pending'
+          });
+          
+          const userData: User = {
+            id: data.user.id,
+            email: data.user.email!,
+            role: 'member',
+            status: 'pending'
+          };
+          setUser(userData);
+          setMember(newMember);
+        } catch (memberError) {
+          console.error('Error creating member:', memberError);
+          // User created but member creation failed
+          return { data: data.user, error: 'Account created but member profile creation failed' };
+        }
+      }
+
+      return { data: data.user, error: null };
     } catch (error) {
+      console.error('Signup error:', error);
       return { data: null, error: error instanceof Error ? error.message : 'Sign up failed' };
+    } finally {
+      setLoading(false);
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
-      const result = await authService.signIn(email, password);
-      return { data: result.success ? { user: authService.getState().user } : null, error: result.error };
+      setLoading(true);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        console.error('Signin error:', error);
+        return { data: null, error: error.message };
+      }
+
+      return { data: data.user, error: null };
     } catch (error) {
+      console.error('Signin error:', error);
       return { data: null, error: error instanceof Error ? error.message : 'Sign in failed' };
+    } finally {
+      setLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
-      await authService.signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        return { error: error.message };
+      }
       return { error: null };
     } catch (error) {
       return { error: error instanceof Error ? error.message : 'Sign out failed' };
