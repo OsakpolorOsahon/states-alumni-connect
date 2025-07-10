@@ -3,7 +3,6 @@
 import { Suspense, lazy } from 'react'
 import { Toaster } from '@/components/ui/toaster'
 import { Toaster as Sonner } from '@/components/ui/sonner'
-import { TooltipProvider } from '@/components/ui/tooltip'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from 'next-themes'
@@ -54,10 +53,9 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
               <Suspense fallback={<LoadingFallback />}>
                 <Routes>
                   {/* public */}
@@ -172,7 +170,6 @@ export default function App() {
               </Suspense>
               <PWAInstallBanner />
             </BrowserRouter>
-          </TooltipProvider>
         </ThemeProvider>
       </HelmetProvider>
     </QueryClientProvider>

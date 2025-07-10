@@ -1,0 +1,29 @@
+chunk-276SZO74.js?v=ad5db6cc:14032 The above error occurred in the <TooltipProvider> component:
+
+    at TooltipProvider (https://2dbd5bce-94d0-435b-989b-64af9e347297-00-3jkqtt4g97kwb.worf.replit.d…rkspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=dc3cc44d:61:5)
+    at V (https://2dbd5bce-94d0-435b-989b-64af9e347297-00-3jkqtt4g97kwb.worf.replit.d…e/runner/workspace/node_modules/.vite/deps/next-themes.js?v=ad5db6cc:44:25)
+    at J (https://2dbd5bce-94d0-435b-989b-64af9e347297-00-3jkqtt4g97kwb.worf.replit.d…e/runner/workspace/node_modules/.vite/deps/next-themes.js?v=ad5db6cc:42:18)
+    at _a (https://2dbd5bce-94d0-435b-989b-64af9e347297-00-3jkqtt4g97kwb.worf.replit.d…r/workspace/node_modules/.vite/deps/react-helmet-async.js?v=ad5db6cc:624:5)
+    at QueryClientProvider (https://2dbd5bce-94d0-435b-989b-64af9e347297-00-3jkqtt4g97kwb.worf.replit.d…rkspace/node_modules/.vite/deps/@tanstack_react-query.js?v=ad5db6cc:2805:3)
+    at App
+    at AuthProvider (https://2dbd5bce-94d0-435b-989b-64af9e347297-00-3jkqtt4g97kwb.worf.replit.dev/src/contexts/AuthContext.tsx?v=9aSD1Vx6psi2Fx6_AUi6a:44:32)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+chunk-276SZO74.js?v=ad5db6cc:19413 Uncaught TypeError: Cannot read properties of null (reading 'useRef')
+    at Object.useRef (chunk-QCHXOAYK.js?v=e105488d:1074:29)
+    at TooltipProvider (@radix-ui_react-tool…js?v=dc3cc44d:67:34)
+    at renderWithHooks (chunk-276SZO74.js?v=ad5db6cc:11548:26)
+    at mountIndeterminateComponent (chunk-276SZO74.js?v=ad5db6cc:14926:21)
+    at beginWork (chunk-276SZO74.js?v=ad5db6cc:15914:22)
+    at beginWork$1 (chunk-276SZO74.js?v=ad5db6cc:19753:22)
+    at performUnitOfWork (chunk-276SZO74.js?v=ad5db6cc:19198:20)
+    at workLoopSync (chunk-276SZO74.js?v=ad5db6cc:19137:13)
+    at renderRootSync (chunk-276SZO74.js?v=ad5db6cc:19116:15)
+    at recoverFromConcurrentError (chunk-276SZO74.js?v=ad5db6cc:18736:28)
+main.tsx:56 Notification permission granted
+main.tsx:22 ServiceWorker registration successful: 
+ServiceWorkerRegistration {installing: null, waiting: null, active: ServiceWorker, navigationPreload: NavigationPreloadManager, scope: 'https://2dbd5bce-94d0-435b-989b-64af9e347297-00-3jkqtt4g97kwb.worf.replit.dev/', …}
+css-generic.js:1 uBOL: Generic cosmetic filtering stopped because no more DOM changes
+﻿
+
