@@ -1,59 +1,48 @@
+// Real-time subscription utilities for Firebase/Firestore
+import { onSnapshot, collection, query, where } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
-// Mock realtime service for the migrated application
-export interface RealtimeSubscriptionConfig {
+interface RealtimeSubscriptionOptions {
   table: string;
-  event?: 'INSERT' | 'UPDATE' | 'DELETE' | '*';
-  filter?: string;
+  filter?: {
+    field: string;
+    operator: any;
+    value: any;
+  };
   callback: (payload: any) => void;
 }
 
-export const createRealtimeSubscription = (config: RealtimeSubscriptionConfig) => {
-  const { table, event = '*', filter, callback } = config;
-  
-  // For now, return a mock subscription that doesn't do anything
-  console.log(`Mock realtime subscription created for table: ${table}, event: ${event}, filter: ${filter}`);
-  
-  return {
-    unsubscribe: () => {
-      console.log(`Mock subscription unsubscribed for table: ${table}`);
+export function createRealtimeSubscription({
+  table,
+  filter,
+  callback
+}: RealtimeSubscriptionOptions) {
+  try {
+    let firestoreQuery = collection(db, table);
+    
+    if (filter) {
+      firestoreQuery = query(
+        collection(db, table),
+        where(filter.field, filter.operator, filter.value)
+      );
     }
-  };
-};
 
-export const subscribeToMembers = (callback: (payload: any) => void) => {
-  return createRealtimeSubscription({
-    table: 'members',
-    callback
-  });
-};
+    const unsubscribe = onSnapshot(firestoreQuery, (snapshot) => {
+      const changes = snapshot.docChanges();
+      changes.forEach((change) => {
+        callback({
+          type: change.type,
+          data: { id: change.doc.id, ...change.doc.data() },
+          old: change.type === 'modified' ? change.doc.data() : null
+        });
+      });
+    }, (error) => {
+      console.error('Realtime subscription error:', error);
+    });
 
-export const subscribeToBadges = (callback: (payload: any) => void) => {
-  return createRealtimeSubscription({
-    table: 'badges',
-    callback
-  });
-};
-
-export const subscribeToHallOfFame = (callback: (payload: any) => void) => {
-  return createRealtimeSubscription({
-    table: 'hall_of_fame',
-    callback
-  });
-};
-
-export const subscribeToNotifications = (memberId: string, callback: (payload: any) => void) => {
-  return createRealtimeSubscription({
-    table: 'notifications',
-    filter: `member_id=eq.${memberId}`,
-    callback
-  });
-};
-
-// Utility to clean up subscriptions
-export const cleanupSubscriptions = (channels: any[]) => {
-  channels.forEach(channel => {
-    if (channel && typeof channel.unsubscribe === 'function') {
-      channel.unsubscribe();
-    }
-  });
-};
+    return { unsubscribe };
+  } catch (error) {
+    console.error('Failed to create realtime subscription:', error);
+    return null;
+  }
+}

@@ -5,16 +5,22 @@ import { createRealtimeSubscription } from '@/lib/realtime';
 
 interface Member {
   id: string;
+  fullName: string;
   full_name: string;
   nickname?: string;
+  stateshipYear: string;
   stateship_year: string;
+  lastMowcubPosition: string;
   last_mowcub_position: string;
+  currentCouncilOffice?: string;
   current_council_office?: string;
+  photoUrl?: string;
   photo_url?: string;
   status: string;
-  paid_through?: string;
+  email: string;
   latitude?: number;
   longitude?: number;
+  createdAt: string;
   created_at: string;
 }
 
@@ -53,7 +59,17 @@ export const useMembers = (filters: FiltersType = { search: '', year: '', positi
     try {
       setLoading(true);
       const data = await api.getActiveMembers();
-      setMembers(data || []);
+      // Normalize the data to handle both camelCase and snake_case
+      const normalizedData = (data || []).map((member: any) => ({
+        ...member,
+        fullName: member.full_name || member.fullName,
+        stateshipYear: member.stateship_year || member.stateshipYear,
+        lastMowcubPosition: member.last_mowcub_position || member.lastMowcubPosition,
+        currentCouncilOffice: member.current_council_office || member.currentCouncilOffice,
+        photoUrl: member.photo_url || member.photoUrl,
+        createdAt: member.created_at || member.createdAt
+      }));
+      setMembers(normalizedData);
       setError(null);
     } catch (err) {
       console.error('Error fetching members:', err);
@@ -66,12 +82,12 @@ export const useMembers = (filters: FiltersType = { search: '', year: '', positi
   // Apply filters
   const filteredMembers = members.filter(member => {
     const matchesSearch = !filters.search || 
-      member.full_name.toLowerCase().includes(filters.search.toLowerCase()) ||
+      (member.fullName && member.fullName.toLowerCase().includes(filters.search.toLowerCase())) ||
       (member.nickname && member.nickname.toLowerCase().includes(filters.search.toLowerCase()));
     
-    const matchesYear = !filters.year || member.stateship_year === filters.year;
-    const matchesPosition = !filters.position || member.last_mowcub_position === filters.position;
-    const matchesOffice = !filters.office || member.current_council_office === filters.office;
+    const matchesYear = !filters.year || filters.year === 'all' || member.stateshipYear === filters.year;
+    const matchesPosition = !filters.position || filters.position === 'all' || member.lastMowcubPosition === filters.position;
+    const matchesOffice = !filters.office || filters.office === 'all' || member.currentCouncilOffice === filters.office;
 
     return matchesSearch && matchesYear && matchesPosition && matchesOffice;
   });

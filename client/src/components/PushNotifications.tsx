@@ -1,208 +1,156 @@
-
-import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Bell, BellOff, Check, X } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: string;
-  is_read: boolean;
-  created_at: string;
-}
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Bell, BellOff } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const PushNotifications = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const { member } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
+  const [permission, setPermission] = useState<NotificationPermission>('default');
+  const [isSupported, setIsSupported] = useState(false);
 
   useEffect(() => {
-    if (member) {
-      fetchNotifications();
-      setupRealtimeSubscription();
-      checkNotificationPermission();
+    // Check if notifications are supported
+    setIsSupported('Notification' in window && 'serviceWorker' in navigator);
+    
+    if ('Notification' in window) {
+      setPermission(Notification.permission);
     }
-  }, [member]);
+  }, []);
 
-  const fetchNotifications = async () => {
-    if (!member) return;
+  const requestPermission = async () => {
+    if (!isSupported) {
+      toast({
+        title: 'Not Supported',
+        description: 'Push notifications are not supported in your browser.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     try {
-      const data = await api.getNotificationsByMemberId(member.id);
-      setNotifications(data || []);
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const setupRealtimeSubscription = () => {
-    if (!member) return;
-
-    // Mock subscription for now
-    const channel = { unsubscribe: () => {} };
-
-    return () => {
-      channel.unsubscribe();
-    };
-  };
-
-  const checkNotificationPermission = () => {
-    if ('Notification' in window) {
-      setNotificationsEnabled(Notification.permission === 'granted');
-    }
-  };
-
-  const requestNotificationPermission = async () => {
-    if ('Notification' in window) {
       const permission = await Notification.requestPermission();
-      setNotificationsEnabled(permission === 'granted');
-      
+      setPermission(permission);
+
       if (permission === 'granted') {
         toast({
-          title: "Notifications Enabled",
-          description: "You'll now receive push notifications for important updates."
+          title: 'Notifications Enabled',
+          description: 'You will now receive push notifications for important updates.',
+        });
+
+        // Register for push notifications
+        if ('serviceWorker' in navigator) {
+          const registration = await navigator.serviceWorker.ready;
+          
+          // Subscribe to push notifications
+          const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: 'your-vapid-public-key' // Replace with your VAPID key
+          });
+
+          // Send subscription to server
+          await fetch('/api/push-subscription', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              subscription,
+              userId: user?.id
+            })
+          });
+        }
+      } else {
+        toast({
+          title: 'Permission Denied',
+          description: 'Please enable notifications in your browser settings to receive updates.',
+          variant: 'destructive',
         });
       }
-    }
-  };
-
-  const markAsRead = async (notificationId: string) => {
-    try {
-      await api.markNotificationAsRead(notificationId);
-      setNotifications(prev => 
-        prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
-      );
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      console.error('Error requesting notification permission:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to enable notifications. Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
-  const markAllAsRead = async () => {
-    if (!member) return;
-
+  const disableNotifications = async () => {
     try {
-      await api.markAllNotificationsAsRead(member.id);
-      setNotifications(prev => 
-        prev.map(n => ({ ...n, is_read: true }))
-      );
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        
+        if (subscription) {
+          await subscription.unsubscribe();
+          
+          // Remove subscription from server
+          await fetch('/api/push-subscription', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user?.id })
+          });
+        }
+      }
 
       toast({
-        title: "All notifications marked as read",
-        description: "Your notification list has been updated."
+        title: 'Notifications Disabled',
+        description: 'You will no longer receive push notifications.',
       });
     } catch (error) {
-      console.error('Error marking all notifications as read:', error);
+      console.error('Error disabling notifications:', error);
     }
   };
 
-  const getNotificationBadgeColor = (type: string) => {
-    switch (type) {
-      case 'badge_awarded': return 'bg-green-500';
-      case 'member_approved': return 'bg-blue-500';
-      case 'member_rejected': return 'bg-red-500';
-      case 'dues_reminder': return 'bg-yellow-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  if (!isSupported) {
+    return null;
+  }
 
   return (
-    <Card>
+    <Card className="mt-6">
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Bell className="h-5 w-5" />
-            Notifications
-            {unreadCount > 0 && (
-              <Badge className="bg-[#E10600] text-white">
-                {unreadCount}
-              </Badge>
-            )}
-          </div>
-          <div className="flex gap-2">
-            {!notificationsEnabled && (
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={requestNotificationPermission}
-              >
-                <Bell className="h-4 w-4 mr-1" />
-                Enable
-              </Button>
-            )}
-            {unreadCount > 0 && (
-              <Button size="sm" variant="outline" onClick={markAllAsRead}>
-                <Check className="h-4 w-4 mr-1" />
-                Mark All Read
-              </Button>
-            )}
-          </div>
+        <CardTitle className="flex items-center gap-2">
+          <Bell className="w-5 h-5" />
+          Push Notifications
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="animate-pulse">
-                <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-muted rounded w-1/2"></div>
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Stay updated with the latest news, member approvals, and community activities.
+          </p>
+          
+          {permission === 'default' && (
+            <Button onClick={requestPermission} className="w-full">
+              <Bell className="w-4 h-4 mr-2" />
+              Enable Notifications
+            </Button>
+          )}
+          
+          {permission === 'granted' && (
+            <div className="flex items-center gap-2">
+              <div className="flex-1 text-sm text-green-600 font-medium">
+                ✓ Notifications enabled
               </div>
-            ))}
-          </div>
-        ) : notifications.length === 0 ? (
-          <div className="text-center py-8">
-            <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground">No notifications yet</p>
-          </div>
-        ) : (
-          <div className="space-y-3 max-h-96 overflow-y-auto">
-            {notifications.map((notification) => (
-              <div 
-                key={notification.id}
-                className={`p-3 rounded-lg border ${
-                  notification.is_read ? 'bg-background' : 'bg-muted/50 border-[#E10600]/20'
-                }`}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={disableNotifications}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className={`w-2 h-2 rounded-full ${getNotificationBadgeColor(notification.type)}`} />
-                      <h4 className={`text-sm font-medium ${!notification.is_read ? 'font-semibold' : ''}`}>
-                        {notification.title}
-                      </h4>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      {notification.message}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(notification.created_at).toLocaleString()}
-                    </p>
-                  </div>
-                  {!notification.is_read && (
-                    <Button 
-                      size="sm" 
-                      variant="ghost"
-                      onClick={() => markAsRead(notification.id)}
-                    >
-                      <Check className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+                <BellOff className="w-4 h-4 mr-2" />
+                Disable
+              </Button>
+            </div>
+          )}
+          
+          {permission === 'denied' && (
+            <div className="text-sm text-muted-foreground">
+              Notifications blocked. Please enable them in your browser settings to receive updates.
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

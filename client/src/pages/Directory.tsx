@@ -61,30 +61,30 @@ const Directory = () => {
       switch (sortBy) {
         case 'hierarchy':
           // First: Council Office (President first, then all the way to none)
-          const aCouncilIndex = councilOfficeOrder.indexOf(a.currentCouncilOffice || null);
-          const bCouncilIndex = councilOfficeOrder.indexOf(b.currentCouncilOffice || null);
+          const aCouncilIndex = councilOfficeOrder.indexOf(a.currentCouncilOffice || a.current_council_office || null);
+          const bCouncilIndex = councilOfficeOrder.indexOf(b.currentCouncilOffice || b.current_council_office || null);
           
           if (aCouncilIndex !== bCouncilIndex) {
             return aCouncilIndex - bCouncilIndex;
           }
           
           // Second: Year of Statesmanship (Oldest to youngest)
-          const aYear = parseInt(a.stateshipYear.split('/')[0] || a.stateshipYear);
-          const bYear = parseInt(b.stateshipYear.split('/')[0] || b.stateshipYear);
+          const aYear = parseInt((a.stateshipYear || a.stateship_year).split('/')[0] || (a.stateshipYear || a.stateship_year));
+          const bYear = parseInt((b.stateshipYear || b.stateship_year).split('/')[0] || (b.stateshipYear || b.stateship_year));
           
           if (aYear !== bYear) {
             return aYear - bYear;
           }
           
           // Third: Last MOWCUB Position (Commander In Chief to Director of Intelligence)
-          const aMowcubIndex = mowcubPositionOrder.indexOf(a.lastMowcubPosition);
-          const bMowcubIndex = mowcubPositionOrder.indexOf(b.lastMowcubPosition);
+          const aMowcubIndex = mowcubPositionOrder.indexOf(a.lastMowcubPosition || a.last_mowcub_position);
+          const bMowcubIndex = mowcubPositionOrder.indexOf(b.lastMowcubPosition || b.last_mowcub_position);
           
           return aMowcubIndex - bMowcubIndex;
         case 'year':
-          return a.stateshipYear.localeCompare(b.stateshipYear);
+          return (a.stateshipYear || a.stateship_year).localeCompare(b.stateshipYear || b.stateship_year);
         case 'name':
-          return a.fullName.localeCompare(b.fullName);
+          return (a.fullName || a.full_name).localeCompare(b.fullName || b.full_name);
         default:
           return 0;
       }

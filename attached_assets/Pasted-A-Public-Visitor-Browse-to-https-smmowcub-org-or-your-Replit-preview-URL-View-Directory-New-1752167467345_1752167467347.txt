@@ -1,0 +1,82 @@
+A. Public Visitor
+Browse to https://smmowcub.org (or your Replit preview URL).
+
+View Directory:
+
+New members appear once approved.
+
+Avatars show correctly or fallback if hidden.
+
+Sorting by council → year → position works.
+
+View Hall of Fame & Stats: live numbers update if you add a test entry via the Console.
+
+B. New Member Signup Flow
+Click “Sign Up”, fill out the form, and submit.
+
+Check Email: you should receive a verification link.
+
+Click Link: you land on UploadDocuments immediately.
+
+Upload Files: upload a profile photo and dues proof PDF.
+
+Pending Page: you see “Under Review…” and polling for status.
+
+In the Firebase Console → Firestore, manually change your test user’s status to “Active.”
+
+Email Confirmation: you receive an “Approved” email from your Cloud Function.
+
+Login: sign in with your credentials → land on the Member Dashboard.
+
+C. Member Interactions
+While logged in:
+
+Edit Profile: change nickname or toggle photo privacy → save.
+
+Post a Job: fill out the form → a new job appears in the board instantly.
+
+Apply to a Job: click the link → you can send a message or redirect externally.
+
+Forums: create a thread, reply to another → see replies in real time.
+
+Notifications: the bell icon shows “1 new reply” or “1 new badge” as events occur.
+
+D. Secretary Workflow
+Login as the initial secretary (you set this user’s role manually in Firestore).
+
+View Pending Approvals: see the test member’s request → Approve/Reject.
+
+Approve: triggers the Cloud Function → Firestore updates → member email is sent.
+
+Create News & Events: add a news post → appears on public News feed immediately.
+
+Transfer Role: pick another active member → click “Transfer” → log out.
+
+Log in as the new secretary → verify you see the Secretary Dashboard and can manage content.
+
+4. Final Production Launch Checklist
+Before shouting “We’re live!”:
+
+ Security Rules published for Firestore & Storage.
+
+ Custom domain mapped and SSL enabled (check “https://smmowcub.org”).
+
+ All env vars set in Replit Secrets.
+
+ Email sender address configured in Firebase Functions for approval/rejection.
+
+ Google Maps API works on Directory or Map page if used.
+
+ PWA functions (offline, install prompt) tested on mobile.
+
+ Performance: pages load under 3 s on a 3G connection (use Lighthouse).
+
+ Error monitoring: Crashlytics errors showing up in the Console.
+
+ Analytics: Basic page views tracked in Firebase Analytics.
+
+ Backups: Firestore export schedule set up.
+
+ First live sign‑up: test yourself from a different email.
+
+ Secretary handover: confirm secondary admin can log in and manage.
