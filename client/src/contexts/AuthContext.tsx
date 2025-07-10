@@ -1,6 +1,26 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { api } from '@/lib/api';
+import { auth, db } from '@/lib/firebase';
+import { 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut as firebaseSignOut,
+  onAuthStateChanged,
+  User as FirebaseUser
+} from 'firebase/auth';
+import { 
+  doc, 
+  setDoc, 
+  getDoc, 
+  collection,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  addDoc,
+  orderBy,
+  limit
+} from 'firebase/firestore';
 
 interface User {
   id: string;
@@ -73,48 +93,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        await fetchUserData(session.user.id, session.user.email);
-      }
-      setLoading(false);
-    };
-
-    getSession();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        await fetchUserData(session.user.id, session.user.email);
-      } else if (event === 'SIGNED_OUT') {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        await fetchUserData(firebaseUser.uid, firebaseUser.email || '');
+      } else {
         setUser(null);
         setMember(null);
       }
       setLoading(false);
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
 
   const fetchUserData = async (userId: string, email: string) => {
     try {
-      // Try to get existing member data
-      const members = await api.getAllMembers();
-      const existingMember = members.find(m => m.userId === userId);
+      // Try to get existing member data from Firestore
+      const memberDoc = await getDoc(doc(db, 'members', userId));
       
-      if (existingMember) {
+      if (memberDoc.exists()) {
+        const memberData = memberDoc.data() as Member;
         const userData: User = {
           id: userId,
           email: email,
-          role: existingMember.role,
-          status: existingMember.status
+          role: memberData.role,
+          status: memberData.status
         };
         setUser(userData);
-        setMember(existingMember);
+        setMember(memberData);
       } else {
         // Create temporary user without member data
         const userData: User = {
@@ -143,21 +149,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, memberData?: any) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: memberData
-        }
-      });
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-      if (error) {
-        console.error('Signup error:', error);
-        return { data: null, error: error.message };
+      // Create member document in Firestore
+      if (memberData) {
+        const memberDoc = {
+          id: user.uid,
+          userId: user.uid,
+          fullName: memberData.full_name || '',
+          nickname: memberData.nickname || '',
+          stateshipYear: memberData.stateship_year || '',
+          lastMowcubPosition: memberData.last_mowcub_position || '',
+          currentCouncilOffice: memberData.current_council_office || '',
+          photoUrl: memberData.photo_url || '',
+          duesProofUrl: memberData.dues_proof_url || '',
+          latitude: memberData.latitude || null,
+          longitude: memberData.longitude || null,
+          paidThrough: memberData.paid_through || '',
+          role: 'member' as const,
+          status: 'pending' as const,
+          approvedAt: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        await setDoc(doc(db, 'members', user.uid), memberDoc);
       }
 
-      // Return success immediately - member creation will happen after email verification
-      return { data: data.user, error: null };
+      return { data: user, error: null };
     } catch (error) {
       console.error('Signup error:', error);
       return { data: null, error: error instanceof Error ? error.message : 'Sign up failed' };
@@ -169,17 +189,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        console.error('Signin error:', error);
-        return { data: null, error: error.message };
-      }
-
-      return { data: data.user, error: null };
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      return { data: userCredential.user, error: null };
     } catch (error) {
       console.error('Signin error:', error);
       return { data: null, error: error instanceof Error ? error.message : 'Sign in failed' };
@@ -190,10 +201,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        return { error: error.message };
-      }
+      await firebaseSignOut(auth);
       return { error: null };
     } catch (error) {
       return { error: error instanceof Error ? error.message : 'Sign out failed' };
@@ -202,8 +210,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const createMember = async (data: any) => {
     try {
-      const result = await api.createMember(data);
-      return { data: result, error: null };
+      const docRef = await addDoc(collection(db, 'members'), {
+        ...data,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+      return { data: { id: docRef.id, ...data }, error: null };
     } catch (error) {
       return { data: null, error: error instanceof Error ? error.message : 'Failed to create member' };
     }

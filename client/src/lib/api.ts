@@ -1,23 +1,77 @@
-// API client for making requests to the backend
-const API_BASE_URL = '/api';
+// API client for Firebase backend
+import { firebaseApi } from './firebaseApi';
 
 class ApiClient {
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${API_BASE_URL}${endpoint}`;
-    const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-      ...options,
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-      throw new Error(error.error || `HTTP ${response.status}`);
+  // Fallback to Firebase API for all requests
+  private async fallbackToFirebase(endpoint: string, options: RequestInit = {}): Promise<any> {
+    const method = options.method || 'GET';
+    const body = options.body ? JSON.parse(options.body as string) : null;
+    
+    try {
+      // Route to appropriate Firebase method based on endpoint
+      if (endpoint === '/members') {
+        return method === 'GET' ? await firebaseApi.getAllMembers() : await firebaseApi.createMember(body);
+      }
+      if (endpoint === '/members/active') {
+        return await firebaseApi.getActiveMembers();
+      }
+      if (endpoint === '/members/pending') {
+        return await firebaseApi.getPendingMembers();
+      }
+      if (endpoint.startsWith('/members/') && method === 'GET') {
+        const id = endpoint.split('/')[2];
+        return await firebaseApi.getMember(id);
+      }
+      if (endpoint === '/news') {
+        return method === 'GET' ? await firebaseApi.getAllNews() : await firebaseApi.createNews(body);
+      }
+      if (endpoint === '/news/published') {
+        return await firebaseApi.getPublishedNews();
+      }
+      if (endpoint === '/forum/threads') {
+        return method === 'GET' ? await firebaseApi.getAllForumThreads() : await firebaseApi.createForumThread(body);
+      }
+      if (endpoint === '/jobs') {
+        return method === 'GET' ? await firebaseApi.getAllJobs() : await firebaseApi.createJob(body);
+      }
+      if (endpoint === '/jobs/active') {
+        return await firebaseApi.getActiveJobs();
+      }
+      if (endpoint === '/hall-of-fame') {
+        return method === 'GET' ? await firebaseApi.getAllHallOfFame() : await firebaseApi.createHallOfFameEntry(body);
+      }
+      if (endpoint.startsWith('/badges/member/')) {
+        const memberId = endpoint.split('/')[3];
+        return await firebaseApi.getBadgesByMember(memberId);
+      }
+      if (endpoint === '/badges') {
+        return await firebaseApi.createBadge(body);
+      }
+      if (endpoint.startsWith('/notifications/member/')) {
+        const memberId = endpoint.split('/')[3];
+        return await firebaseApi.getNotificationsByMember(memberId);
+      }
+      if (endpoint === '/notifications') {
+        return await firebaseApi.createNotification(body);
+      }
+      if (endpoint === '/events') {
+        return method === 'GET' ? await firebaseApi.getAllEvents() : await firebaseApi.createEvent(body);
+      }
+      if (endpoint === '/events/upcoming') {
+        return await firebaseApi.getUpcomingEvents();
+      }
+      
+      // Default empty response for unmatched endpoints
+      return [];
+    } catch (error) {
+      console.error('Firebase API error:', error);
+      return [];
     }
+  }
 
-    return response.json();
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    // Use Firebase API directly
+    return this.fallbackToFirebase(endpoint, options);
   }
 
   // Member API

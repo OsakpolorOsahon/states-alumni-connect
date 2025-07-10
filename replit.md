@@ -19,20 +19,20 @@ Preferred communication style: Simple, everyday language.
 - **UI Components**: Radix UI primitives with custom styling
 
 ### Backend Architecture
-- **Runtime**: Node.js with Express.js
-- **Database**: PostgreSQL with Drizzle ORM
-- **Database Provider**: Neon Database (serverless PostgreSQL)
-- **API Design**: RESTful API with `/api` prefix
-- **Session Management**: PostgreSQL session store
-- **File Storage**: Supabase for file uploads (photos, documents)
+- **Runtime**: Node.js with Express.js (legacy endpoints)
+- **Database**: Firebase Firestore (NoSQL document database)
+- **Authentication**: Firebase Auth with email/password
+- **API Design**: Firebase SDK with real-time capabilities
+- **Session Management**: Firebase Auth tokens
+- **File Storage**: Firebase Storage for file uploads (photos, documents)
 
 ### Key Components
 
 #### Authentication System
-- Email/password authentication via Supabase Auth
+- Email/password authentication via Firebase Auth
 - Role-based access control (Member, Secretary)
-- Multi-step registration process with email verification
-- Document upload requirement for membership approval
+- Real-time user state management
+- Direct member profile creation in Firestore
 
 #### Member Management
 - Comprehensive member profiles with photos and professional details
@@ -81,8 +81,7 @@ Preferred communication style: Simple, everyday language.
 ## External Dependencies
 
 ### Third-Party Services
-- **Supabase**: Authentication, real-time subscriptions, file storage
-- **Neon Database**: Serverless PostgreSQL hosting
+- **Firebase**: Authentication, Firestore database, real-time updates, file storage
 - **Google Maps API**: Interactive mapping features
 - **Replit**: Development environment integration
 
@@ -108,12 +107,13 @@ Preferred communication style: Simple, everyday language.
 - Environment-specific configuration
 
 ### Database Management
-- Drizzle migrations for schema changes
-- PostgreSQL connection pooling
-- Real-time subscriptions for live updates
+- Firebase Firestore collections for data storage
+- Real-time listeners for live updates
+- Automatic scaling and indexing
 
 ### Security Considerations
-- JWT-based authentication
+- Firebase Auth tokens for authentication
+- Firestore security rules for data access
 - Role-based access control
 - File upload validation and sanitization
 - Environment variable protection for sensitive data

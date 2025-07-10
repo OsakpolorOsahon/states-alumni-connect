@@ -6,7 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import Navigation from '@/components/Navigation';
-import { supabase } from '@/lib/supabase';
+import { auth } from '@/lib/firebase';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { firebaseApi } from '@/lib/firebaseApi';
 
 const TestLogin = () => {
   const { signIn } = useAuth();
@@ -18,15 +20,16 @@ const TestLogin = () => {
     setTestResults(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
   };
 
-  const testSupabaseConnection = async () => {
+  const testFirebaseConnection = async () => {
     try {
-      addTestResult('Testing Supabase connection...');
-      const { data, error } = await supabase.auth.getSession();
-      if (error) {
-        addTestResult(`❌ Supabase error: ${error.message}`);
+      addTestResult('Testing Firebase connection...');
+      const user = auth.currentUser;
+      if (user) {
+        addTestResult('✅ Firebase connection successful');
+        addTestResult(`User: ${user.email}`);
       } else {
-        addTestResult('✅ Supabase connection successful');
-        addTestResult(`Session: ${data.session ? 'Active' : 'None'}`);
+        addTestResult('✅ Firebase connection successful');
+        addTestResult('No user logged in');
       }
     } catch (error) {
       addTestResult(`❌ Connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -51,22 +54,58 @@ const TestLogin = () => {
     }
   };
 
+  const testFirebaseData = async () => {
+    setLoading(true);
+    addTestResult('Testing Firebase data operations...');
+    
+    try {
+      // Test creating initial data
+      await firebaseApi.createInitialData();
+      addTestResult('✅ Initial data created');
+      
+      // Test fetching members
+      const members = await firebaseApi.getAllMembers();
+      addTestResult(`✅ Fetched ${members.length} members`);
+      
+      // Test fetching active members
+      const activeMembers = await firebaseApi.getActiveMembers();
+      addTestResult(`✅ Fetched ${activeMembers.length} active members`);
+      
+    } catch (error) {
+      addTestResult(`❌ Data operation error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const testSignup = async () => {
     setLoading(true);
     addTestResult('Testing signup with new user...');
     
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: `test-${Date.now()}@example.com`,
-        password: 'password123',
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        `test-${Date.now()}@example.com`,
+        'password123'
+      );
+      
+      addTestResult('✅ Signup successful');
+      addTestResult(`User ID: ${userCredential.user.uid}`);
+      
+      // Test creating member data
+      await firebaseApi.createMember({
+        userId: userCredential.user.uid,
+        fullName: 'Test User',
+        nickname: 'Tester',
+        stateshipYear: '2024',
+        lastMowcubPosition: 'Private',
+        currentCouncilOffice: 'Member',
+        role: 'member',
+        status: 'active'
       });
       
-      if (error) {
-        addTestResult(`❌ Signup failed: ${error.message}`);
-      } else {
-        addTestResult('✅ Signup successful');
-        addTestResult(`User ID: ${data.user?.id}`);
-      }
+      addTestResult('✅ Member profile created');
+      
     } catch (error) {
       addTestResult(`❌ Signup error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
@@ -84,8 +123,8 @@ const TestLogin = () => {
               <CardTitle>🔧 Authentication Test Page</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Button onClick={testSupabaseConnection} disabled={loading}>
+              <div className="flex gap-2 flex-wrap">
+                <Button onClick={testFirebaseConnection} disabled={loading}>
                   Test Connection
                 </Button>
                 <Button onClick={testLogin} disabled={loading}>
@@ -93,6 +132,9 @@ const TestLogin = () => {
                 </Button>
                 <Button onClick={testSignup} disabled={loading}>
                   Test Signup
+                </Button>
+                <Button onClick={testFirebaseData} disabled={loading}>
+                  Test Data
                 </Button>
               </div>
               

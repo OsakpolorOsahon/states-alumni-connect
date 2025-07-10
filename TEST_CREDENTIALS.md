@@ -2,10 +2,18 @@
 
 ## Login Credentials
 
+🔥 **Firebase Backend Now Active!** 🔥
+
 For testing purposes, you can use the following credentials:
 
-### Member Account
-- **Email:** `member@test.com`
+### Test Account Creation
+- Go to `/test-login` page
+- Click "Test Signup" to create a new account
+- Use any email/password combination
+- Member profile will be created automatically
+
+### Manual Test Accounts
+- **Email:** `test@example.com`
 - **Password:** `password123`
 - **Role:** Member
 - **Status:** Active
@@ -16,27 +24,20 @@ For testing purposes, you can use the following credentials:
 - **Role:** Secretary
 - **Status:** Active
 
-### Pending Member Account
-- **Email:** `pending@test.com`
-- **Password:** `password123`
-- **Role:** Member
-- **Status:** Pending
-
 ## How to Create Test Accounts
 
 1. Go to `/signup` on the website
 2. Create a new account with any email
-3. The system will automatically create a member profile
+3. The system will automatically create a member profile in Firebase
 4. Secretary can approve pending members from the Secretary Dashboard
 
-## Database Test Data
+## Firebase Database Test Data
 
-The database has been populated with sample members:
-- John Doe (Active Member)
-- Jane Smith (Secretary)
-- Michael Johnson (Active Member)
-- Sarah Wilson (Active Member)
-- David Brown (Pending Member)
+The Firebase database can be populated with sample members:
+- Go to `/test-login` page
+- Click "Test Data" to create initial sample data
+- Data includes John Doe (Active Member) and Jane Smith (Secretary)
+- All data is stored in Firebase Firestore
 
 ## Features to Test
 
@@ -68,11 +69,12 @@ The database has been populated with sample members:
 ## Production Deployment
 
 This application is now production-ready with:
-- ✅ Supabase authentication
-- ✅ PostgreSQL database
+- ✅ Firebase Authentication (email/password)
+- ✅ Firebase Firestore database (NoSQL)
+- ✅ Firebase Storage for file uploads
+- ✅ Real-time data synchronization
 - ✅ Secure API endpoints
 - ✅ Role-based access control
 - ✅ Responsive design
 - ✅ PWA capabilities
-- ✅ Real-time updates
-- ✅ File upload functionality
+- ✅ Automatic scaling and performance
