@@ -1,0 +1,60 @@
+Starting signup process for: osahon1224@gmail.com
+AuthContext.tsx:154 
+        
+        
+       POST https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyDc8NUPljKc7B-KV78o1KrLow0un2LuEzE 400 (Bad Request)
+(anonymous) @ firebase_auth.js?v=f54bb546:1099
+await in (anonymous) (async)
+_performFetchWithErrorHandling @ firebase_auth.js?v=f54bb546:1108
+_performApiRequest @ firebase_auth.js?v=f54bb546:1065
+_performSignInRequest @ firebase_auth.js?v=f54bb546:1143
+signUp @ firebase_auth.js?v=f54bb546:4463
+handleRecaptchaFlow @ firebase_auth.js?v=f54bb546:3194
+createUserWithEmailAndPassword @ firebase_auth.js?v=f54bb546:4853
+signUp @ AuthContext.tsx:154
+handleSubmit @ SignUp.tsx:70
+callCallback2 @ chunk-RPCDYKBN.js?v=f54bb546:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=f54bb546:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=f54bb546:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=f54bb546:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=f54bb546:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=f54bb546:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=f54bb546:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=f54bb546:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=f54bb546:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=f54bb546:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=f54bb546:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=f54bb546:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=f54bb546:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=f54bb546:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=f54bb546:5449
+Show 22 more frames
+Show less
+AuthContext.tsx:198 Signup error: FirebaseError: Firebase: Error (auth/operation-not-allowed).
+    at createErrorInternal (firebase_auth.js?v=f54bb546:697:37)
+    at _fail (firebase_auth.js?v=f54bb546:662:9)
+    at _performFetchWithErrorHandling (firebase_auth.js?v=f54bb546:1132:9)
+    at async _performSignInRequest (firebase_auth.js?v=f54bb546:1143:26)
+    at async createUserWithEmailAndPassword (firebase_auth.js?v=f54bb546:4861:20)
+    at async signUp (AuthContext.tsx:154:30)
+    at async handleSubmit (SignUp.tsx:70:22)
+signUp @ AuthContext.tsx:198
+await in signUp (async)
+handleSubmit @ SignUp.tsx:70
+callCallback2 @ chunk-RPCDYKBN.js?v=f54bb546:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=f54bb546:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=f54bb546:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=f54bb546:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=f54bb546:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=f54bb546:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=f54bb546:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=f54bb546:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=f54bb546:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=f54bb546:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=f54bb546:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=f54bb546:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=f54bb546:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=f54bb546:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=f54bb546:5449
+Show 15 more frames
+Show less
