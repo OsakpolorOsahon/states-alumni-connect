@@ -4,7 +4,7 @@ if (!process.env.RESEND_API_KEY) {
   console.warn("RESEND_API_KEY environment variable not set. Email notifications will be disabled.");
 }
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 interface EmailParams {
   to: string;
@@ -15,7 +15,7 @@ interface EmailParams {
 }
 
 export async function sendEmail(params: EmailParams): Promise<boolean> {
-  if (!process.env.RESEND_API_KEY) {
+  if (!resend) {
     console.log('Email would be sent:', params);
     return true; // Return true in development mode
   }
