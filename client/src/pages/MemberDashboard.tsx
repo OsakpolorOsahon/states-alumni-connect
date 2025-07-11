@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Bell, Users, MapPin, Award, FileText, MessageSquare, Briefcase, BookOpen } from "lucide-react";
+import { Link } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import PushNotifications from "@/components/PushNotifications";
@@ -41,7 +42,7 @@ const MemberDashboard = () => {
             <div className="flex gap-2">
               {isSecretary && (
                 <Button asChild className="bg-[#E10600] hover:bg-[#C10500]">
-                  <a href="/secretary-dashboard">Secretary Dashboard</a>
+                  <Link to="/secretary-dashboard">Secretary Dashboard</Link>
                 </Button>
               )}
               <Button variant="outline" onClick={signOut}>
@@ -120,7 +121,7 @@ const MemberDashboard = () => {
                         variant="outline"
                         className="h-auto p-4 flex-col items-start gap-2 hover:bg-muted/50"
                       >
-                        <a href={link.href}>
+                        <Link to={link.href}>
                           <div className="flex items-center gap-2 w-full">
                             <IconComponent className="h-5 w-5 text-[#E10600]" />
                             <span className="font-medium">{link.title}</span>
@@ -128,7 +129,7 @@ const MemberDashboard = () => {
                           <p className="text-sm text-muted-foreground text-left">
                             {link.description}
                           </p>
-                        </a>
+                        </Link>
                       </Button>
                     );
                   })}

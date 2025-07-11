@@ -32,8 +32,8 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
       return;
     }
 
-    if (requireActive && (!member || member.status !== 'Active')) {
-      if (member?.status === 'Pending') {
+    if (requireActive && (!member || member.status !== 'active')) {
+      if (member?.status === 'pending') {
         navigate('/pending-approval');
       } else if (user && !member) {
         // User exists but no member record - redirect to upload documents
@@ -55,7 +55,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
 
   if (requireAuth && !user) return null;
   if (requireSecretary && (!member || member.role !== 'secretary')) return null;
-  if (requireActive && (!member || member.status !== 'Active')) return null;
+  if (requireActive && (!member || member.status !== 'active')) return null;
 
   return <>{children}</>;
 };
