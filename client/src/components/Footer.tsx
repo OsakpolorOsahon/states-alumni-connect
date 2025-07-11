@@ -22,7 +22,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-gray-900 dark:bg-black text-white relative z-10">
+    <footer className="bg-gray-900 dark:bg-black text-white relative z-10 mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand Section */}
@@ -53,7 +53,7 @@ const Footer = () => {
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 bg-gray-800 rounded-full hover:bg-[#E10600] transition-colors duration-300 tilt-hover icon-hover ripple-effect"
+                    className="p-2 bg-gray-800 rounded-full hover:bg-[#E10600] transition-colors duration-300"
                     aria-label={social.label}
                   >
                     <IconComponent className="h-5 w-5" />
@@ -71,7 +71,7 @@ const Footer = () => {
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group nav-item"
+                    className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
                   >
                     <span className="w-0 group-hover:w-2 h-0.5 bg-[#E10600] transition-all duration-300 mr-0 group-hover:mr-2"></span>
                     {link.name}
