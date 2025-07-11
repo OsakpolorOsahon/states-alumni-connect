@@ -1,13 +1,10 @@
-import { MailService } from '@sendgrid/mail';
+import { Resend } from 'resend';
 
-if (!process.env.SENDGRID_API_KEY) {
-  console.warn("SENDGRID_API_KEY environment variable not set. Email notifications will be disabled.");
+if (!process.env.RESEND_API_KEY) {
+  console.warn("RESEND_API_KEY environment variable not set. Email notifications will be disabled.");
 }
 
-const mailService = new MailService();
-if (process.env.SENDGRID_API_KEY) {
-  mailService.setApiKey(process.env.SENDGRID_API_KEY);
-}
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface EmailParams {
   to: string;
@@ -18,22 +15,21 @@ interface EmailParams {
 }
 
 export async function sendEmail(params: EmailParams): Promise<boolean> {
-  if (!process.env.SENDGRID_API_KEY) {
+  if (!process.env.RESEND_API_KEY) {
     console.log('Email would be sent:', params);
     return true; // Return true in development mode
   }
 
   try {
-    await mailService.send({
-      to: params.to,
+    await resend.emails.send({
       from: params.from,
+      to: params.to,
       subject: params.subject,
-      text: params.text,
-      html: params.html,
+      html: params.html || params.text,
     });
     return true;
   } catch (error) {
-    console.error('SendGrid email error:', error);
+    console.error('Resend email error:', error);
     return false;
   }
 }
@@ -64,7 +60,7 @@ export async function sendApprovalEmail(memberEmail: string, memberName: string,
 
   return sendEmail({
     to: memberEmail,
-    from: 'noreply@smmowcub.org', // Replace with your verified sender
+    from: 'SMMOWCUB <noreply@smmowcub.org>', // Replace with your verified sender
     subject,
     html
   });

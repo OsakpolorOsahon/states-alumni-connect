@@ -76,24 +76,17 @@ export const useRealTimeStats = () => {
   useEffect(() => {
     fetchStats();
 
-    // Set up real-time subscriptions for all relevant tables
-    const membersChannel = createRealtimeSubscription({
-      table: 'members',
-      callback: () => fetchStats()
-    });
-
-    const hallOfFameChannel = createRealtimeSubscription({
-      table: 'hall_of_fame', 
-      callback: () => fetchStats()
-    });
+    // Disable realtime subscriptions until Firebase security rules are properly configured
+    // This prevents permission denied errors in the console
+    // TODO: Enable after Firebase security rules are set up
+    
+    // Set up periodic refresh instead of realtime subscriptions
+    const interval = setInterval(() => {
+      fetchStats();
+    }, 30000); // Refresh every 30 seconds
 
     return () => {
-      if (membersChannel && typeof membersChannel.unsubscribe === 'function') {
-        membersChannel.unsubscribe();
-      }
-      if (hallOfFameChannel && typeof hallOfFameChannel.unsubscribe === 'function') {
-        hallOfFameChannel.unsubscribe();
-      }
+      clearInterval(interval);
     };
   }, []);
 

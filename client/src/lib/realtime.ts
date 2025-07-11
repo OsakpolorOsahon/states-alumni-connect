@@ -1,6 +1,6 @@
 // Real-time subscription utilities for Firebase/Firestore
 import { onSnapshot, collection, query, where } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 
 interface RealtimeSubscriptionOptions {
   table: string;
@@ -17,6 +17,12 @@ export function createRealtimeSubscription({
   filter,
   callback
 }: RealtimeSubscriptionOptions) {
+  // Only enable realtime subscriptions if user is authenticated
+  if (!auth.currentUser) {
+    console.warn('Realtime subscriptions disabled - user not authenticated');
+    return null;
+  }
+
   try {
     let firestoreQuery = collection(db, table);
     
@@ -38,6 +44,10 @@ export function createRealtimeSubscription({
       });
     }, (error) => {
       console.error('Realtime subscription error:', error);
+      // Don't spam console with permission errors
+      if (error.code !== 'permission-denied') {
+        console.error('Realtime subscription error:', error);
+      }
     });
 
     return { unsubscribe };
