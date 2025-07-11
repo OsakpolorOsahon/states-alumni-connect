@@ -3,11 +3,13 @@
 import { Suspense, lazy } from 'react'
 import { Toaster } from '@/components/ui/toaster'
 import { Toaster as Sonner } from '@/components/ui/sonner'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { queryClient } from '@/lib/queryClient'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from 'next-themes'
 import { HelmetProvider } from 'react-helmet-async'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { TestAuthProvider } from '@/contexts/TestAuthContext'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import PWAInstallBanner from '@/components/PWAInstallBanner'
 import LoadingSpinner from '@/components/LoadingSpinner'
@@ -40,7 +42,7 @@ const UserManual = lazy(() => import('./pages/UserManual'))
 const TestLogin = lazy(() => import('./pages/TestLogin'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 
-const queryClient = new QueryClient()
+
 
 function LoadingFallback() {
   return (
@@ -56,11 +58,12 @@ export default function App() {
       <HelmetProvider>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <AuthProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Suspense fallback={<LoadingFallback />}>
-                <Routes>
+            <TestAuthProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Suspense fallback={<LoadingFallback />}>
+                  <Routes>
                   {/* public */}
                   <Route path="/" element={<Index />} />
                   <Route path="/about" element={<About />} />
@@ -171,9 +174,10 @@ export default function App() {
                   {/* catch-all */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-              </Suspense>
-              <PWAInstallBanner />
-            </BrowserRouter>
+                </Suspense>
+                <PWAInstallBanner />
+              </BrowserRouter>
+            </TestAuthProvider>
           </AuthProvider>
         </ThemeProvider>
       </HelmetProvider>

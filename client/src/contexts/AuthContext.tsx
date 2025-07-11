@@ -221,6 +221,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Wait for user data to be fetched
+      await fetchUserData(userCredential.user.uid, userCredential.user.email || '');
+      
       return { data: userCredential.user, error: null };
     } catch (error) {
       console.error('Signin error:', error);

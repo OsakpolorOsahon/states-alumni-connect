@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 import { createRealtimeSubscription } from '@/lib/realtime';
 
 interface JobPost {
@@ -20,43 +20,18 @@ interface JobPost {
 }
 
 export const useJobPosts = () => {
-  const [jobs, setJobs] = useState<JobPost[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchJobs = async () => {
-    try {
-      setLoading(true);
-      const data = await api.getActiveJobPosts();
-      setJobs(data || []);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching jobs:', err);
-      setError('Failed to load jobs');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchJobs();
-
-    // Set up real-time subscription
-    const channel = createRealtimeSubscription({
-      table: 'job_posts',
-      callback: () => fetchJobs()
-    });
-
-    return () => {
-      if (channel && typeof channel.unsubscribe === 'function') {
-        channel.unsubscribe();
-      }
-    };
-  }, []);
+  const { data: jobs = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['/api/jobs'],
+    queryFn: () => apiRequest('/api/jobs'),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
   const createJob = async (jobData: Omit<JobPost, 'id' | 'created_at' | 'posted_by' | 'members'>) => {
     try {
-      const result = await api.createJobPost(jobData);
+      const result = await apiRequest('/api/jobs', {
+        method: 'POST',
+        body: JSON.stringify(jobData),
+      });
       return { success: true, data: result };
     } catch (error) {
       console.error('Error creating job:', error);
@@ -64,5 +39,11 @@ export const useJobPosts = () => {
     }
   };
 
-  return { jobs, loading, error, refetch: fetchJobs, createJob };
+  return { 
+    jobs, 
+    loading: isLoading, 
+    error: error?.message || null, 
+    refetch, 
+    createJob 
+  };
 };

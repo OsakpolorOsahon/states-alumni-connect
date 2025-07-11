@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
-import { createRealtimeSubscription } from '@/lib/realtime';
+import { useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
 interface NewsItem {
   id: string;
@@ -17,39 +16,16 @@ interface NewsItem {
 }
 
 export const useNews = () => {
-  const [news, setNews] = useState<NewsItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: news = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['/api/news'],
+    queryFn: () => apiRequest('/api/news'),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-  const fetchNews = async () => {
-    try {
-      setLoading(true);
-      const data = await api.getPublishedNews();
-      setNews(data || []);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching news:', err);
-      setError('Failed to load news');
-    } finally {
-      setLoading(false);
-    }
+  return { 
+    news, 
+    loading: isLoading, 
+    error: error?.message || null, 
+    refetch 
   };
-
-  useEffect(() => {
-    fetchNews();
-
-    // Set up real-time subscription
-    const channel = createRealtimeSubscription({
-      table: 'news',
-      callback: () => fetchNews()
-    });
-
-    return () => {
-      if (channel && typeof channel.unsubscribe === 'function') {
-        channel.unsubscribe();
-      }
-    };
-  }, []);
-
-  return { news, loading, error, refetch: fetchNews };
 };

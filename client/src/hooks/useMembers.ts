@@ -1,7 +1,6 @@
 
-import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
-import { createRealtimeSubscription } from '@/lib/realtime';
+import { useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
 interface Member {
   id: string;
@@ -32,35 +31,12 @@ interface FiltersType {
 }
 
 export const useMembers = (filters: FiltersType = { search: '', year: '', position: '', office: '' }) => {
-  const [members, setMembers] = useState<Member[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchMembers();
-    
-    // Set up real-time subscription
-    const channel = createRealtimeSubscription({
-      table: 'members',
-      callback: (payload) => {
-        console.log('Member change:', payload);
-        fetchMembers(); // Refetch to get latest data
-      }
-    });
-
-    return () => {
-      if (channel && typeof channel.unsubscribe === 'function') {
-        channel.unsubscribe();
-      }
-    };
-  }, []);
-
-  const fetchMembers = async () => {
-    try {
-      setLoading(true);
-      const data = await api.getActiveMembers();
+  const { data: members = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['/api/members/active'],
+    queryFn: async () => {
+      const data = await apiRequest('/api/members/active');
       // Normalize the data to handle both camelCase and snake_case
-      const normalizedData = (data || []).map((member: any) => ({
+      return (data || []).map((member: any) => ({
         ...member,
         fullName: member.full_name || member.fullName,
         stateshipYear: member.stateship_year || member.stateshipYear,
@@ -69,15 +45,9 @@ export const useMembers = (filters: FiltersType = { search: '', year: '', positi
         photoUrl: member.photo_url || member.photoUrl,
         createdAt: member.created_at || member.createdAt
       }));
-      setMembers(normalizedData);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching members:', err);
-      setError('Failed to load members');
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
   // Apply filters
   const filteredMembers = members.filter(member => {
@@ -94,8 +64,8 @@ export const useMembers = (filters: FiltersType = { search: '', year: '', positi
 
   return {
     members: filteredMembers,
-    loading,
-    error,
-    refetch: fetchMembers
+    loading: isLoading,
+    error: error?.message || null,
+    refetch
   };
 };

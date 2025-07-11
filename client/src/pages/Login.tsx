@@ -31,15 +31,19 @@ const Login = () => {
       if (result.error) {
         toast({
           title: "Login Failed",
-          description: result.error.message,
+          description: result.error,
           variant: "destructive"
         });
       } else {
+        // Wait a moment for auth context to update
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 500);
+        
         toast({
-          title: "Login Successful",
-          description: "Welcome back!",
+          title: "Login Successful", 
+          description: "Redirecting to dashboard...",
         });
-        navigate('/dashboard');
       }
     } catch (error) {
       toast({

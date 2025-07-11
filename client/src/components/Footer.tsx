@@ -26,7 +26,7 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand Section */}
-          <div className="lg:col-span-2 fade-in-scroll slide-in-left">
+          <div className="lg:col-span-2">
             <div className="flex items-center mb-4">
               <img
                 src="/images/logo-transparent.png"
@@ -64,11 +64,11 @@ const Footer = () => {
           </div>
 
           {/* Quick Links */}
-          <div className="fade-in-scroll slide-in-right">
+          <div>
             <h4 className="text-lg font-semibold mb-6 text-[#E10600]">Quick Links</h4>
             <ul className="space-y-3">
               {quickLinks.map((link) => (
-                <li key={link.name} className="stagger-animate">
+                <li key={link.name}>
                   <Link
                     to={link.href}
                     className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group nav-item"
@@ -82,29 +82,29 @@ const Footer = () => {
           </div>
 
           {/* Contact */}
-          <div className="fade-in-scroll progressive-load">
+          <div>
             <h4 className="text-lg font-semibold mb-6 text-[#E10600]">Contact</h4>
             <ul className="space-y-4">
-              <li className="flex items-start space-x-3 stagger-animate">
-                <Mail className="h-5 w-5 text-[#E10600] mt-0.5 flex-shrink-0 icon-hover" />
+              <li className="flex items-start space-x-3">
+                <Mail className="h-5 w-5 text-[#E10600] mt-0.5 flex-shrink-0" />
                 <a
                   href="mailto:secretary@smmowcub.org"
-                  className="text-gray-300 hover:text-white transition-colors duration-300 nav-item"
+                  className="text-gray-300 hover:text-white transition-colors duration-300"
                 >
                   secretary@smmowcub.org
                 </a>
               </li>
-              <li className="flex items-start space-x-3 stagger-animate">
-                <Phone className="h-5 w-5 text-[#E10600] mt-0.5 flex-shrink-0 icon-hover" />
+              <li className="flex items-start space-x-3">
+                <Phone className="h-5 w-5 text-[#E10600] mt-0.5 flex-shrink-0" />
                 <a
                   href="tel:+2348030000000"
-                  className="text-gray-300 hover:text-white transition-colors duration-300 nav-item"
+                  className="text-gray-300 hover:text-white transition-colors duration-300"
                 >
                   +234 (0) 803 xxx xxxx
                 </a>
               </li>
-              <li className="flex items-start space-x-3 stagger-animate">
-                <MapPin className="h-5 w-5 text-[#E10600] mt-0.5 flex-shrink-0 icon-hover" />
+              <li className="flex items-start space-x-3">
+                <MapPin className="h-5 w-5 text-[#E10600] mt-0.5 flex-shrink-0" />
                 <span className="text-gray-300">
                   University of Benin, Benin City, Edo State, Nigeria
                 </span>
@@ -114,7 +114,7 @@ const Footer = () => {
         </div>
 
         {/* Bottom Section */}
-        <div className="mt-12 pt-8 border-t border-gray-800 fade-in-scroll">
+        <div className="mt-12 pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-gray-400 text-sm">
               © 2025 SMMOWCUB. All rights reserved.
@@ -122,25 +122,25 @@ const Footer = () => {
             <div className="flex space-x-6">
               <Link
                 to="/privacy-policy"
-                className="text-gray-400 hover:text-white text-sm transition-colors duration-300 nav-item"
+                className="text-gray-400 hover:text-white text-sm transition-colors duration-300"
               >
                 Privacy Policy
               </Link>
               <Link
                 to="/terms-of-use"
-                className="text-gray-400 hover:text-white text-sm transition-colors duration-300 nav-item"
+                className="text-gray-400 hover:text-white text-sm transition-colors duration-300"
               >
                 Terms of Use
               </Link>
               <Link
                 to="/guidelines"
-                className="text-gray-400 hover:text-white text-sm transition-colors duration-300 nav-item"
+                className="text-gray-400 hover:text-white text-sm transition-colors duration-300"
               >
                 Community Guidelines
               </Link>
               <Link
                 to="/user-manual"
-                className="text-gray-400 hover:text-white text-sm transition-colors duration-300 nav-item"
+                className="text-gray-400 hover:text-white text-sm transition-colors duration-300"
               >
                 User Manual
               </Link>
