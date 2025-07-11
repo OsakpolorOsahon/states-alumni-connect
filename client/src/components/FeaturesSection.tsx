@@ -1,8 +1,10 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, BookOpen, Award } from "lucide-react";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const FeaturesSection = () => {
+  const titleRef = useScrollAnimation();
   const features = [
     {
       icon: Users,
@@ -24,11 +26,14 @@ const FeaturesSection = () => {
   return (
     <section className="py-16 lg:py-24 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+        <div 
+          ref={titleRef as React.RefObject<HTMLDivElement>}
+          className="text-center mb-16 fade-in-scroll"
+        >
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 bounce-in">
             Member Features
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto slide-in-left">
             Discover our exclusive statesmen network
           </p>
         </div>
@@ -39,13 +44,13 @@ const FeaturesSection = () => {
             return (
               <Card 
                 key={index} 
-                className="text-center hover:shadow-lg transition-all duration-300 border-border dark:bg-card dark:border-border dark:hover:shadow-lg"
+                className="text-center card-hover interactive-shadow stagger-animate tilt-hover border-border dark:bg-card dark:border-border"
                 role="article"
                 aria-labelledby={`feature-title-${index}`}
               >
                 <CardHeader className="pb-4">
-                  <div className="mx-auto w-16 h-16 bg-[#E10600]/10 dark:bg-[#E10600]/20 rounded-full flex items-center justify-center mb-4">
-                    <Icon className="w-8 h-8 text-[#E10600]" aria-hidden="true" />
+                  <div className="mx-auto w-16 h-16 bg-[#E10600]/10 dark:bg-[#E10600]/20 rounded-full flex items-center justify-center mb-4 pulse-gentle">
+                    <Icon className="w-8 h-8 text-[#E10600] icon-hover" aria-hidden="true" />
                   </div>
                   <CardTitle 
                     id={`feature-title-${index}`}

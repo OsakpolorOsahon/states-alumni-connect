@@ -32,7 +32,7 @@ const MemberCard: React.FC<MemberCardProps> = ({ member }) => {
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow">
+    <Card className="card-hover interactive-shadow stagger-animate">
       <CardContent className="p-6">
         <div className="flex items-start gap-4">
           <Avatar className="w-16 h-16">
@@ -66,7 +66,7 @@ const MemberCard: React.FC<MemberCardProps> = ({ member }) => {
 
             <div className="mt-4">
               <Link to={`/directory/${member.id}`}>
-                <Button size="sm" className="w-full">
+                <Button size="sm" className="w-full btn-animated ripple-effect">
                   View Profile
                 </Button>
               </Link>

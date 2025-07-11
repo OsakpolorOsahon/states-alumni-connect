@@ -83,7 +83,7 @@ Preferred communication style: Simple, everyday language.
 ### Third-Party Services
 - **Firebase**: Authentication, Firestore database, real-time updates, file storage
 - **Google Maps API**: Interactive mapping features
-- **Replit**: Development environment integration
+- **Development Environment**: Cloud-based development platform
 
 ### NPM Packages
 - **UI/Styling**: @radix-ui components, tailwindcss, lucide-react icons

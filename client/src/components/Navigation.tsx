@@ -124,9 +124,9 @@ const Navigation = () => {
                 >
                   <Link
                     to={item.href}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors nav-item ${
                       isActive(item.href)
-                        ? "bg-[#E10600] text-white"
+                        ? "bg-[#E10600] text-white active"
                         : "text-foreground hover:text-[#E10600] hover:bg-muted"
                     }`}
                   >
@@ -165,6 +165,7 @@ const Navigation = () => {
               variant="ghost"
               size="icon"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="tilt-hover icon-hover"
             >
               <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
               <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -178,7 +179,7 @@ const Navigation = () => {
               <div className="flex items-center gap-2">
                 {member?.role === "secretary" && (
                   <Link to="/secretary-dashboard">
-                    <Button className="bg-[#E10600] hover:bg-[#C10500]">
+                    <Button className="bg-[#E10600] hover:bg-[#C10500] btn-animated ripple-effect">
                       Secretary
                     </Button>
                   </Link>
@@ -188,6 +189,7 @@ const Navigation = () => {
                   size="icon"
                   onClick={signOut}
                   title="Sign Out"
+                  className="icon-hover"
                 >
                   <LogOut className="h-4 w-4" />
                 </Button>
@@ -195,10 +197,10 @@ const Navigation = () => {
             ) : (
               <div className="flex items-center gap-2">
                 <Link to="/login">
-                  <Button variant="ghost">Login</Button>
+                  <Button variant="ghost" className="btn-animated">Login</Button>
                 </Link>
                 <Link to="/signup">
-                  <Button className="bg-[#E10600] hover:bg-[#C10500]">
+                  <Button className="bg-[#E10600] hover:bg-[#C10500] btn-animated ripple-effect tilt-hover">
                     Signup
                   </Button>
                 </Link>

@@ -24,20 +24,20 @@ const HeroSection = () => {
 
       {/* Content */}
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight bounce-in">
           Senior Members Man O' War Club{" "}
-          <span className="text-[#E10600]">University Of Benin</span>
+          <span className="text-[#E10600] glitch-hover">University Of Benin</span>
         </h1>
         
-        <p className="text-xl md:text-2xl text-gray-200 mb-8 max-w-3xl mx-auto leading-relaxed">
+        <p className="text-xl md:text-2xl text-gray-200 mb-8 max-w-3xl mx-auto leading-relaxed slide-in-left">
           A secure portal for our Statesmen to connect, learn, and be recognized.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8 slide-in-right">
           <Button 
             onClick={handleDirectoryClick}
             size="lg" 
-            className="bg-[#E10600] hover:bg-[#C10500] text-white px-8 py-3 text-lg font-semibold"
+            className="bg-[#E10600] hover:bg-[#C10500] text-white px-8 py-3 text-lg font-semibold btn-animated ripple-effect tilt-hover"
             aria-label="View Alumni Directory"
           >
             View Directory
@@ -45,7 +45,7 @@ const HeroSection = () => {
           <Link to="/contact">
             <Button 
               size="lg" 
-              className="bg-[#E10600] hover:bg-[#C10500] text-white px-8 py-3 text-lg font-semibold"
+              className="bg-[#E10600] hover:bg-[#C10500] text-white px-8 py-3 text-lg font-semibold btn-animated ripple-effect tilt-hover"
               aria-label="Contact Us"
             >
               Contact Us
@@ -54,12 +54,12 @@ const HeroSection = () => {
         </div>
 
         {/* Social Media Icons */}
-        <div className="flex justify-center items-center space-x-6 mb-8">
+        <div className="flex justify-center items-center space-x-6 mb-8 progressive-load">
           <a 
             href="https://www.facebook.com/csmowcub1154" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-white hover:text-[#E10600] transition-colors duration-200"
+            className="text-white hover:text-[#E10600] transition-colors duration-200 icon-hover"
             aria-label="Follow us on Facebook"
           >
             <Facebook className="h-6 w-6" />
@@ -68,7 +68,7 @@ const HeroSection = () => {
             href="https://www.x.com/csmowcub1154" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-white hover:text-[#E10600] transition-colors duration-200"
+            className="text-white hover:text-[#E10600] transition-colors duration-200 icon-hover"
             aria-label="Follow us on Twitter"
           >
             <Twitter className="h-6 w-6" />

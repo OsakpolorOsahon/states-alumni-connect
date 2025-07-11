@@ -96,9 +96,9 @@ const Directory = () => {
       <div className="min-h-screen bg-background">
         <Navigation />
         <div className="container mx-auto py-12 px-4">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#E10600] mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Loading directory...</p>
+          <div className="text-center progressive-load">
+            <div className="spinner-smooth rounded-full h-32 w-32 border-b-2 border-[#E10600] mx-auto"></div>
+            <p className="mt-4 text-muted-foreground fade-in-scroll">Loading directory...</p>
           </div>
         </div>
         <Footer />

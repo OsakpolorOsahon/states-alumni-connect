@@ -15,22 +15,14 @@ const LoadingSpinner = ({ size = 'md', text }: LoadingSpinnerProps) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <motion.div
-        animate={{ rotate: 360 }}
-        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-      >
+    <div className="flex flex-col items-center justify-center progressive-load">
+      <div className="spinner-smooth">
         <Loader2 className={`${sizeClasses[size]} text-[#E10600]`} />
-      </motion.div>
+      </div>
       {text && (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mt-2 text-sm text-muted-foreground"
-        >
+        <p className="mt-2 text-sm text-muted-foreground fade-in-scroll pulse-gentle">
           {text}
-        </motion.p>
+        </p>
       )}
     </div>
   );
