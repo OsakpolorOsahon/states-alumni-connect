@@ -8,6 +8,51 @@ import { z } from "zod";
 import { sendApprovalEmail } from "./email";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Stats endpoint
+  app.get("/api/stats", async (req, res) => {
+    try {
+      const [
+        allMembers,
+        activeMembers,
+        pendingMembers,
+        hallOfFame,
+        news,
+        forumThreads,
+        jobPosts
+      ] = await Promise.all([
+        storage.getAllMembers(),
+        storage.getActiveMembers(),
+        storage.getPendingMembers(),
+        storage.getAllHallOfFame(),
+        storage.getAllNews(),
+        storage.getAllForumThreads(),
+        storage.getAllJobPosts()
+      ]);
+
+      // Calculate recent members (last 30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const recentMembers = allMembers.filter(member => 
+        new Date(member.created_at) >= thirtyDaysAgo
+      );
+
+      const stats = {
+        totalMembers: allMembers.length,
+        activeMembers: activeMembers.length,
+        pendingMembers: pendingMembers.length,
+        recentMembers: recentMembers.length,
+        hallOfFameCount: hallOfFame.length,
+        activeJobs: jobPosts.length,
+        forumThreads: forumThreads.length,
+        newsCount: news.length
+      };
+
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Member routes
   app.get("/api/members", async (req, res) => {
     try {

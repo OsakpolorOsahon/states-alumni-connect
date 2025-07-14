@@ -13,30 +13,40 @@ interface StatsData {
 
 export const useRealTimeStats = () => {
   const { data: stats = {
-    totalMembers: 1247,
-    activeMembers: 1200,
-    pendingMembers: 47,
-    recentMembers: 23,
-    hallOfFameCount: 23,
-    activeJobs: 5,
-    forumThreads: 12,
-    newsCount: 8
+    totalMembers: 0,
+    activeMembers: 0,
+    pendingMembers: 0,
+    recentMembers: 0,
+    hallOfFameCount: 0,
+    activeJobs: 0,
+    forumThreads: 0,
+    newsCount: 0
   }, isLoading, error } = useQuery({
     queryKey: ['stats'],
     queryFn: async () => {
-      // Return static stats to prevent excessive API calls on home page
-      return {
-        totalMembers: 1247,
-        activeMembers: 1200,
-        pendingMembers: 47,
-        recentMembers: 23,
-        hallOfFameCount: 23,
-        activeJobs: 5,
-        forumThreads: 12,
-        newsCount: 8
-      };
+      try {
+        const response = await fetch('/api/stats');
+        if (!response.ok) {
+          throw new Error('Failed to fetch stats');
+        }
+        return await response.json();
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+        // Return fallback data in case of error
+        return {
+          totalMembers: 0,
+          activeMembers: 0,
+          pendingMembers: 0,
+          recentMembers: 0,
+          hallOfFameCount: 0,
+          activeJobs: 0,
+          forumThreads: 0,
+          newsCount: 0
+        };
+      }
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 10 * 60 * 1000, // refetch every 10 minutes
   });
 
   return { 

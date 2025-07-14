@@ -51,7 +51,11 @@ const HallOfFame = () => {
 
   const fetchHallOfFame = async () => {
     try {
-      const data = await firebaseApi.getAllHallOfFame();
+      const response = await fetch('/api/hall-of-fame');
+      if (!response.ok) {
+        throw new Error('Failed to fetch hall of fame');
+      }
+      const data = await response.json();
       setHallOfFameMembers(data || []);
     } catch (error) {
       console.error('Error fetching hall of fame:', error);
@@ -67,13 +71,11 @@ const HallOfFame = () => {
 
   const fetchAvailableMembers = async () => {
     try {
-      const { data, error } = await supabase
-        .from('members')
-        .select('id, full_name, nickname, stateship_year')
-        .eq('status', 'Active')
-        .order('full_name');
-
-      if (error) throw error;
+      const response = await fetch('/api/members/active');
+      if (!response.ok) {
+        throw new Error('Failed to fetch members');
+      }
+      const data = await response.json();
       setAvailableMembers(data || []);
     } catch (error) {
       console.error('Error fetching members:', error);
@@ -91,21 +93,22 @@ const HallOfFame = () => {
     }
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('No session');
-
-      const response = await fetch(`https://ojxgyaylosexrbvvllzg.supabase.co/functions/v1/addFameEntry`, {
+      const response = await fetch('/api/hall-of-fame', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(newEntry)
+        body: JSON.stringify({
+          memberId: newEntry.member_id,
+          achievementTitle: newEntry.achievement_title,
+          achievementDescription: newEntry.achievement_description,
+          achievementDate: newEntry.achievement_date
+        })
       });
 
       const result = await response.json();
 
-      if (result.success) {
+      if (response.ok && result.success) {
         toast({
           title: "Entry Added",
           description: "Hall of Fame entry has been added successfully"
@@ -119,7 +122,7 @@ const HallOfFame = () => {
         setShowAddForm(false);
         fetchHallOfFame();
       } else {
-        throw new Error(result.error);
+        throw new Error(result.error || 'Failed to add entry');
       }
     } catch (error) {
       console.error('Error adding hall of fame entry:', error);

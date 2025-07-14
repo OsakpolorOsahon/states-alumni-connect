@@ -6,6 +6,7 @@ import FeaturesSection from "@/components/FeaturesSection";
 import AboutSection from "@/components/AboutSection";
 import HistorySection from "@/components/HistorySection";
 import SimpleDirectorySection from "@/components/SimpleDirectorySection";
+import HallOfFameSection from "@/components/HallOfFameSection";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
@@ -29,6 +30,7 @@ const Index = () => {
       <AboutSection />
       <HistorySection />
       <SimpleDirectorySection />
+      <HallOfFameSection />
       <ContactSection />
       <Footer />
     </motion.div>
