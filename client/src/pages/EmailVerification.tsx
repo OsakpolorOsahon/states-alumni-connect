@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Mail, CheckCircle } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 
 const EmailVerification = () => {
   const { signOut } = useAuth();

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { MapPin, User, AlertTriangle } from "lucide-react";
-import { firebaseApi } from "@/lib/firebaseApi";
+import { supabase } from "@/lib/supabase";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import MemberProfileBadges from "@/components/MemberProfileBadges";

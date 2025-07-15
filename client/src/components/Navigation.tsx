@@ -21,7 +21,7 @@ import {
   Youtube,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/SupabaseAuthContext";
 import NotificationBell from "./NotificationBell";
 
 const Navigation = () => {

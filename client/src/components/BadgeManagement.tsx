@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Award, Plus, X, User } from 'lucide-react';
-import { firebaseApi } from '@/lib/firebaseApi';
+import { supabase } from '@/lib/supabase';
 
 interface Member {
   id: string;

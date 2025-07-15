@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { firebaseApi } from '@/lib/firebaseApi';
+import { supabase } from '@/lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Award } from "lucide-react";
