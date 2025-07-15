@@ -178,6 +178,10 @@
   animation: fade-in 0.6s ease-out;
 }
 
+.animate-fade-in-up {
+  animation: fade-in 0.6s ease-out;
+}
+
 .animate-scale-in {
   animation: scale-in 0.4s ease-out;
 }
@@ -188,6 +192,31 @@
 
 .animate-slide-in-right {
   animation: slide-in-right 0.5s ease-out;
+}
+
+/* Animation Delay Classes */
+.animation-delay-200 {
+  animation-delay: 0.2s;
+}
+
+.animation-delay-400 {
+  animation-delay: 0.4s;
+}
+
+.animation-delay-500 {
+  animation-delay: 0.5s;
+}
+
+.animation-delay-600 {
+  animation-delay: 0.6s;
+}
+
+.animation-delay-700 {
+  animation-delay: 0.7s;
+}
+
+.animation-delay-800 {
+  animation-delay: 0.8s;
 }
 
 /* Interactive Animations */
