@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from 'lucide-react';
 
@@ -24,6 +23,7 @@ const Footer = () => {
     <footer className="bg-gray-900 dark:bg-black text-white relative z-10 mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          
           {/* Brand Section */}
           <div className="lg:col-span-2">
             <div className="flex items-center mb-4">
@@ -37,14 +37,15 @@ const Footer = () => {
                 <p className="text-sm text-gray-300">Senior Members, Man O' War Club</p>
               </div>
             </div>
-            <p className="text-gray-300 max-w-md leading-relaxed">
+            
+            <p className="text-gray-300 max-w-md leading-relaxed mb-6">
               Bringing together the legacy and leadership of UNIBEN's Man O' War Club alumni 
               through an exclusive digital brotherhood.
             </p>
             
             {/* Social Links */}
-            <div className="flex space-x-4 mt-6">
-              {socialLinks.map((social, index) => {
+            <div className="flex space-x-4">
+              {socialLinks.map((social) => {
                 const IconComponent = social.icon;
                 return (
                   <a
@@ -66,7 +67,7 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold mb-6 text-[#E10600]">Quick Links</h4>
             <ul className="space-y-3">
-              {quickLinks.map((link, index) => (
+              {quickLinks.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.href}
