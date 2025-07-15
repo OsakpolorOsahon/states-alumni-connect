@@ -1,91 +1,85 @@
 # SMMOWCUB Complete Setup & Deployment Guide
 
 ## 🎯 Overview
-This guide will walk you through setting up ALL external services for your SMMOWCUB website. Follow each section step-by-step to ensure everything works perfectly.
+This guide will walk you through setting up your SMMOWCUB website using **Pure React + Supabase** architecture. This simplified stack eliminates the need for a backend server while providing all necessary features.
+
+## 🏗️ Architecture Overview
+- **Frontend**: React with TypeScript
+- **Database**: Supabase PostgreSQL 
+- **Authentication**: Supabase Auth
+- **Real-time**: Supabase Realtime
+- **File Storage**: UploadThing
+- **Email**: Resend
+- **Maps**: Google Maps API
+- **Deployment**: Replit (frontend only)
 
 ---
 
 ## 📋 **PART 1: EXTERNAL SERVICES SETUP**
 
-### 🔥 **1. Firebase Setup (Authentication & Firestore)**
+### 🎯 **1. Supabase Setup (Database + Authentication)**
 
-#### Step 1: Access Your Firebase Console
-1. Go to [Firebase Console](https://console.firebase.google.com)
-2. Select your existing SMMOWCUB project (or create one if needed)
+#### Step 1: Create Supabase Project
+1. Go to [supabase.com](https://supabase.com)
+2. Click **Start your project** → **New project**
+3. Choose your organization and region
+4. Set project name: "SMMOWCUB"
+5. Set database password (save it securely)
 
-#### Step 2: Configure Authentication
-1. Go to **Authentication** → **Settings** → **Authorized domains**
-2. Add these domains:
+#### Step 2: Get API Keys
+1. Go to **Settings** → **API**
+2. Copy these values:
+   - **Project URL** (VITE_SUPABASE_URL)
+   - **anon public key** (VITE_SUPABASE_ANON_KEY)
+3. Add these to your Replit Secrets
+
+#### Step 3: Create Database Schema
+1. Go to **SQL Editor** in Supabase
+2. Copy and paste the contents of `supabase/schema.sql`
+3. Click **Run** to execute the schema
+
+#### Step 4: Configure Authentication
+1. Go to **Authentication** → **Settings** → **Site URL**
+2. Set to your domain: `https://yourdomain.com`
+3. Go to **Authentication** → **Settings** → **Redirect URLs**
+4. Add these URLs:
    ```
-   localhost (for development)
-   your-replit-app.replit.app (current domain)
-   yourdomain.com (your final domain)
-   www.yourdomain.com
+   http://localhost:5173 (for development)
+   https://your-replit-app.replit.app
+   https://yourdomain.com
    ```
 
-#### Step 3: Set Up Firestore Security Rules
-1. Go to **Firestore Database** → **Rules**
-2. Replace existing rules with:
-   ```javascript
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       // Allow authenticated users to read/write all documents
-       match /{document=**} {
-         allow read, write: if request.auth != null;
-       }
-     }
-   }
-   ```
-3. Click **Publish**
-
-#### Step 4: Create Initial Secretary Account
+#### Step 5: Create Initial Secretary Account
 1. Go to **Authentication** → **Users** → **Add user**
 2. Create user with email: `secretary@yourdomain.com`
 3. Set a temporary password
-4. After creating, go to **Firestore Database** → **Data**
-5. Create collection `members` with document ID matching the user's UID:
+4. After creating, go to **Table Editor** → **members**
+5. Click **Insert** → **Insert row**
+6. Add secretary data:
    ```json
    {
-     "id": "USER_UID_HERE",
-     "userId": "USER_UID_HERE", 
-     "fullName": "Your Name",
+     "user_id": "USER_ID_FROM_AUTH_USERS",
+     "full_name": "Your Name",
      "nickname": "Secretary",
-     "stateshipYear": "2020",
-     "lastMowcubPosition": "Major",
-     "currentCouncilOffice": "Secretary General",
+     "stateship_year": "2020",
+     "last_mowcub_position": "Major",
+     "current_council_office": "Secretary General",
      "role": "secretary",
-     "status": "active",
-     "createdAt": "2025-01-11T00:00:00.000Z",
-     "updatedAt": "2025-01-11T00:00:00.000Z"
+     "status": "active"
    }
    ```
 
----
-
-### 💾 **2. Neon.tech Database Setup**
-
-#### Step 1: Create Neon Account
-1. Go to [neon.tech](https://neon.tech)
-2. Sign up with GitHub or email
-3. Create new project: "SMMOWCUB"
-
-#### Step 2: Get Connection String
-1. In Neon dashboard, go to **Connection Details**
-2. Copy the connection string (starts with `postgresql://`)
-3. Save this - you'll need it later
-
-#### Step 3: Update Your Application
-1. In your Replit project, go to **Secrets**
-2. Update `DATABASE_URL` with your Neon connection string
-3. Run database migration:
-   ```bash
-   npm run db:push
-   ```
+#### Step 6: Configure Row Level Security (RLS)
+1. The schema automatically enables RLS
+2. Review policies in **Authentication** → **Policies**
+3. Policies are already configured for:
+   - Members can view active members
+   - Secretaries can manage all data
+   - Public can view published content
 
 ---
 
-### 📧 **3. Resend Email Setup**
+### 📧 **2. Resend Email Setup**
 
 #### Step 1: Domain Verification
 1. Go to [Resend Dashboard](https://resend.com/domains)
@@ -96,11 +90,10 @@ This guide will walk you through setting up ALL external services for your SMMOW
    - Add MX records for email delivery
    - Add DKIM records for authentication
 
-#### Step 2: Update Email Settings
-1. In `server/email.ts`, update the sender email:
-   ```typescript
-   from: 'SMMOWCUB <noreply@yourdomain.com>'
-   ```
+#### Step 2: Get API Key
+1. Go to **API Keys** in Resend dashboard
+2. Create new API key: "SMMOWCUB Production"
+3. Copy the key and add to Replit Secrets as `RESEND_API_KEY`
 
 #### Step 3: Test Email Delivery
 1. Send test email from Resend dashboard
@@ -108,7 +101,7 @@ This guide will walk you through setting up ALL external services for your SMMOW
 
 ---
 
-### 📎 **4. UploadThing File Upload Setup**
+### 📎 **3. UploadThing File Upload Setup**
 
 #### Step 1: Configure Upload Settings
 1. Go to [UploadThing Dashboard](https://uploadthing.com/dashboard)
@@ -118,10 +111,16 @@ This guide will walk you through setting up ALL external services for your SMMOW
    - Allowed types: image/*, application/pdf
    - Max files per upload: 1
 
-#### Step 2: Configure CORS
+#### Step 2: Get API Keys
+1. Copy your **App ID** and **Secret Key**
+2. Add to Replit Secrets:
+   - `UPLOADTHING_APP_ID`
+   - `UPLOADTHING_SECRET`
+
+#### Step 3: Configure CORS
 1. In UploadThing settings, add allowed origins:
    ```
-   http://localhost:5000
+   http://localhost:5173
    https://your-replit-app.replit.app
    https://yourdomain.com
    ```

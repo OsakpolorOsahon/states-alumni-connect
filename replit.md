@@ -18,21 +18,21 @@ Preferred communication style: Simple, everyday language.
 - **Build Tool**: Vite for fast development and optimized builds
 - **UI Components**: Radix UI primitives with custom styling
 
-### Backend Architecture
-- **Runtime**: Node.js with Express.js (legacy endpoints)
-- **Database**: Firebase Firestore (NoSQL document database) + PostgreSQL (Drizzle ORM)
-- **Authentication**: Firebase Auth with email/password
-- **API Design**: Firebase SDK with real-time capabilities + REST API endpoints
-- **Session Management**: Firebase Auth tokens
+### Backend Architecture (Serverless)
+- **Database**: Supabase PostgreSQL with Row Level Security (RLS)
+- **Authentication**: Supabase Auth with email/password
+- **API Design**: Supabase Auto-generated REST API + Real-time subscriptions
+- **Session Management**: Supabase Auth tokens
 - **File Storage**: UploadThing for file uploads (photos, documents)
+- **Email Service**: Resend for transactional emails
 
 ### Key Components
 
 #### Authentication System
-- Email/password authentication via Firebase Auth
+- Email/password authentication via Supabase Auth
 - Role-based access control (Member, Secretary)
 - Real-time user state management
-- Direct member profile creation in Firestore
+- Direct member profile creation in PostgreSQL
 
 #### Member Management
 - Comprehensive member profiles with photos and professional details
@@ -55,7 +55,7 @@ Preferred communication style: Simple, everyday language.
 #### Communication Features
 - Push notifications system
 - Real-time updates using Supabase subscriptions
-- Email notifications for important events
+- Email notifications via Resend for important events
 
 ## Data Flow
 
@@ -81,9 +81,11 @@ Preferred communication style: Simple, everyday language.
 ## External Dependencies
 
 ### Third-Party Services
-- **Firebase**: Authentication, Firestore database, real-time updates, file storage
+- **Supabase**: Authentication, PostgreSQL database, real-time updates
+- **UploadThing**: File storage for photos and documents
+- **Resend**: Email service for notifications
 - **Google Maps API**: Interactive mapping features
-- **Development Environment**: Cloud-based development platform
+- **Replit**: Cloud-based development and deployment platform
 
 ### NPM Packages
 - **UI/Styling**: @radix-ui components, tailwindcss, lucide-react icons
@@ -107,13 +109,14 @@ Preferred communication style: Simple, everyday language.
 - Environment-specific configuration
 
 ### Database Management
-- Firebase Firestore collections for data storage
+- Supabase PostgreSQL for structured data storage
 - Real-time listeners for live updates
-- Automatic scaling and indexing
+- Automatic scaling and Row Level Security (RLS)
+- SQL-based queries with auto-generated APIs
 
 ### Security Considerations
-- Firebase Auth tokens for authentication
-- Firestore security rules for data access
+- Supabase Auth tokens for authentication
+- Row Level Security (RLS) policies for data access
 - Role-based access control
 - File upload validation and sanitization
 - Environment variable protection for sensitive data
@@ -126,14 +129,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### January 2025 - Complete System Integration and Deployment Ready
-- **Email System Migration**: Switched from SendGrid to Resend for better reliability
-- **Firebase Permission Issues Fixed**: Resolved realtime subscription errors
-- **Complete API Integration**: All external services configured (Firebase, Resend, UploadThing, Google Maps)
-- **Database Architecture**: Dual database system (PostgreSQL + Firebase Firestore) fully operational
-- **Deployment Guide Created**: Comprehensive setup guide for all external services
-- **Security Enhancements**: Proper error handling and authentication flow
-- **Production Ready**: Website 100% functional with all features working
+### January 2025 - Pure React + Supabase Architecture Migration
+- **Backend Elimination**: Removed Express/Node.js server for simplified architecture
+- **Database Migration**: Migrated from Firebase Firestore to Supabase PostgreSQL
+- **Authentication System**: Switched from Firebase Auth to Supabase Auth
+- **Real-time Features**: Implemented Supabase real-time subscriptions
+- **Security Implementation**: Row Level Security (RLS) policies for data protection
+- **Email System**: Integrated Resend for transactional emails
+- **File Storage**: UploadThing integration for photo/document uploads
+- **Deployment Simplification**: Pure frontend deployment with Vite
+- **Complete Setup Guide**: Updated comprehensive setup guide for Supabase architecture
+- **Production Ready**: Serverless architecture with auto-scaling capabilities
 
 ## Key Features
 
