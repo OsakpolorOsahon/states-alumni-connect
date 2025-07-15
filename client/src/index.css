@@ -1,6 +1,6 @@
 
-/* Import custom animations first */
-@import './styles/animations.css';
+/* Import custom animations first - temporarily disabled for debugging */
+/* @import './styles/animations.css'; */
 
 @tailwind base;
 @tailwind components;
