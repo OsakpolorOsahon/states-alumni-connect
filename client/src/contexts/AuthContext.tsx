@@ -57,6 +57,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(response.user);
       setMember(response.member);
     } catch (error) {
+      // Silently handle unauthenticated users - this is normal
       setUser(null);
       setMember(null);
     }
