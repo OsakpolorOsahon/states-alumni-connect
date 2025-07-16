@@ -10,7 +10,7 @@ const Footer = () => {
 
   return (
     <div style={{
-      backgroundColor: '#E10600',
+      backgroundColor: '#000000',
       color: 'white',
       padding: '40px 20px',
       marginTop: '50px',
@@ -25,14 +25,30 @@ const Footer = () => {
         margin: '0 auto',
         textAlign: 'center'
       }}>
-        <h1 style={{
-          fontSize: '36px',
-          fontWeight: 'bold',
-          marginBottom: '20px',
-          color: 'white'
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '15px',
+          marginBottom: '20px'
         }}>
-          SMMOWCUB FOOTER
-        </h1>
+          <img
+            src="/images/logo-transparent.png"
+            alt="SMMOWCUB Logo"
+            style={{
+              height: '40px',
+              width: 'auto'
+            }}
+          />
+          <h1 style={{
+            fontSize: '36px',
+            fontWeight: 'bold',
+            margin: 0,
+            color: 'white'
+          }}>
+            SMMOWCUB FOOTER
+          </h1>
+        </div>
         
         <p style={{
           fontSize: '18px',
