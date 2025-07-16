@@ -9,8 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, XCircle, Eye, User, Clock } from 'lucide-react';
 
 const SecretaryMemberManagement = () => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  // Removed broken hooks
+  // Removed broken hooks
   const [selectedTab, setSelectedTab] = useState<'pending' | 'active' | 'all'>('pending');
 
   // Fetch members based on selected tab

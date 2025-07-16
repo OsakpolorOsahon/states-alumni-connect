@@ -16,8 +16,8 @@ import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 
 const Forums = () => {
-  const { threads, loading, error, createThread } = useForumThreads();
-  const { toast } = useToast();
+  // Removed broken hooks
+  // Removed broken hooks
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newThread, setNewThread] = useState({
     title: '',

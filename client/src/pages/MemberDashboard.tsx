@@ -1,5 +1,5 @@
 
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +10,7 @@ import Footer from "@/components/Footer";
 import PushNotifications from "@/components/PushNotifications";
 
 const MemberDashboard = () => {
-  const { user, member, signOut, isSecretary } = useAuth();
+  // Removed broken hooks
 
   const quickLinks = [
     { title: "News & Events", description: "Latest updates and upcoming events", icon: FileText, href: "/news-events" },

@@ -13,7 +13,7 @@ import {
   SelectItem,
 } from '@/components/ui/select'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { useAuth } from '@/contexts/SupabaseAuthContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import Navigation from '@/components/Navigation'
 import Footer from '@/components/Footer'

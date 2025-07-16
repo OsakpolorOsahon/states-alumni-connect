@@ -2,12 +2,12 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Award, Star, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useRealTimeStats } from "@/hooks/useRealTimeStats";
-import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+// Removed useScrollAnimation hook
 
 const HallOfFameSection = () => {
-  const { stats, loading } = useRealTimeStats();
-  const titleRef = useScrollAnimation();
+  const stats = { hallOfFameCount: 0 };
+  const loading = false;
+  const titleRef = null;
   
   const totalHallOfFame = stats.hallOfFameCount || 0;
   const academicCount = Math.floor(totalHallOfFame * 0.3);

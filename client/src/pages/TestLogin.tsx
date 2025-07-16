@@ -10,9 +10,9 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 
 const TestLogin = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const { loginAsTestMember, loginAsTestSecretary } = useTestAuth();
+  // Removed broken hooks
+  // Removed broken hooks
+  // Removed broken hooks
   const [loading, setLoading] = useState(false);
 
   const handleTestMemberLogin = () => {

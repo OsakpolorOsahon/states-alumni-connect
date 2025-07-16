@@ -17,7 +17,7 @@ const Contact = () => {
     message: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
+  // Removed broken hooks
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

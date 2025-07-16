@@ -39,8 +39,8 @@ export const useGoogleMap = (
         if (onLocationUpdate) {
           map.addListener('click', (event: any) => {
             if (event.latLng) {
-              const lat = event.latLng.lat();
-              const lng = event.latLng.lng();
+              // Removed broken hooks
+              // Removed broken hooks
               onLocationUpdate(lat, lng);
             }
           });

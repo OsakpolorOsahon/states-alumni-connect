@@ -2,12 +2,12 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+// Removed useScrollAnimation hook
 
 const AboutSection = () => {
-  const titleRef = useScrollAnimation();
-  const contentRef = useScrollAnimation();
-  const imageRef = useScrollAnimation();
+  const titleRef = null;
+  const contentRef = null;
+  const imageRef = null;
 
   return (
     <section className="py-16 lg:py-24 bg-background dark:bg-background">

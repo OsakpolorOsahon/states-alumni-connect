@@ -6,8 +6,149 @@ import { uploadRouter } from "./uploadthing";
 import { insertMemberSchema, insertBadgeSchema, insertHallOfFameSchema, insertNewsSchema, insertForumThreadSchema, insertForumReplySchema, insertJobPostSchema, insertJobApplicationSchema, insertMentorshipRequestSchema, insertNotificationSchema, insertEventSchema } from "@shared/schema";
 import { z } from "zod";
 import { sendApprovalEmail } from "./email";
+import bcrypt from "bcrypt";
+
+// Authentication middleware
+function requireAuth(req: any, res: any, next: any) {
+  if (!req.session?.user) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+  next();
+}
+
+// Secretary middleware
+function requireSecretary(req: any, res: any, next: any) {
+  if (!req.session?.user || req.session?.member?.role !== 'secretary') {
+    return res.status(403).json({ error: "Secretary access required" });
+  }
+  next();
+}
+
+// Active member middleware
+function requireActiveMember(req: any, res: any, next: any) {
+  if (!req.session?.user || req.session?.member?.status !== 'active') {
+    return res.status(403).json({ error: "Active member access required" });
+  }
+  next();
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Authentication routes
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const { email, password, ...memberData } = req.body;
+      
+      // Validate required fields
+      if (!email || !password) {
+        return res.status(400).json({ error: "Email and password are required" });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByUsername(email);
+      if (existingUser) {
+        return res.status(409).json({ error: "User already exists" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create user
+      const user = await storage.createUser({
+        username: email,
+        hashedPassword,
+        role: 'member'
+      });
+
+      // Create member record
+      const member = await storage.createMember({
+        userId: user.id.toString(),
+        full_name: memberData.full_name,
+        nickname: memberData.nickname,
+        stateship_year: memberData.stateship_year,
+        last_mowcub_position: memberData.last_mowcub_position,
+        current_council_office: memberData.current_council_office,
+        latitude: memberData.latitude,
+        longitude: memberData.longitude,
+        status: 'pending',
+        role: 'member',
+        photo_url: memberData.photo_url,
+        dues_proof_url: memberData.dues_proof_url
+      });
+
+      res.status(201).json({ 
+        user: { id: user.id, email: user.username }, 
+        member,
+        message: "Registration successful. Awaiting approval." 
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      res.status(500).json({ error: "Registration failed" });
+    }
+  });
+
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: "Email and password are required" });
+      }
+
+      // Find user
+      const user = await storage.getUserByUsername(email);
+      if (!user) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      // Verify password
+      const isValidPassword = await bcrypt.compare(password, user.hashedPassword);
+      if (!isValidPassword) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      // Get member data
+      const member = await storage.getMemberByUserId(user.id.toString());
+
+      // Set session
+      req.session.user = { id: user.id, email: user.username };
+      req.session.member = member;
+
+      res.json({ 
+        user: { id: user.id, email: user.username }, 
+        member,
+        message: "Login successful" 
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ error: "Login failed" });
+    }
+  });
+
+  app.post("/api/auth/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ error: "Logout failed" });
+      }
+      res.clearCookie('connect.sid');
+      res.json({ message: "Logout successful" });
+    });
+  });
+
+  app.get("/api/auth/me", requireAuth, async (req, res) => {
+    try {
+      // Refresh member data
+      const member = await storage.getMemberByUserId(req.session.user.id.toString());
+      req.session.member = member;
+      
+      res.json({
+        user: req.session.user,
+        member
+      });
+    } catch (error) {
+      console.error("Session error:", error);
+      res.status(500).json({ error: "Failed to get user data" });
+    }
+  });
   // Stats endpoint
   app.get("/api/stats", async (req, res) => {
     try {
@@ -147,6 +288,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Badge routes
+  app.get("/api/badges", async (req, res) => {
+    try {
+      const members = await storage.getAllMembers();
+      const allBadges = [];
+      
+      for (const member of members) {
+        const badges = await storage.getBadgesByMemberId(member.id);
+        badges.forEach(badge => {
+          allBadges.push({
+            ...badge,
+            member_name: member.full_name,
+            member_nickname: member.nickname
+          });
+        });
+      }
+      
+      res.json(allBadges);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.get("/api/badges/member/:memberId", async (req, res) => {
     try {
       const badges = await storage.getBadgesByMemberId(req.params.memberId);

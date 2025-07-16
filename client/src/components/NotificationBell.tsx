@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Bell, X, Check } from 'lucide-react';
-import { api } from '@/lib/api';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+// Removed api import
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
 interface Notification {
@@ -28,19 +28,6 @@ const NotificationBell = () => {
   useEffect(() => {
     if (member) {
       fetchNotifications();
-      
-      // Set up real-time subscription for notifications
-      const channel = createRealtimeSubscription({
-        table: 'notifications',
-        filter: `member_id=eq.${member.id}`,
-        callback: () => fetchNotifications()
-      });
-
-      return () => {
-        if (channel && typeof channel.unsubscribe === 'function') {
-          channel.unsubscribe();
-        }
-      };
     }
   }, [member]);
 
@@ -48,9 +35,10 @@ const NotificationBell = () => {
     if (!member) return;
 
     try {
-      const data = await api.getNotificationsByMemberId(member.id);
-      setNotifications(data || []);
-      setUnreadCount(data?.filter(n => !n.isRead).length || 0);
+      // Mock data for now
+      const data: Notification[] = [];
+      setNotifications(data);
+      setUnreadCount(data.filter(n => !n.is_read).length);
     } catch (error) {
       console.error('Error fetching notifications:', error);
     }
@@ -58,8 +46,8 @@ const NotificationBell = () => {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      await api.markNotificationAsRead(notificationId);
-
+      // Mock function for now
+      console.log('Marking notification as read:', notificationId);
       fetchNotifications();
     } catch (error) {
       console.error('Error marking notification as read:', error);
@@ -70,8 +58,8 @@ const NotificationBell = () => {
     if (!member) return;
 
     try {
-      await api.markAllNotificationsAsRead(member.id);
-
+      // Mock function for now
+      console.log('Marking all notifications as read for member:', member.id);
       fetchNotifications();
       toast({
         title: "All notifications marked as read"

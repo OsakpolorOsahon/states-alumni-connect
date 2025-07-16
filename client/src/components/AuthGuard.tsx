@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 interface AuthGuardProps {
@@ -16,8 +16,8 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
   requireSecretary = false,
   requireActive = false 
 }) => {
-  const { user, member, loading } = useAuth();
-  const navigate = useNavigate();
+  // Removed broken hooks
+  // Removed broken hooks
 
   useEffect(() => {
     if (loading) return;

@@ -23,7 +23,7 @@ export default function UploadThingFileUpload({
   accept,
   maxSize = '4MB'
 }: UploadThingFileUploadProps) {
-  const { toast } = useToast();
+  // Removed broken hooks
   const [isUploading, setIsUploading] = useState(false);
 
   const getIcon = () => {

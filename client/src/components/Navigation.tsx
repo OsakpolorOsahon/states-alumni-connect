@@ -21,14 +21,14 @@ import {
   Youtube,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useAuth } from "@/contexts/SupabaseAuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import NotificationBell from "./NotificationBell";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
   const { theme, setTheme } = useTheme();
   const { user, member, signOut, loading } = useAuth();
-  const location = useLocation();
   
   const publicNavItems = [
     { name: "Home", href: "/" },

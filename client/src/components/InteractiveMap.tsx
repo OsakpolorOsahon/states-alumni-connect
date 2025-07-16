@@ -18,7 +18,7 @@ interface Member {
 const InteractiveMap = () => {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+  // Removed broken hooks
 
   useEffect(() => {
     fetchMembers();
@@ -33,7 +33,7 @@ const InteractiveMap = () => {
 
   const fetchMembers = async () => {
     try {
-      const data = await api.getActiveMembers();
+      // Removed broken hooks
       setMembers(data?.filter(member => member.latitude && member.longitude) || []);
     } catch (error) {
       console.error('Error fetching members:', error);

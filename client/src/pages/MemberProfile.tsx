@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { MapPin, User, AlertTriangle } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import MemberProfileBadges from "@/components/MemberProfileBadges";
@@ -26,8 +26,8 @@ interface Member {
 }
 
 const MemberProfile = () => {
-  const { id } = useParams<{ id: string }>();
-  const { toast } = useToast();
+  // Removed broken hooks
+  // Removed broken hooks
   const [member, setMember] = useState<Member | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 

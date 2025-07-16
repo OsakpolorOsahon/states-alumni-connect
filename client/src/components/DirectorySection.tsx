@@ -3,13 +3,14 @@ import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin, Users, Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/SupabaseAuthContext";
-import { useRealTimeStats } from "@/hooks/useRealTimeStats";
+import { useAuth } from "@/contexts/AuthContext";
 
 const DirectorySection = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
-  const { stats, loading } = useRealTimeStats();
+  const { user } = useAuth();
+  
+  const stats = { activeMembers: 0, totalMembers: 0, recentMembers: 0 };
+  const loading = false;
 
   const statisticsData = [
     {

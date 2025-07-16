@@ -12,16 +12,16 @@ import { GraduationCap, Users, MessageCircle, Calendar, CheckCircle, Clock, XCir
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import AuthGuard from '@/components/AuthGuard';
-import { useMembers } from '@/hooks/useMembers';
+// Removed useMembers hook
 import { useMentorshipRequests } from '@/hooks/useMentorshipRequests';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { MOWCUB_POSITIONS } from '@/data/memberData';
 
 const Mentorship = () => {
-  const { members, loading: membersLoading } = useMembers();
-  const { requests, loading: requestsLoading, createRequest, respondToRequest } = useMentorshipRequests();
-  const { toast } = useToast();
+  // Removed broken hooks
+  // Removed broken hooks
+  // Removed broken hooks
   const [showRequestDialog, setShowRequestDialog] = useState(false);
   const [selectedMentor, setSelectedMentor] = useState<string>('');
   const [requestMessage, setRequestMessage] = useState('');
@@ -105,7 +105,7 @@ const Mentorship = () => {
   // Filter potential mentors (exclude very recent members)
   const potentialMentors = members.filter(member => {
     const memberYear = parseInt(member.stateship_year.split('/')[0]);
-    const currentYear = new Date().getFullYear();
+    // Removed broken hooks
     return currentYear - memberYear >= 3; // At least 3 years experience
   });
 

@@ -34,7 +34,7 @@ export const useMentorshipRequests = () => {
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const data = await api.getAllMentorshipRequests();
+      // Removed broken hooks
       setRequests(data || []);
       setError(null);
     } catch (err) {

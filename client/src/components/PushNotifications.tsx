@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bell, BellOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const PushNotifications = () => {
-  const { user } = useAuth();
-  const { toast } = useToast();
+  // Removed broken hooks
+  // Removed broken hooks
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isSupported, setIsSupported] = useState(false);
 
@@ -31,7 +31,7 @@ const PushNotifications = () => {
     }
 
     try {
-      const permission = await Notification.requestPermission();
+      // Removed broken hooks
       setPermission(permission);
 
       if (permission === 'granted') {
@@ -81,7 +81,7 @@ const PushNotifications = () => {
     try {
       if ('serviceWorker' in navigator) {
         const registration = await navigator.serviceWorker.ready;
-        const subscription = await registration.pushManager.getSubscription();
+        // Removed broken hooks
         
         if (subscription) {
           await subscription.unsubscribe();

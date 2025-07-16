@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Mail, CheckCircle } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const EmailVerification = () => {
-  const { signOut } = useAuth();
+  // Removed broken hooks
 
   return (
     <div className="min-h-screen bg-background">

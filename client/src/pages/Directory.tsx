@@ -10,8 +10,7 @@ import { Search, MapPin, User, Users, Crown, Star, Filter, ArrowUpDown } from 'l
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import InteractiveMap from '@/components/InteractiveMap';
-import { useMembers } from '@/hooks/useMembers';
-import { useRealTimeStats } from '@/hooks/useRealTimeStats';
+// Removed useMembers hook
 import { STATESHIP_YEARS, MOWCUB_POSITIONS, COUNCIL_OFFICES } from '@/data/memberData';
 
 const Directory = () => {
@@ -25,8 +24,9 @@ const Directory = () => {
   const [viewType, setViewType] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'hierarchy' | 'year' | 'name'>('hierarchy');
 
-  const { members, loading, error } = useMembers(filters);
-  const { stats, loading: statsLoading } = useRealTimeStats();
+  const members = [];
+  const loading = false;
+  const error = null;
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();

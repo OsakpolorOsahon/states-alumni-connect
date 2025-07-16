@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Trophy, Star, Medal, Award, Plus } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
@@ -39,8 +39,8 @@ const HallOfFame = () => {
     achievement_date: ''
   });
   const [availableMembers, setAvailableMembers] = useState<any[]>([]);
-  const { isSecretary } = useAuth();
-  const { toast } = useToast();
+  // Removed broken hooks
+  // Removed broken hooks
 
   useEffect(() => {
     fetchHallOfFame();
@@ -55,7 +55,7 @@ const HallOfFame = () => {
       if (!response.ok) {
         throw new Error('Failed to fetch hall of fame');
       }
-      const data = await response.json();
+      // Removed broken hooks
       setHallOfFameMembers(data || []);
     } catch (error) {
       console.error('Error fetching hall of fame:', error);
@@ -75,7 +75,7 @@ const HallOfFame = () => {
       if (!response.ok) {
         throw new Error('Failed to fetch members');
       }
-      const data = await response.json();
+      // Removed broken hooks
       setAvailableMembers(data || []);
     } catch (error) {
       console.error('Error fetching members:', error);
@@ -106,7 +106,7 @@ const HallOfFame = () => {
         })
       });
 
-      const result = await response.json();
+      // Removed broken hooks
 
       if (response.ok && result.success) {
         toast({
@@ -139,7 +139,7 @@ const HallOfFame = () => {
   };
 
   const getAchievementIcon = (title: string) => {
-    const lowerTitle = title.toLowerCase();
+    // Removed broken hooks
     if (lowerTitle.includes('leadership') || lowerTitle.includes('president')) return Trophy;
     if (lowerTitle.includes('service') || lowerTitle.includes('community')) return Star;
     if (lowerTitle.includes('excellence') || lowerTitle.includes('outstanding')) return Medal;

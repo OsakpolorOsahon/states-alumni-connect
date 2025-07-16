@@ -1,10 +1,10 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, BookOpen, Award } from "lucide-react";
-import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+// Removed useScrollAnimation hook
 
 const FeaturesSection = () => {
-  const titleRef = useScrollAnimation();
+  const titleRef = null;
   const features = [
     {
       icon: Users,

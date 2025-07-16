@@ -2,11 +2,11 @@
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
-import { useAuth } from "@/contexts/SupabaseAuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const HeroSection = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  // Removed broken hooks
+  // Removed broken hooks
 
   const handleDirectoryClick = () => {
     // Directory is public, always navigate to it

@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Award, Plus, X, User } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+
 
 interface Member {
   id: string;
@@ -33,7 +33,7 @@ const BadgeManagement = () => {
   const [members, setMembers] = useState<Member[]>([]);
   const [badges, setBadges] = useState<BadgeRecord[]>([]);
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  // Removed broken hooks
 
   const [newBadge, setNewBadge] = useState({
     member_id: '',
@@ -58,7 +58,8 @@ const BadgeManagement = () => {
 
   const fetchMembers = async () => {
     try {
-      const data = await firebaseApi.getActiveMembers();
+      const response = await fetch('/api/members/active');
+      // Removed broken hooks
       setMembers(data || []);
     } catch (error) {
       console.error('Error fetching members:', error);
@@ -67,28 +68,9 @@ const BadgeManagement = () => {
 
   const fetchBadges = async () => {
     try {
-      // Firebase doesn't have joins, so we'll get all badges and merge member data
-      const allMembers = await firebaseApi.getAllMembers();
-      const allBadges = await firebaseApi.getAllBadges ? await firebaseApi.getAllBadges() : [];
-
-      // Then fetch member details for each badge
-      const badgesWithMembers = await Promise.all(
-        (badgesData || []).map(async (badge) => {
-          const { data: memberData } = await supabase
-            .from('members')
-            .select('full_name, nickname')
-            .eq('id', badge.member_id)
-            .single();
-
-          return {
-            ...badge,
-            member_name: memberData?.full_name || 'Unknown',
-            member_nickname: memberData?.nickname
-          };
-        })
-      );
-
-      setBadges(badgesWithMembers);
+      const response = await fetch('/api/badges');
+      // Removed broken hooks
+      setBadges(badges);
     } catch (error) {
       console.error('Error fetching badges:', error);
     }
@@ -106,35 +88,32 @@ const BadgeManagement = () => {
 
     setLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('No session');
-
-      const response = await fetch(`https://ojxgyaylosexrbvvllzg.supabase.co/functions/v1/awardBadge`, {
+      const response = await fetch('/api/badges', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           memberId: newBadge.member_id,
+          badgeName: newBadge.badge_name,
           badgeCode: newBadge.badge_code,
-          awardedBy: session.user.id
+          description: newBadge.description
         })
       });
 
-      const result = await response.json();
-
-      if (result.success) {
-        toast({
-          title: "Badge Awarded",
-          description: `Badge "${newBadge.badge_name}" has been awarded successfully`
-        });
-        setNewBadge({ member_id: '', badge_code: '', badge_name: '', description: '' });
-        setShowAwardForm(false);
-        fetchBadges();
-      } else {
-        throw new Error(result.error);
+      if (!response.ok) {
+        throw new Error('Failed to award badge');
       }
+
+      // Removed broken hooks
+
+      toast({
+        title: "Badge Awarded",
+        description: `Badge "${newBadge.badge_name}" has been awarded successfully`
+      });
+      setNewBadge({ member_id: '', badge_code: '', badge_name: '', description: '' });
+      setShowAwardForm(false);
+      fetchBadges();
     } catch (error) {
       console.error('Error awarding badge:', error);
       toast({

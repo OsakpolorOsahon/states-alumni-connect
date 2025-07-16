@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,7 +16,7 @@ import Footer from "@/components/Footer";
 import SecretaryMemberManagement from "@/components/SecretaryMemberManagement";
 
 const SecretaryDashboard = () => {
-  const { member } = useAuth();
+  // Removed broken hooks
   const [activeTab, setActiveTab] = useState("management");
 
   return (

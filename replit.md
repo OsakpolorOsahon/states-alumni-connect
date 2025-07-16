@@ -18,11 +18,11 @@ Preferred communication style: Simple, everyday language.
 - **Build Tool**: Vite for fast development and optimized builds
 - **UI Components**: Radix UI primitives with custom styling
 
-### Backend Architecture (Serverless)
-- **Database**: Supabase PostgreSQL with Row Level Security (RLS)
-- **Authentication**: Supabase Auth with email/password
-- **API Design**: Supabase Auto-generated REST API + Real-time subscriptions
-- **Session Management**: Supabase Auth tokens
+### Backend Architecture (Full-Stack)
+- **Database**: Neon PostgreSQL with Drizzle ORM
+- **Authentication**: Express sessions with bcrypt password hashing
+- **API Design**: Express REST API with proper route handlers
+- **Session Management**: Express-session with secure cookie configuration
 - **File Storage**: UploadThing for file uploads (photos, documents)
 - **Email Service**: Resend for transactional emails
 
@@ -129,17 +129,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### January 2025 - Pure React + Supabase Architecture Migration
-- **Backend Elimination**: Removed Express/Node.js server for simplified architecture
-- **Database Migration**: Migrated from Firebase Firestore to Supabase PostgreSQL
-- **Authentication System**: Switched from Firebase Auth to Supabase Auth
-- **Real-time Features**: Implemented Supabase real-time subscriptions
-- **Security Implementation**: Row Level Security (RLS) policies for data protection
+### January 2025 - Replit Environment Migration
+- **Backend Migration**: Migrated from Supabase to Express/Node.js server with PostgreSQL
+- **Database Migration**: Migrated from Supabase PostgreSQL to Neon PostgreSQL via Drizzle ORM
+- **Authentication System**: Replaced Supabase Auth with server-side Express sessions and bcrypt
+- **API Migration**: Converted Supabase Edge Functions to Express API routes
+- **Security Implementation**: Server-side authentication with session management
 - **Email System**: Integrated Resend for transactional emails
 - **File Storage**: UploadThing integration for photo/document uploads
-- **Deployment Simplification**: Pure frontend deployment with Vite
-- **Complete Setup Guide**: Updated comprehensive setup guide for Supabase architecture
-- **Production Ready**: Serverless architecture with auto-scaling capabilities
+- **Environment Security**: Added proper API key management with Replit Secrets
+- **Development Environment**: Optimized for Replit cloud development
+- **Production Ready**: Full-stack architecture with proper client/server separation
 
 ## Key Features
 

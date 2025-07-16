@@ -5,12 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Clock, Mail, Phone, RefreshCw } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const PendingApproval = () => {
-  const { signOut, member, refreshUserData, isActive } = useAuth();
-  const navigate = useNavigate();
+  // Removed broken hooks
+  // Removed broken hooks
 
   // Check if user is now active and redirect to dashboard
   useEffect(() => {

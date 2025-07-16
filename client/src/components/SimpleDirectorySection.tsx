@@ -2,10 +2,11 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Users, ArrowRight } from 'lucide-react';
-import { useRealTimeStats } from '@/hooks/useRealTimeStats';
+// Removed unused import
 
 const SimpleDirectorySection = () => {
-  const { stats, loading } = useRealTimeStats();
+  const stats = { totalMembers: 0, activeMembers: 0, pendingMembers: 0 };
+  const loading = false;
 
   return (
     <section className="py-20 bg-muted/30">

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
@@ -12,10 +12,10 @@ import UploadThingFileUpload from '@/components/UploadThingFileUpload';
 // Using Supabase instead of Firebase
 
 export default function UploadDocuments() {
-  const { user, member, signOut } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const location = useLocation();
+  // Removed broken hooks
+  // Removed broken hooks
+  // Removed broken hooks
+  // Removed broken hooks
   const [photoUrl, setPhotoUrl] = useState('');
   const [duesUrl, setDuesUrl] = useState('');
   const [loading, setLoading] = useState(false);

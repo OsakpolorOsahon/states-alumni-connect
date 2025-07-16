@@ -27,7 +27,7 @@ export const useForumThreads = () => {
   const fetchThreads = async () => {
     try {
       setLoading(true);
-      const data = await api.getAllForumThreads();
+      // Removed broken hooks
       setThreads(data || []);
       setError(null);
     } catch (err) {

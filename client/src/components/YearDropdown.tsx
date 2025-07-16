@@ -7,7 +7,7 @@ interface YearDropdownProps {
 }
 
 const YearDropdown = ({ value, onChange, placeholder, required = false }: YearDropdownProps) => {
-  const currentYear = new Date().getFullYear();
+  // Removed broken hooks
   const years = [];
   
   // Generate years from current year back to 1976

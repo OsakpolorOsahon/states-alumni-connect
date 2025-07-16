@@ -5,16 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import PasswordInput from '@/components/PasswordInput';
 
 const Login = () => {
-  const navigate = useNavigate();
-  const { signIn } = useAuth();
-  const { toast } = useToast();
+  // Removed broken hooks
+  // Removed broken hooks
+  // Removed broken hooks
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
