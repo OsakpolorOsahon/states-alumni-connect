@@ -113,9 +113,9 @@ export default function SignUp() {
         <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl text-center">Join SMMOWCUB</CardTitle>
+              <CardTitle className="text-2xl text-center">Member Signup</CardTitle>
               <p className="text-center text-muted-foreground">
-                Member Sign-up
+                Signup, upload documents and wait for verification
               </p>
             </CardHeader>
             <CardContent>
