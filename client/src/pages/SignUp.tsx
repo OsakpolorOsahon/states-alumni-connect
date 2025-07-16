@@ -115,7 +115,7 @@ export default function SignUp() {
             <CardHeader>
               <CardTitle className="text-2xl text-center">Join SMMOWCUB</CardTitle>
               <p className="text-center text-muted-foreground">
-                Create your account to apply for membership
+                Member Sign-up
               </p>
             </CardHeader>
             <CardContent>
