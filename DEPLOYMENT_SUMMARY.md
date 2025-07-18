@@ -30,6 +30,13 @@ The SMMOWCUB application has been successfully migrated to a modern Supabase + V
 
 ### Client-Side Integration
 - ✅ `client/src/lib/supabase.ts` - Client-side Supabase helpers
+- ✅ `client/src/contexts/AuthContext.tsx` - Updated auth context
+
+### Google Maps Integration (PRESERVED)
+- ✅ `client/src/components/GoogleMap.tsx` - Interactive Google Maps
+- ✅ `client/src/components/InteractiveMap.tsx` - Member location mapping
+- ✅ `client/src/hooks/useGoogleMap.ts` - Google Maps API integration
+- ✅ `client/src/pages/Map.tsx` - Member map page with full functionality
 
 ### Documentation
 - ✅ `VERCEL_SUPABASE_DEPLOYMENT.md` - Complete deployment guide
