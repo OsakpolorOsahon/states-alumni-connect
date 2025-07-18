@@ -1,4 +1,4 @@
-import { db } from "./db";
+import { db, supabaseAdmin } from "./db";
 import { users, members, badges, hallOfFame, news, forumThreads, forumReplies, jobPosts, jobApplications, mentorshipRequests, notifications, events } from "@shared/schema";
 import { User, InsertUser, Member, InsertMember, Badge, InsertBadge, HallOfFame, InsertHallOfFame, News, InsertNews, ForumThread, InsertForumThread, ForumReply, InsertForumReply, JobPost, InsertJobPost, JobApplication, InsertJobApplication, MentorshipRequest, InsertMentorshipRequest, Notification, InsertNotification, Event, InsertEvent } from "@shared/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -830,5 +830,440 @@ export class MemoryStorage implements IStorage {
   }
 }
 
-// Use database storage if available, otherwise use memory storage
-export const storage = db ? new DatabaseStorage() : new MemoryStorage();
+// Supabase storage implementation
+export class SupabaseStorage implements IStorage {
+  // User operations - using Supabase Auth
+  async getUser(id: number): Promise<User | undefined> {
+    if (db) {
+      const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+      return result[0];
+    }
+    return undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    if (db) {
+      const result = await db.select().from(users).where(eq(users.username, username)).limit(1);
+      return result[0];
+    }
+    return undefined;
+  }
+
+  async createUser(user: InsertUser): Promise<User> {
+    if (db) {
+      const result = await db.insert(users).values(user).returning();
+      return result[0];
+    }
+    throw new Error("Database not available");
+  }
+
+  // Member operations
+  async getMember(id: string): Promise<Member | undefined> {
+    if (db) {
+      const result = await db.select().from(members).where(eq(members.id, id)).limit(1);
+      return result[0];
+    }
+    return undefined;
+  }
+
+  async getMemberByUserId(userId: string): Promise<Member | undefined> {
+    if (db) {
+      const result = await db.select().from(members).where(eq(members.userId, userId)).limit(1);
+      return result[0];
+    }
+    return undefined;
+  }
+
+  async getAllMembers(): Promise<Member[]> {
+    if (db) {
+      return await db.select().from(members).orderBy(desc(members.createdAt));
+    }
+    return [];
+  }
+
+  async getActiveMembers(): Promise<Member[]> {
+    if (db) {
+      return await db.select().from(members).where(eq(members.status, 'active')).orderBy(desc(members.createdAt));
+    }
+    return [];
+  }
+
+  async getPendingMembers(): Promise<Member[]> {
+    if (db) {
+      return await db.select().from(members).where(eq(members.status, 'pending')).orderBy(desc(members.createdAt));
+    }
+    return [];
+  }
+
+  async createMember(member: InsertMember): Promise<Member> {
+    if (db) {
+      const result = await db.insert(members).values(member).returning();
+      return result[0];
+    }
+    throw new Error("Database not available");
+  }
+
+  async updateMember(id: string, updates: Partial<InsertMember>): Promise<Member> {
+    if (db) {
+      const result = await db.update(members).set(updates).where(eq(members.id, id)).returning();
+      return result[0];
+    }
+    throw new Error("Database not available");
+  }
+
+  async deleteMember(id: string): Promise<void> {
+    if (db) {
+      await db.delete(members).where(eq(members.id, id));
+    }
+  }
+
+  // Badge operations
+  async getBadgesByMemberId(memberId: string): Promise<Badge[]> {
+    if (db) {
+      return await db.select().from(badges).where(eq(badges.memberId, memberId)).orderBy(desc(badges.awardedAt));
+    }
+    return [];
+  }
+
+  async createBadge(badge: InsertBadge): Promise<Badge> {
+    if (db) {
+      const result = await db.insert(badges).values(badge).returning();
+      return result[0];
+    }
+    throw new Error("Database not available");
+  }
+
+  async deleteBadge(id: string): Promise<void> {
+    if (db) {
+      await db.delete(badges).where(eq(badges.id, id));
+    }
+  }
+
+  // Hall of Fame operations
+  async getAllHallOfFame(): Promise<HallOfFame[]> {
+    if (db) {
+      return await db.select().from(hallOfFame).orderBy(desc(hallOfFame.createdAt));
+    }
+    return [];
+  }
+
+  async createHallOfFameEntry(entry: InsertHallOfFame): Promise<HallOfFame> {
+    if (db) {
+      const result = await db.insert(hallOfFame).values(entry).returning();
+      return result[0];
+    }
+    throw new Error("Database not available");
+  }
+
+  async deleteHallOfFameEntry(id: string): Promise<void> {
+    if (db) {
+      await db.delete(hallOfFame).where(eq(hallOfFame.id, id));
+    }
+  }
+
+  // News operations
+  async getAllNews(): Promise<News[]> {
+    if (db) {
+      return await db.select().from(news).orderBy(desc(news.updatedAt));
+    }
+    return [];
+  }
+
+  async getPublishedNews(): Promise<News[]> {
+    if (db) {
+      return await db.select().from(news).where(eq(news.isPublished, true)).orderBy(desc(news.publishedAt));
+    }
+    return [];
+  }
+
+  async getNewsById(id: string): Promise<News | undefined> {
+    if (db) {
+      const result = await db.select().from(news).where(eq(news.id, id)).limit(1);
+      return result[0];
+    }
+    return undefined;
+  }
+
+  async createNews(newsItem: InsertNews): Promise<News> {
+    if (db) {
+      const result = await db.insert(news).values(newsItem).returning();
+      return result[0];
+    }
+    throw new Error("Database not available");
+  }
+
+  async updateNews(id: string, updates: Partial<InsertNews>): Promise<News> {
+    if (db) {
+      const result = await db.update(news).set(updates).where(eq(news.id, id)).returning();
+      return result[0];
+    }
+    throw new Error("Database not available");
+  }
+
+  async deleteNews(id: string): Promise<void> {
+    if (db) {
+      await db.delete(news).where(eq(news.id, id));
+    }
+  }
+
+  // Forum operations
+  async getAllForumThreads(): Promise<ForumThread[]> {
+    if (db) {
+      return await db.select().from(forumThreads).orderBy(desc(forumThreads.isPinned), desc(forumThreads.updatedAt));
+    }
+    return [];
+  }
+
+  async getForumThreadById(id: string): Promise<ForumThread | undefined> {
+    if (db) {
+      const result = await db.select().from(forumThreads).where(eq(forumThreads.id, id)).limit(1);
+      return result[0];
+    }
+    return undefined;
+  }
+
+  async createForumThread(thread: InsertForumThread): Promise<ForumThread> {
+    if (db) {
+      const result = await db.insert(forumThreads).values(thread).returning();
+      return result[0];
+    }
+    throw new Error("Database not available");
+  }
+
+  async updateForumThread(id: string, updates: Partial<InsertForumThread>): Promise<ForumThread> {
+    if (db) {
+      const result = await db.update(forumThreads).set(updates).where(eq(forumThreads.id, id)).returning();
+      return result[0];
+    }
+    throw new Error("Database not available");
+  }
+
+  async deleteForumThread(id: string): Promise<void> {
+    if (db) {
+      await db.delete(forumThreads).where(eq(forumThreads.id, id));
+    }
+  }
+
+  async getForumRepliesByThreadId(threadId: string): Promise<ForumReply[]> {
+    if (db) {
+      return await db.select().from(forumReplies).where(eq(forumReplies.threadId, threadId)).orderBy(forumReplies.createdAt);
+    }
+    return [];
+  }
+
+  async createForumReply(reply: InsertForumReply): Promise<ForumReply> {
+    if (db) {
+      const result = await db.insert(forumReplies).values(reply).returning();
+      return result[0];
+    }
+    throw new Error("Database not available");
+  }
+
+  async deleteForumReply(id: string): Promise<void> {
+    if (db) {
+      await db.delete(forumReplies).where(eq(forumReplies.id, id));
+    }
+  }
+
+  // Job operations
+  async getAllJobPosts(): Promise<JobPost[]> {
+    if (db) {
+      return await db.select().from(jobPosts).orderBy(desc(jobPosts.createdAt));
+    }
+    return [];
+  }
+
+  async getActiveJobPosts(): Promise<JobPost[]> {
+    if (db) {
+      return await db.select().from(jobPosts).where(eq(jobPosts.isActive, true)).orderBy(desc(jobPosts.createdAt));
+    }
+    return [];
+  }
+
+  async getJobPostById(id: string): Promise<JobPost | undefined> {
+    if (db) {
+      const result = await db.select().from(jobPosts).where(eq(jobPosts.id, id)).limit(1);
+      return result[0];
+    }
+    return undefined;
+  }
+
+  async createJobPost(jobPost: InsertJobPost): Promise<JobPost> {
+    if (db) {
+      const result = await db.insert(jobPosts).values(jobPost).returning();
+      return result[0];
+    }
+    throw new Error("Database not available");
+  }
+
+  async updateJobPost(id: string, updates: Partial<InsertJobPost>): Promise<JobPost> {
+    if (db) {
+      const result = await db.update(jobPosts).set(updates).where(eq(jobPosts.id, id)).returning();
+      return result[0];
+    }
+    throw new Error("Database not available");
+  }
+
+  async deleteJobPost(id: string): Promise<void> {
+    if (db) {
+      await db.delete(jobPosts).where(eq(jobPosts.id, id));
+    }
+  }
+
+  async getJobApplicationsByJobId(jobId: string): Promise<JobApplication[]> {
+    if (db) {
+      return await db.select().from(jobApplications).where(eq(jobApplications.jobId, jobId)).orderBy(desc(jobApplications.createdAt));
+    }
+    return [];
+  }
+
+  async getJobApplicationsByApplicantId(applicantId: string): Promise<JobApplication[]> {
+    if (db) {
+      return await db.select().from(jobApplications).where(eq(jobApplications.applicantId, applicantId)).orderBy(desc(jobApplications.createdAt));
+    }
+    return [];
+  }
+
+  async createJobApplication(application: InsertJobApplication): Promise<JobApplication> {
+    if (db) {
+      const result = await db.insert(jobApplications).values(application).returning();
+      return result[0];
+    }
+    throw new Error("Database not available");
+  }
+
+  async updateJobApplication(id: string, updates: Partial<InsertJobApplication>): Promise<JobApplication> {
+    if (db) {
+      const result = await db.update(jobApplications).set(updates).where(eq(jobApplications.id, id)).returning();
+      return result[0];
+    }
+    throw new Error("Database not available");
+  }
+
+  // Mentorship operations
+  async getAllMentorshipRequests(): Promise<MentorshipRequest[]> {
+    if (db) {
+      return await db.select().from(mentorshipRequests).orderBy(desc(mentorshipRequests.createdAt));
+    }
+    return [];
+  }
+
+  async getMentorshipRequestsByMenteeId(menteeId: string): Promise<MentorshipRequest[]> {
+    if (db) {
+      return await db.select().from(mentorshipRequests).where(eq(mentorshipRequests.menteeId, menteeId)).orderBy(desc(mentorshipRequests.createdAt));
+    }
+    return [];
+  }
+
+  async getMentorshipRequestsByMentorId(mentorId: string): Promise<MentorshipRequest[]> {
+    if (db) {
+      return await db.select().from(mentorshipRequests).where(eq(mentorshipRequests.mentorId, mentorId)).orderBy(desc(mentorshipRequests.createdAt));
+    }
+    return [];
+  }
+
+  async createMentorshipRequest(request: InsertMentorshipRequest): Promise<MentorshipRequest> {
+    if (db) {
+      const result = await db.insert(mentorshipRequests).values(request).returning();
+      return result[0];
+    }
+    throw new Error("Database not available");
+  }
+
+  async updateMentorshipRequest(id: string, updates: Partial<InsertMentorshipRequest>): Promise<MentorshipRequest> {
+    if (db) {
+      const result = await db.update(mentorshipRequests).set(updates).where(eq(mentorshipRequests.id, id)).returning();
+      return result[0];
+    }
+    throw new Error("Database not available");
+  }
+
+  async deleteMentorshipRequest(id: string): Promise<void> {
+    if (db) {
+      await db.delete(mentorshipRequests).where(eq(mentorshipRequests.id, id));
+    }
+  }
+
+  // Notification operations
+  async getNotificationsByMemberId(memberId: string): Promise<Notification[]> {
+    if (db) {
+      return await db.select().from(notifications).where(eq(notifications.memberId, memberId)).orderBy(desc(notifications.createdAt));
+    }
+    return [];
+  }
+
+  async getUnreadNotificationsByMemberId(memberId: string): Promise<Notification[]> {
+    if (db) {
+      return await db.select().from(notifications).where(and(eq(notifications.memberId, memberId), eq(notifications.isRead, false))).orderBy(desc(notifications.createdAt));
+    }
+    return [];
+  }
+
+  async createNotification(notification: InsertNotification): Promise<Notification> {
+    if (db) {
+      const result = await db.insert(notifications).values(notification).returning();
+      return result[0];
+    }
+    throw new Error("Database not available");
+  }
+
+  async markNotificationAsRead(id: string): Promise<void> {
+    if (db) {
+      await db.update(notifications).set({ isRead: true }).where(eq(notifications.id, id));
+    }
+  }
+
+  async markAllNotificationsAsRead(memberId: string): Promise<void> {
+    if (db) {
+      await db.update(notifications).set({ isRead: true }).where(eq(notifications.memberId, memberId));
+    }
+  }
+
+  // Event operations
+  async getAllEvents(): Promise<Event[]> {
+    if (db) {
+      return await db.select().from(events).orderBy(desc(events.eventDate));
+    }
+    return [];
+  }
+
+  async getUpcomingEvents(): Promise<Event[]> {
+    if (db) {
+      return await db.select().from(events).where(sql`event_date > NOW()`).orderBy(events.eventDate);
+    }
+    return [];
+  }
+
+  async getEventById(id: string): Promise<Event | undefined> {
+    if (db) {
+      const result = await db.select().from(events).where(eq(events.id, id)).limit(1);
+      return result[0];
+    }
+    return undefined;
+  }
+
+  async createEvent(event: InsertEvent): Promise<Event> {
+    if (db) {
+      const result = await db.insert(events).values(event).returning();
+      return result[0];
+    }
+    throw new Error("Database not available");
+  }
+
+  async updateEvent(id: string, updates: Partial<InsertEvent>): Promise<Event> {
+    if (db) {
+      const result = await db.update(events).set(updates).where(eq(events.id, id)).returning();
+      return result[0];
+    }
+    throw new Error("Database not available");
+  }
+
+  async deleteEvent(id: string): Promise<void> {
+    if (db) {
+      await db.delete(events).where(eq(events.id, id));
+    }
+  }
+}
+
+// Use Supabase storage if database available, otherwise use memory storage
+export const storage = db ? new SupabaseStorage() : new MemoryStorage();

@@ -1,19 +1,37 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
+import { createClient } from '@supabase/supabase-js';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
 import * as schema from "@shared/schema";
 
-neonConfig.webSocketConstructor = ws;
+// Supabase configuration
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
-// Allow the app to work without a database in development
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.log("⚠️  Supabase configuration not found - using in-memory storage for development");
+}
+
+// Create Supabase client for authentication and real-time features
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co', 
+  supabaseAnonKey || 'placeholder-key'
+);
+
+// Create admin client for server-side operations
+export const supabaseAdmin = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseServiceKey || 'placeholder-key'
+);
+
+// Database connection for Drizzle ORM
 let db: any;
-let pool: Pool | null = null;
+let pool: any = null;
 
 if (process.env.DATABASE_URL) {
-  pool = new Pool({ connectionString: process.env.DATABASE_URL });
-  db = drizzle({ client: pool, schema });
+  pool = postgres(process.env.DATABASE_URL);
+  db = drizzle(pool, { schema });
 } else {
-  // Log that we're using in-memory storage instead
   console.log("⚠️  DATABASE_URL not found - using in-memory storage for development");
   db = null; // Will be handled by MemoryStorage in storage.ts
 }

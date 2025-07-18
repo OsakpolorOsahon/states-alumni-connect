@@ -1,40 +1,57 @@
 import type { Express } from "express";
-import { createServer, type Server } from "http"; // 'createServer' and 'Server' are no longer directly used in this file's export, but might be used by other parts of your server. Leaving them for now to avoid breaking other imports if they exist.
+import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { supabase, supabaseAdmin } from "./db";
 import { createRouteHandler } from "uploadthing/server";
 import { uploadRouter } from "./uploadthing";
 import { insertMemberSchema, insertBadgeSchema, insertHallOfFameSchema, insertNewsSchema, insertForumThreadSchema, insertForumReplySchema, insertJobPostSchema, insertJobApplicationSchema, insertMentorshipRequestSchema, insertNotificationSchema, insertEventSchema } from "@shared/schema";
 import { z } from "zod";
 import { sendApprovalEmail } from "./email";
-import bcrypt from "bcrypt";
 
-// Authentication middleware
-function requireAuth(req: any, res: any, next: any) {
-  if (!req.session?.user) {
+// Authentication middleware using Supabase
+async function requireAuth(req: any, res: any, next: any) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: "Authentication required" });
   }
+
+  const token = authHeader.split(' ')[1];
+  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+  
+  if (error || !user) {
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
+
+  // Get member data
+  const member = await storage.getMemberByUserId(user.id);
+  req.user = user;
+  req.member = member;
   next();
 }
 
 // Secretary middleware
-function requireSecretary(req: any, res: any, next: any) {
-  if (!req.session?.user || req.session?.member?.role !== 'secretary') {
-    return res.status(403).json({ error: "Secretary access required" });
-  }
-  next();
+async function requireSecretary(req: any, res: any, next: any) {
+  await requireAuth(req, res, () => {
+    if (!req.member || req.member.role !== 'secretary') {
+      return res.status(403).json({ error: "Secretary access required" });
+    }
+    next();
+  });
 }
 
 // Active member middleware
-function requireActiveMember(req: any, res: any, next: any) {
-  if (!req.session?.user || req.session?.member?.status !== 'active') {
-    return res.status(403).json({ error: "Active member access required" });
-  }
-  next();
+async function requireActiveMember(req: any, res: any, next: any) {
+  await requireAuth(req, res, () => {
+    if (!req.member || req.member.status !== 'active') {
+      return res.status(403).json({ error: "Active member access required" });
+    }
+    next();
+  });
 }
 
 // *** IMPORTANT CHANGE HERE: Changed return type to Promise<void> ***
 export async function registerRoutes(app: Express): Promise<void> {
-  // Authentication routes
+  // Authentication routes using Supabase Auth
   app.post("/api/auth/register", async (req, res) => {
     try {
       const { email, password, ...memberData } = req.body;
@@ -44,24 +61,25 @@ export async function registerRoutes(app: Express): Promise<void> {
         return res.status(400).json({ error: "Email and password are required" });
       }
 
-      // Check if user already exists
-      const existingUser = await storage.getUserByUsername(email);
-      if (existingUser) {
-        return res.status(409).json({ error: "User already exists" });
+      // Create user with Supabase Auth
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email: email,
+        password: password,
+        email_confirm: true
+      });
+
+      if (authError) {
+        console.error("Supabase auth error:", authError);
+        return res.status(400).json({ error: authError.message });
       }
 
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      // Create user
-      const user = await storage.createUser({
-        username: email,
-        password: hashedPassword
-      });
+      if (!authData.user) {
+        return res.status(400).json({ error: "Failed to create user" });
+      }
 
       // Create member record
       const member = await storage.createMember({
-        userId: user.id.toString(),
+        userId: authData.user.id,
         fullName: memberData.fullName,
         nickname: memberData.nickname,
         stateshipYear: memberData.stateshipYear,
@@ -72,11 +90,11 @@ export async function registerRoutes(app: Express): Promise<void> {
         status: 'pending',
         role: 'member',
         photoUrl: memberData.photoUrl,
-        dues_proof_url: memberData.dues_proof_url
+        duesProofUrl: memberData.duesProofUrl
       });
 
       res.status(201).json({
-        user: { id: user.id, email: user.username },
+        user: { id: authData.user.id, email: authData.user.email },
         member,
         message: "Registration successful. Awaiting approval."
       });
@@ -94,27 +112,22 @@ export async function registerRoutes(app: Express): Promise<void> {
         return res.status(400).json({ error: "Email and password are required" });
       }
 
-      // Find user
-      const user = await storage.getUserByUsername(email);
-      if (!user) {
-        return res.status(401).json({ error: "Invalid credentials" });
-      }
+      // Authenticate with Supabase
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
 
-      // Verify password
-      const isValidPassword = await bcrypt.compare(password, user.hashedPassword);
-      if (!isValidPassword) {
+      if (authError || !authData.user) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
 
       // Get member data
-      const member = await storage.getMemberByUserId(user.id.toString());
-
-      // Set session
-      req.session.user = { id: user.id, email: user.username };
-      req.session.member = member;
+      const member = await storage.getMemberByUserId(authData.user.id);
 
       res.json({
-        user: { id: user.id, email: user.username },
+        user: { id: authData.user.id, email: authData.user.email },
+        session: authData.session,
         member,
         message: "Login successful"
       });
@@ -124,24 +137,27 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
-  app.post("/api/auth/logout", (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ error: "Logout failed" });
+  app.post("/api/auth/logout", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        await supabaseAdmin.auth.admin.signOut(token);
       }
-      res.clearCookie('connect.sid');
       res.json({ message: "Logout successful" });
-    });
+    } catch (error) {
+      console.error("Logout error:", error);
+      res.status(500).json({ error: "Logout failed" });
+    }
   });
 
   app.get("/api/auth/me", requireAuth, async (req, res) => {
     try {
       // Refresh member data
-      const member = await storage.getMemberByUserId(req.session.user.id.toString());
-      req.session.member = member;
+      const member = await storage.getMemberByUserId(req.user.id);
 
       res.json({
-        user: req.session.user,
+        user: req.user,
         member
       });
     } catch (error) {
@@ -174,7 +190,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       const recentMembers = allMembers.filter(member =>
-        new Date(member.created_at) >= thirtyDaysAgo
+        new Date(member.createdAt || 0) >= thirtyDaysAgo
       );
 
       const stats = {
