@@ -1,7 +1,8 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
-import { registerRoutes } from "./routes";
+import { registerRoutes } from "./routes"; // This now just configures the app
 import { setupVite, serveStatic, log } from "./vite";
+import http from 'http'; // Import http module
 
 const app = express();
 app.use(express.json());
@@ -13,7 +14,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false, // Set to true in production with HTTPS
+    secure: process.env.NODE_ENV === 'production', // Set to true in production with HTTPS
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
@@ -50,14 +51,19 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
+  // 1. Register routes onto the Express app instance
+  await registerRoutes(app); // registerRoutes no longer needs to return 'Server'
+
+  // 2. Create the HTTP server using the configured Express app
+  const server = http.createServer(app); // Create the server here!
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
+    console.error("Application error:", err); // Log the error for debugging
     res.status(status).json({ message });
-    throw err;
+    // Don't throw err here, it can lead to uncaught exceptions after sending response
+    // throw err; // Remove this line
   });
 
   // Only use Vite in development mode
@@ -72,8 +78,8 @@ app.use((req, res, next) => {
   server.listen({
     port: Number(port),
     host: "0.0.0.0",
-    reusePort: true,
+    reusePort: false, // Optional: remove this, not usually needed and can be tricky
   }, () => {
-    log(`serving on port ${port}`);
+    log(`serving on port ${port}`); // This log message should now appear!
   });
 })();
