@@ -4,6 +4,8 @@
 
 The SMMOWCUB application has been successfully migrated to a modern Supabase + Vercel architecture. Here's what was accomplished:
 
+**📋 For Complete Step-by-Step Instructions:** See `COMPLETE_DEPLOYMENT_GUIDE.md` - A detailed guide written so simply that anyone can follow it!
+
 ## Architecture Changes
 
 ### From: Express Sessions + Neon PostgreSQL
