@@ -56,23 +56,22 @@ export async function registerRoutes(app: Express): Promise<void> {
       // Create user
       const user = await storage.createUser({
         username: email,
-        hashedPassword,
-        role: 'member'
+        password: hashedPassword
       });
 
       // Create member record
       const member = await storage.createMember({
         userId: user.id.toString(),
-        full_name: memberData.full_name,
+        fullName: memberData.fullName,
         nickname: memberData.nickname,
-        stateship_year: memberData.stateship_year,
-        last_mowcub_position: memberData.last_mowcub_position,
-        current_council_office: memberData.current_council_office,
+        stateshipYear: memberData.stateshipYear,
+        lastMowcubPosition: memberData.lastMowcubPosition,
+        currentCouncilOffice: memberData.currentCouncilOffice,
         latitude: memberData.latitude,
         longitude: memberData.longitude,
         status: 'pending',
         role: 'member',
-        photo_url: memberData.photo_url,
+        photoUrl: memberData.photoUrl,
         dues_proof_url: memberData.dues_proof_url
       });
 

@@ -2,6 +2,7 @@ import { db } from "./db";
 import { users, members, badges, hallOfFame, news, forumThreads, forumReplies, jobPosts, jobApplications, mentorshipRequests, notifications, events } from "@shared/schema";
 import { User, InsertUser, Member, InsertMember, Badge, InsertBadge, HallOfFame, InsertHallOfFame, News, InsertNews, ForumThread, InsertForumThread, ForumReply, InsertForumReply, JobPost, InsertJobPost, JobApplication, InsertJobApplication, MentorshipRequest, InsertMentorshipRequest, Notification, InsertNotification, Event, InsertEvent } from "@shared/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
+import { randomUUID } from "crypto";
 
 export interface IStorage {
   // User operations
@@ -356,4 +357,478 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+// In-memory storage implementation for development
+export class MemoryStorage implements IStorage {
+  private users: User[] = [];
+  private members: Member[] = [];
+  private badges: Badge[] = [];
+  private hallOfFame: HallOfFame[] = [];
+  private news: News[] = [];
+  private forumThreads: ForumThread[] = [];
+  private forumReplies: ForumReply[] = [];
+  private jobPosts: JobPost[] = [];
+  private jobApplications: JobApplication[] = [];
+  private mentorshipRequests: MentorshipRequest[] = [];
+  private notifications: Notification[] = [];
+  private events: Event[] = [];
+  
+  private nextUserId = 1;
+
+  // User operations
+  async getUser(id: number): Promise<User | undefined> {
+    return this.users.find(u => u.id === id);
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    return this.users.find(u => u.username === username);
+  }
+
+  async createUser(user: InsertUser): Promise<User> {
+    const newUser: User = {
+      id: this.nextUserId++,
+      ...user
+    };
+    this.users.push(newUser);
+    return newUser;
+  }
+
+  // Member operations
+  async getMember(id: string): Promise<Member | undefined> {
+    return this.members.find(m => m.id === id);
+  }
+
+  async getMemberByUserId(userId: string): Promise<Member | undefined> {
+    return this.members.find(m => m.userId === userId);
+  }
+
+  async getAllMembers(): Promise<Member[]> {
+    return [...this.members].sort((a, b) => 
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    );
+  }
+
+  async getActiveMembers(): Promise<Member[]> {
+    return this.members
+      .filter(m => m.status === 'active')
+      .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+  }
+
+  async getPendingMembers(): Promise<Member[]> {
+    return this.members
+      .filter(m => m.status === 'pending')
+      .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+  }
+
+  async createMember(member: InsertMember): Promise<Member> {
+    const newMember: Member = {
+      id: randomUUID(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ...member
+    };
+    this.members.push(newMember);
+    return newMember;
+  }
+
+  async updateMember(id: string, updates: Partial<InsertMember>): Promise<Member> {
+    const index = this.members.findIndex(m => m.id === id);
+    if (index === -1) throw new Error("Member not found");
+    
+    this.members[index] = {
+      ...this.members[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.members[index];
+  }
+
+  async deleteMember(id: string): Promise<void> {
+    const index = this.members.findIndex(m => m.id === id);
+    if (index !== -1) {
+      this.members.splice(index, 1);
+    }
+  }
+
+  // Badge operations
+  async getBadgesByMemberId(memberId: string): Promise<Badge[]> {
+    return this.badges
+      .filter(b => b.memberId === memberId)
+      .sort((a, b) => new Date(b.awardedAt || 0).getTime() - new Date(a.awardedAt || 0).getTime());
+  }
+
+  async createBadge(badge: InsertBadge): Promise<Badge> {
+    const newBadge: Badge = {
+      id: randomUUID(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ...badge
+    };
+    this.badges.push(newBadge);
+    return newBadge;
+  }
+
+  async deleteBadge(id: string): Promise<void> {
+    const index = this.badges.findIndex(b => b.id === id);
+    if (index !== -1) {
+      this.badges.splice(index, 1);
+    }
+  }
+
+  // Hall of Fame operations
+  async getAllHallOfFame(): Promise<HallOfFame[]> {
+    return [...this.hallOfFame].sort((a, b) => 
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    );
+  }
+
+  async createHallOfFameEntry(entry: InsertHallOfFame): Promise<HallOfFame> {
+    const newEntry: HallOfFame = {
+      id: randomUUID(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ...entry
+    };
+    this.hallOfFame.push(newEntry);
+    return newEntry;
+  }
+
+  async deleteHallOfFameEntry(id: string): Promise<void> {
+    const index = this.hallOfFame.findIndex(h => h.id === id);
+    if (index !== -1) {
+      this.hallOfFame.splice(index, 1);
+    }
+  }
+
+  // News operations
+  async getAllNews(): Promise<News[]> {
+    return [...this.news].sort((a, b) => 
+      new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime()
+    );
+  }
+
+  async getPublishedNews(): Promise<News[]> {
+    return this.news
+      .filter(n => n.isPublished)
+      .sort((a, b) => new Date(b.publishedAt || 0).getTime() - new Date(a.publishedAt || 0).getTime());
+  }
+
+  async getNewsById(id: string): Promise<News | undefined> {
+    return this.news.find(n => n.id === id);
+  }
+
+  async createNews(newsItem: InsertNews): Promise<News> {
+    const newNews: News = {
+      id: randomUUID(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ...newsItem
+    };
+    this.news.push(newNews);
+    return newNews;
+  }
+
+  async updateNews(id: string, updates: Partial<InsertNews>): Promise<News> {
+    const index = this.news.findIndex(n => n.id === id);
+    if (index === -1) throw new Error("News not found");
+    
+    this.news[index] = {
+      ...this.news[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.news[index];
+  }
+
+  async deleteNews(id: string): Promise<void> {
+    const index = this.news.findIndex(n => n.id === id);
+    if (index !== -1) {
+      this.news.splice(index, 1);
+    }
+  }
+
+  // Forum operations
+  async getAllForumThreads(): Promise<ForumThread[]> {
+    return [...this.forumThreads].sort((a, b) => {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      return new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime();
+    });
+  }
+
+  async getForumThreadById(id: string): Promise<ForumThread | undefined> {
+    return this.forumThreads.find(t => t.id === id);
+  }
+
+  async createForumThread(thread: InsertForumThread): Promise<ForumThread> {
+    const newThread: ForumThread = {
+      id: randomUUID(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ...thread
+    };
+    this.forumThreads.push(newThread);
+    return newThread;
+  }
+
+  async updateForumThread(id: string, updates: Partial<InsertForumThread>): Promise<ForumThread> {
+    const index = this.forumThreads.findIndex(t => t.id === id);
+    if (index === -1) throw new Error("Thread not found");
+    
+    this.forumThreads[index] = {
+      ...this.forumThreads[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.forumThreads[index];
+  }
+
+  async deleteForumThread(id: string): Promise<void> {
+    const index = this.forumThreads.findIndex(t => t.id === id);
+    if (index !== -1) {
+      this.forumThreads.splice(index, 1);
+    }
+  }
+
+  async getForumRepliesByThreadId(threadId: string): Promise<ForumReply[]> {
+    return this.forumReplies
+      .filter(r => r.threadId === threadId)
+      .sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
+  }
+
+  async createForumReply(reply: InsertForumReply): Promise<ForumReply> {
+    const newReply: ForumReply = {
+      id: randomUUID(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ...reply
+    };
+    this.forumReplies.push(newReply);
+    return newReply;
+  }
+
+  async deleteForumReply(id: string): Promise<void> {
+    const index = this.forumReplies.findIndex(r => r.id === id);
+    if (index !== -1) {
+      this.forumReplies.splice(index, 1);
+    }
+  }
+
+  // Job operations
+  async getAllJobPosts(): Promise<JobPost[]> {
+    return [...this.jobPosts].sort((a, b) => 
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    );
+  }
+
+  async getActiveJobPosts(): Promise<JobPost[]> {
+    return this.jobPosts
+      .filter(j => j.isActive)
+      .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+  }
+
+  async getJobPostById(id: string): Promise<JobPost | undefined> {
+    return this.jobPosts.find(j => j.id === id);
+  }
+
+  async createJobPost(jobPost: InsertJobPost): Promise<JobPost> {
+    const newJobPost: JobPost = {
+      id: randomUUID(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ...jobPost
+    };
+    this.jobPosts.push(newJobPost);
+    return newJobPost;
+  }
+
+  async updateJobPost(id: string, updates: Partial<InsertJobPost>): Promise<JobPost> {
+    const index = this.jobPosts.findIndex(j => j.id === id);
+    if (index === -1) throw new Error("Job post not found");
+    
+    this.jobPosts[index] = {
+      ...this.jobPosts[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.jobPosts[index];
+  }
+
+  async deleteJobPost(id: string): Promise<void> {
+    const index = this.jobPosts.findIndex(j => j.id === id);
+    if (index !== -1) {
+      this.jobPosts.splice(index, 1);
+    }
+  }
+
+  async getJobApplicationsByJobId(jobId: string): Promise<JobApplication[]> {
+    return this.jobApplications
+      .filter(a => a.jobId === jobId)
+      .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+  }
+
+  async getJobApplicationsByApplicantId(applicantId: string): Promise<JobApplication[]> {
+    return this.jobApplications
+      .filter(a => a.applicantId === applicantId)
+      .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+  }
+
+  async createJobApplication(application: InsertJobApplication): Promise<JobApplication> {
+    const newApplication: JobApplication = {
+      id: randomUUID(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ...application
+    };
+    this.jobApplications.push(newApplication);
+    return newApplication;
+  }
+
+  async updateJobApplication(id: string, updates: Partial<InsertJobApplication>): Promise<JobApplication> {
+    const index = this.jobApplications.findIndex(a => a.id === id);
+    if (index === -1) throw new Error("Application not found");
+    
+    this.jobApplications[index] = {
+      ...this.jobApplications[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.jobApplications[index];
+  }
+
+  // Mentorship operations
+  async getAllMentorshipRequests(): Promise<MentorshipRequest[]> {
+    return [...this.mentorshipRequests].sort((a, b) => 
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    );
+  }
+
+  async getMentorshipRequestsByMenteeId(menteeId: string): Promise<MentorshipRequest[]> {
+    return this.mentorshipRequests
+      .filter(r => r.menteeId === menteeId)
+      .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+  }
+
+  async getMentorshipRequestsByMentorId(mentorId: string): Promise<MentorshipRequest[]> {
+    return this.mentorshipRequests
+      .filter(r => r.mentorId === mentorId)
+      .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+  }
+
+  async createMentorshipRequest(request: InsertMentorshipRequest): Promise<MentorshipRequest> {
+    const newRequest: MentorshipRequest = {
+      id: randomUUID(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ...request
+    };
+    this.mentorshipRequests.push(newRequest);
+    return newRequest;
+  }
+
+  async updateMentorshipRequest(id: string, updates: Partial<InsertMentorshipRequest>): Promise<MentorshipRequest> {
+    const index = this.mentorshipRequests.findIndex(r => r.id === id);
+    if (index === -1) throw new Error("Request not found");
+    
+    this.mentorshipRequests[index] = {
+      ...this.mentorshipRequests[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.mentorshipRequests[index];
+  }
+
+  async deleteMentorshipRequest(id: string): Promise<void> {
+    const index = this.mentorshipRequests.findIndex(r => r.id === id);
+    if (index !== -1) {
+      this.mentorshipRequests.splice(index, 1);
+    }
+  }
+
+  // Notification operations
+  async getNotificationsByMemberId(memberId: string): Promise<Notification[]> {
+    return this.notifications
+      .filter(n => n.memberId === memberId)
+      .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+  }
+
+  async getUnreadNotificationsByMemberId(memberId: string): Promise<Notification[]> {
+    return this.notifications
+      .filter(n => n.memberId === memberId && !n.isRead)
+      .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+  }
+
+  async createNotification(notification: InsertNotification): Promise<Notification> {
+    const newNotification: Notification = {
+      id: randomUUID(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ...notification
+    };
+    this.notifications.push(newNotification);
+    return newNotification;
+  }
+
+  async markNotificationAsRead(id: string): Promise<void> {
+    const index = this.notifications.findIndex(n => n.id === id);
+    if (index !== -1) {
+      this.notifications[index].isRead = true;
+    }
+  }
+
+  async markAllNotificationsAsRead(memberId: string): Promise<void> {
+    this.notifications
+      .filter(n => n.memberId === memberId)
+      .forEach(n => n.isRead = true);
+  }
+
+  // Event operations
+  async getAllEvents(): Promise<Event[]> {
+    return [...this.events].sort((a, b) => 
+      new Date(b.eventDate || 0).getTime() - new Date(a.eventDate || 0).getTime()
+    );
+  }
+
+  async getUpcomingEvents(): Promise<Event[]> {
+    const now = new Date();
+    return this.events
+      .filter(e => new Date(e.eventDate || 0) > now)
+      .sort((a, b) => new Date(a.eventDate || 0).getTime() - new Date(b.eventDate || 0).getTime());
+  }
+
+  async getEventById(id: string): Promise<Event | undefined> {
+    return this.events.find(e => e.id === id);
+  }
+
+  async createEvent(event: InsertEvent): Promise<Event> {
+    const newEvent: Event = {
+      id: randomUUID(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ...event
+    };
+    this.events.push(newEvent);
+    return newEvent;
+  }
+
+  async updateEvent(id: string, updates: Partial<InsertEvent>): Promise<Event> {
+    const index = this.events.findIndex(e => e.id === id);
+    if (index === -1) throw new Error("Event not found");
+    
+    this.events[index] = {
+      ...this.events[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.events[index];
+  }
+
+  async deleteEvent(id: string): Promise<void> {
+    const index = this.events.findIndex(e => e.id === id);
+    if (index !== -1) {
+      this.events.splice(index, 1);
+    }
+  }
+}
+
+// Use database storage if available, otherwise use memory storage
+export const storage = db ? new DatabaseStorage() : new MemoryStorage();
