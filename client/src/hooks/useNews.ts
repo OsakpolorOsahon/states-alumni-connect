@@ -1,31 +1,32 @@
-import { useQuery } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
-
-interface NewsItem {
-  id: string;
-  title: string;
-  content: string;
-  is_published: boolean;
-  published_at: string;
-  updated_at: string;
-  author_id: string;
-  members?: {
-    full_name: string;
-    photo_url?: string;
-  };
-}
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { db } from '@/lib/supabase';
 
 export const useNews = () => {
-  const { data: news = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['/api/news'],
-    queryFn: () => apiRequest('/api/news'),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+  return useQuery({
+    queryKey: ['news'],
+    queryFn: async () => {
+      const result = await db.getNews();
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+      return result.data || [];
+    },
   });
+};
 
-  return { 
-    news, 
-    loading: isLoading, 
-    error: error?.message || null, 
-    refetch 
-  };
+export const useCreateNews = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (newsData: any) => {
+      const result = await db.createNews(newsData);
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+      return result.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['news'] });
+    },
+  });
 };
