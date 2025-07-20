@@ -130,18 +130,6 @@ export const jobApplications = pgTable("job_applications", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const mentorshipRequests = pgTable("mentorship_requests", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  menteeId: uuid("mentee_id").references(() => members.id),
-  mentorId: uuid("mentor_id").references(() => members.id),
-  requestMessage: text("request_message").notNull(),
-  status: mentorshipStatusEnum("status").default("pending"),
-  matchedAt: timestamp("matched_at"),
-  completedAt: timestamp("completed_at"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
 export const events = pgTable("events", {
   id: uuid("id").primaryKey().defaultRandom(),
   organizerId: uuid("organizer_id").references(() => members.id),
@@ -171,8 +159,10 @@ export const mentorshipRequests = pgTable("mentorship_requests", {
   id: uuid("id").primaryKey().defaultRandom(),
   menteeId: uuid("mentee_id").references(() => members.id),
   mentorId: uuid("mentor_id").references(() => members.id),
-  requestMessage: text("request_message"),
+  requestMessage: text("request_message").notNull(),
   status: mentorshipStatusEnum("status").default("pending"),
+  matchedAt: timestamp("matched_at"),
+  completedAt: timestamp("completed_at"),
   respondedAt: timestamp("responded_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -185,17 +175,6 @@ export const notifications = pgTable("notifications", {
   message: text("message").notNull(),
   type: notificationTypeEnum("type").default("general"),
   isRead: boolean("is_read").default(false),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-export const events = pgTable("events", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  organizerId: uuid("organizer_id").references(() => members.id),
-  title: text("title").notNull(),
-  description: text("description"),
-  eventDate: timestamp("event_date").notNull(),
-  location: text("location"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
