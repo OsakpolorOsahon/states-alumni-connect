@@ -2,14 +2,37 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Award, Star, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
-// Removed useScrollAnimation hook
+import { useQuery } from '@tanstack/react-query';
+import { db } from '@/lib/supabase';
+import { useMemo } from 'react';
 
 const HallOfFameSection = () => {
-  const stats = { hallOfFameCount: 0 };
-  const loading = false;
-  const titleRef = null;
+  const { data: achievements = [], isLoading: achievementsLoading } = useQuery({
+    queryKey: ['hall-of-fame'],
+    queryFn: async () => {
+      const result = await db.getHallOfFame();
+      if (result.error) throw new Error(result.error.message);
+      return result.data || [];
+    }
+  });
+
+  const stats = useMemo(() => {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    return {
+      totalAchievements: achievements.length,
+      featuredMembers: new Set(achievements.map((a: any) => a.member_id)).size,
+      monthlyRecognitions: achievements.filter((a: any) => 
+        new Date(a.created_at) > thirtyDaysAgo
+      ).length
+    };
+  }, [achievements]);
   
-  const totalHallOfFame = stats.hallOfFameCount || 0;
+  const loading = achievementsLoading;
+  const titleRef = null as React.RefObject<HTMLDivElement>;
+  
+  const totalHallOfFame = stats.totalAchievements || 0;
   const academicCount = Math.floor(totalHallOfFame * 0.3);
   const leadershipCount = Math.floor(totalHallOfFame * 0.4);
   const innovationCount = totalHallOfFame - academicCount - leadershipCount;

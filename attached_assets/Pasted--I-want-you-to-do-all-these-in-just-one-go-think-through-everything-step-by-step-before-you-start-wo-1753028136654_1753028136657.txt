@@ -1,0 +1,17 @@
+‎I want you to do all these in just one go think through everything step by step before you start working:
+‎1.  If not done properly, Make the directory page a public page where public users can see members cards. Make the the order in which the members cards are arranged by the heirachy of council positions( President first then all the way to none) > Year of statesmanship(Oldest statesman to youngest) > Last MOWCUB position(Commander In Chief to Director of Intelligence). On the card the Person's profile picture should be displayed then if the person is in a council position then there should be at tag on the person's card showing his council position then the person's details should be displayed as followed: "[Full Name] Statesman[Last MOWCUB Position] [Year Of Statesmanship]"all these information can be gotten from the sign up form.An example is "John Doe Statesman Director of Intelligence 2015/2016". Don't fill any cards by yourself let everything be automatic and real time once the secretary approved a member automatically their card appears on the directory in the appropriate position. If the member doesn't want his picture public then let the transparent logo be in place of their picture.
+‎
+‎2. Let the numbers on the Directory and Hall of Fame section and footer be realtime and every other thing on the website that needs to be realtime for proper information. Make everything initialise at no entry yet or 0 and when they are filled the numbers can start going up and everything updated.
+‎
+‎5. Make every single page on the website start working properly. Public pages, Members pages, Secretary pages. Let members be able to start posting job listing and secretary approve them and then members can apply or visit the link of the Job. Let the secretary start being able to post news and events with dates and members being able to engage. Let members be able to make posts and other members engage. And let the mentorship part too start working properly. Basically Just let everything start working properly in the members and secretary's dashboard. And let everything be real time. Organise everything and make it neat, official, formal and easy to use. Also note a secretary can hand over so make the secretary also able to make another person a secretary and leave the secretary position(Let there be an "Are You Sure" warning) then the person made secretary can access the secretary dashboard and no other person until he hands over.
+‎
+‎8. After doing everything you can possibly do,... Tell me exactly the things I need to do to make the website complete and ready for use by the Public User, Members and the Secretary and Tell me exactly how I will do those things. Also give me a new step by step deployment guide on vercel. Put all this in a Final Deployment guide and delete the previous ones. Make this guide extremely detailed and easy for understanding.
+‎
+‎9. Do everything to make this be the last prompt I will feed you with because after this you would have made the website fully functional and effective that I will not need to feed you any other prompt or do any other fix or work except the things you tell me to do from 8.
+‎
+‎10. Review the website. Run tests optimise to make everything faster and load faster. Check for errors or things that are not working and fix them. Let the website be fully functional after this prompt.
+‎
+‎Do everything here In one go don't make any mistake.
+‎DO A REALLY GOOD JOB IN ONE GO.
+‎I know you can do this.
+‎Lets gooooo.

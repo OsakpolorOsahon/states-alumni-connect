@@ -125,6 +125,44 @@ export const jobApplications = pgTable("job_applications", {
   coverLetter: text("cover_letter"),
   resumeUrl: text("resume_url"),
   status: text("status").default("pending"),
+  appliedAt: timestamp("applied_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const mentorshipRequests = pgTable("mentorship_requests", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  menteeId: uuid("mentee_id").references(() => members.id),
+  mentorId: uuid("mentor_id").references(() => members.id),
+  requestMessage: text("request_message").notNull(),
+  status: mentorshipStatusEnum("status").default("pending"),
+  matchedAt: timestamp("matched_at"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const events = pgTable("events", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  organizerId: uuid("organizer_id").references(() => members.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  eventDate: timestamp("event_date").notNull(),
+  location: text("location"),
+  maxAttendees: integer("max_attendees"),
+  isPublic: boolean("is_public").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const eventAttendees = pgTable("event_attendees", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventId: uuid("event_id").references(() => events.id),
+  memberId: uuid("member_id").references(() => members.id),
+  rsvpStatus: text("rsvp_status").default("pending"),
+  registeredAt: timestamp("registered_at").defaultNow(),
+  resumeUrl: text("resume_url"),
+  status: text("status").default("pending"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

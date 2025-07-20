@@ -94,6 +94,15 @@ export const db = {
     return await supabase.from('job_posts').insert(job).select().single()
   },
 
+  // Hall of Fame
+  getHallOfFame: async () => {
+    return await supabase.from('hall_of_fame').select('*, members(full_name, photo_url)').order('created_at', { ascending: false })
+  },
+
+  createHallOfFame: async (achievement: any) => {
+    return await supabase.from('hall_of_fame').insert(achievement).select().single()
+  },
+
   // Events
   getEvents: async () => {
     return await supabase.from('events').select('*').order('event_date', { ascending: true })
@@ -101,6 +110,32 @@ export const db = {
 
   createEvent: async (event: any) => {
     return await supabase.from('events').insert(event).select().single()
+  },
+
+  // Job Applications
+  getJobApplications: async (jobId?: string) => {
+    const query = supabase.from('job_applications').select('*, members(full_name), job_posts(title)');
+    if (jobId) {
+      return query.eq('job_id', jobId);
+    }
+    return query.order('created_at', { ascending: false });
+  },
+
+  createJobApplication: async (application: any) => {
+    return await supabase.from('job_applications').insert(application).select().single()
+  },
+
+  // Mentorship
+  getMentorshipRequests: async () => {
+    return await supabase.from('mentorship_requests').select('*, mentees:members!mentee_id(full_name), mentors:members!mentor_id(full_name)').order('created_at', { ascending: false })
+  },
+
+  createMentorshipRequest: async (request: any) => {
+    return await supabase.from('mentorship_requests').insert(request).select().single()
+  },
+
+  updateMentorshipRequest: async (id: string, updates: any) => {
+    return await supabase.from('mentorship_requests').update(updates).eq('id', id).select().single()
   },
 
   // Notifications

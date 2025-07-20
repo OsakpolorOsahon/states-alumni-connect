@@ -4,13 +4,27 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin, Users, Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useMembers } from "@/hooks/useMembers";
+import { useMemo } from 'react';
 
 const DirectorySection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { data: members = [], isLoading } = useMembers();
   
-  const stats = { activeMembers: 0, totalMembers: 0, recentMembers: 0 };
-  const loading = false;
+  const stats = useMemo(() => {
+    const activeMembers = members.filter(m => m.status === 'active').length;
+    const totalMembers = members.length;
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const recentMembers = members.filter(m => 
+      new Date(m.created_at) > thirtyDaysAgo && m.status === 'active'
+    ).length;
+    
+    return { activeMembers, totalMembers, recentMembers };
+  }, [members]);
+  
+  const loading = isLoading;
 
   const statisticsData = [
     {
