@@ -363,8 +363,12 @@ UPLOADTHING_APP_ID=your_uploadthing_app_id
 ##### Option A: Deploy from GitHub
 1. Push your code to GitHub
 2. Connect your GitHub repository to Vercel
-3. Add environment variables in Vercel dashboard
-4. Deploy
+3. Configure build settings in Vercel dashboard:
+   - **Build Command**: `vite build`
+   - **Output Directory**: `dist/public`
+   - **Install Command**: `npm install`
+4. Add environment variables in Vercel dashboard
+5. Deploy
 
 ##### Option B: Deploy with Vercel CLI
 ```bash
@@ -383,6 +387,26 @@ vercel env add VITE_SUPABASE_ANON_KEY
 
 # Redeploy with environment variables
 vercel --prod
+```
+
+#### Troubleshooting Build Issues
+
+If you encounter "No Output Directory named 'dist' found", ensure:
+1. The `vercel.json` has the correct `outputDirectory`: `"dist/public"`
+2. The build command is set to `vite build` (not the full stack build)
+3. Vite config outputs to `dist/public` directory
+
+The `vercel.json` should look like:
+```json
+{
+  "buildCommand": "vite build",
+  "outputDirectory": "dist/public",
+  "framework": "vite",
+  "env": {
+    "VITE_SUPABASE_URL": "@vite_supabase_url",
+    "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key"
+  }
+}
 ```
 
 #### Step 3: Domain Configuration
