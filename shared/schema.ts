@@ -15,9 +15,9 @@ export const stateshipYearEnum = pgEnum("stateship_year_enum", [
   "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024", "2025", "2026"
 ]);
 export const lastPositionEnum = pgEnum("last_position_enum", [
-  "Recruit", "Lance Corporal", "Corporal", "Sergeant", "Staff Sergeant", "Warrant Officer II",
-  "Warrant Officer I", "Second Lieutenant", "Lieutenant", "Captain", "Major", "Lieutenant Colonel",
-  "Colonel", "Brigadier General", "Major General", "Lieutenant General", "General"
+  "CINC", "CGS", "AG", "GOC", "PM", "EC", "QMG", "DSD", "STO", "BM", "DO", "FCRO",
+  "DOP", "CSO", "DOH", "CDI", "CMO", "HOV", "DAG", "DPM", "DQMG", "DDSD", "DBM", 
+  "DDO", "DFCRO", "DDOP", "DDOH", "PC", "ADC", "DI", "None"
 ]);
 export const councilOfficeEnum = pgEnum("council_office_enum", [
   "President", "Vice President", "Secretary General", "Assistant Secretary General",

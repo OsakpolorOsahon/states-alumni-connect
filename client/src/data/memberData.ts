@@ -11,25 +11,38 @@ export const STATESHIP_YEARS = [
   '1977/1978', '1976/1977'
 ];
 
-// MOWCUB positions using database enum values (from lastPositionEnum)
 export const MOWCUB_POSITIONS = [
-  { code: "General", title: "General" },
-  { code: "Lieutenant General", title: "Lieutenant General" }, 
-  { code: "Major General", title: "Major General" },
-  { code: "Brigadier General", title: "Brigadier General" },
-  { code: "Colonel", title: "Colonel" },
-  { code: "Lieutenant Colonel", title: "Lieutenant Colonel" },
-  { code: "Major", title: "Major" },
-  { code: "Captain", title: "Captain" },
-  { code: "Lieutenant", title: "Lieutenant" },
-  { code: "Second Lieutenant", title: "Second Lieutenant" },
-  { code: "Warrant Officer I", title: "Warrant Officer I" },
-  { code: "Warrant Officer II", title: "Warrant Officer II" },
-  { code: "Staff Sergeant", title: "Staff Sergeant" },
-  { code: "Sergeant", title: "Sergeant" },
-  { code: "Corporal", title: "Corporal" },
-  { code: "Lance Corporal", title: "Lance Corporal" },
-  { code: "Recruit", title: "Recruit" }
+  { code: 'CINC', title: 'Commander-in-Chief' },
+  { code: 'CGS', title: 'Chief of General Staff' },
+  { code: 'AG', title: 'Adjutant General' },
+  { code: 'GOC', title: 'General Officer Commanding' },
+  { code: 'PM', title: 'Provost Marshal' },
+  { code: 'EC', title: 'Executive Council Member' },
+  { code: 'QMG', title: 'Quartermaster General' },
+  { code: 'DSD', title: 'Director of Staff Duties' },
+  { code: 'STO', title: 'Senior Training Officer' },
+  { code: 'BM', title: 'Brigade Major' },
+  { code: 'DO', title: 'Duty Officer' },
+  { code: 'FCRO', title: 'Force Commander Regimental Officer' },
+  { code: 'DOP', title: 'Director of Operations' },
+  { code: 'CSO', title: 'Chief Security Officer' },
+  { code: 'DOH', title: 'Director of Health' },
+  { code: 'CDI', title: 'Chief Drill Instructor' },
+  { code: 'CMO', title: 'Chief Medical Officer' },
+  { code: 'HOV', title: 'Head of Venue' },
+  { code: 'DAG', title: 'Deputy Adjutant General' },
+  { code: 'DPM', title: 'Deputy Provost Marshal' },
+  { code: 'DQMG', title: 'Deputy Quartermaster General' },
+  { code: 'DDSD', title: 'Deputy Director of Staff Duties' },
+  { code: 'DBM', title: 'Deputy Brigade Major' },
+  { code: 'DDO', title: 'Deputy Duty Officer' },
+  { code: 'DFCRO', title: 'Deputy Force Commander Regimental Officer' },
+  { code: 'DDOP', title: 'Deputy Director of Operations' },
+  { code: 'DDOH', title: 'Deputy Director of Health' },
+  { code: 'PC', title: 'Platoon Commander' },
+  { code: 'ADC', title: 'Aide-de-Camp' },
+  { code: 'DI', title: 'Drill Instructor' },
+  { code: 'None', title: 'None' }
 ];
 
 export const COUNCIL_OFFICES = [

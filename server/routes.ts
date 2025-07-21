@@ -85,14 +85,15 @@ export async function registerRoutes(app: Express): Promise<void> {
         return res.status(400).json({ error: "Failed to create user" });
       }
 
-      // Create member record with proper field mapping
+      // Create member record with proper field mapping and null handling
       const memberInsert = {
         user_id: authData.user.id,
         full_name: memberData.fullName || memberData.full_name || 'Unknown',
         nickname: memberData.nickname || null,
-        stateship_year: memberData.stateshipYear || memberData.stateship_year || 2024,
-        last_mowcub_position: memberData.lastMowcubPosition || memberData.last_mowcub_position || 'Member',
-        current_council_office: memberData.currentCouncilOffice || memberData.current_council_office || null,
+        stateship_year: memberData.stateshipYear || memberData.stateship_year || '2024/2025',
+        last_mowcub_position: memberData.lastPosition || memberData.lastMowcubPosition || memberData.last_mowcub_position || 'None',
+        current_council_office: (memberData.councilOffice === 'none' || memberData.councilOffice === 'Member') ? null : 
+                                (memberData.councilOffice || memberData.currentCouncilOffice || memberData.current_council_office || null),
         latitude: memberData.latitude || null,
         longitude: memberData.longitude || null,
         status: 'pending',
