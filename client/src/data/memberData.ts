@@ -47,19 +47,16 @@ export const MOWCUB_POSITIONS = [
 
 export const COUNCIL_OFFICES = [
   'President',
-  'Vice President (Diaspora)',
-  'Vice President (National)',
-  'Secretary-General',
-  'Assistant Secretary-General',
+  'Vice President', 
+  'Secretary General',
+  'Assistant Secretary General',
   'Treasurer',
-  'Director of Finance',
-  'Director of Socials',
-  'Director of Public Relations',
+  'Financial Secretary',
+  'Public Relations Officer',
+  'Welfare Officer',
   'Provost Marshal',
-  'Deputy Provost Marshal',
-  'Ex-Officio (I)',
-  'Ex-Officio (II)',
-  'None'
+  'Organizing Secretary',
+  'Member'
 ];
 
 export const BADGE_DEFINITIONS = [

@@ -105,16 +105,19 @@ const SecretaryMemberEdit = ({ member, onUpdate, onCancel }: SecretaryMemberEdit
             Current Council Office
           </Label>
           <Select 
-            value={editingMember.currentCouncilOffice || "None"} 
+            value={editingMember.currentCouncilOffice || ""} 
             onValueChange={(value) => setEditingMember(prev => ({ 
               ...prev, 
-              currentCouncilOffice: value === "None" ? undefined : value 
+              currentCouncilOffice: value || null
             }))}
           >
             <SelectTrigger className="dark:bg-background dark:border-border dark:text-foreground">
               <SelectValue placeholder="Select office" />
             </SelectTrigger>
             <SelectContent className="dark:bg-popover dark:border-border">
+              <SelectItem value="" className="dark:text-foreground dark:focus:bg-accent">
+                No Office
+              </SelectItem>
               {councilOffices.map(office => (
                 <SelectItem key={office} value={office} className="dark:text-foreground dark:focus:bg-accent">
                   {office}

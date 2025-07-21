@@ -38,7 +38,7 @@ export default function SignUp() {
     nickname: '',
     stateshipYear: '',
     lastPosition: '',
-    councilOffice: 'None',
+    councilOffice: '',
     latitude: null as number | null,
     longitude: null as number | null,
   })
@@ -239,6 +239,7 @@ export default function SignUp() {
                       <SelectValue placeholder="Select office" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="">No Office</SelectItem>
                       {COUNCIL_OFFICES.map((o) => (
                         <SelectItem key={o} value={o}>
                           {o}

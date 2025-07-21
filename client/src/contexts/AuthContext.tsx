@@ -128,12 +128,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const memberResult = await db.createMember({
           user_id: authData.user.id,
           full_name: memberData.full_name,
-          nickname: memberData.nickname,
+          nickname: memberData.nickname || null,
           stateship_year: memberData.stateship_year,
           last_mowcub_position: memberData.last_mowcub_position,
-          current_council_office: memberData.current_council_office,
-          photo_url: memberData.photo_url,
-          dues_proof_url: memberData.dues_proof_url,
+          current_council_office: memberData.current_council_office || null,
+          photo_url: memberData.photo_url || null,
+          dues_proof_url: memberData.dues_proof_url || null,
           latitude: memberData.latitude,
           longitude: memberData.longitude
         });
