@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MOWCUB_POSITIONS, COUNCIL_OFFICES } from '@/data/memberData';
 
 interface Member {
   id: string;
@@ -24,40 +25,9 @@ interface SecretaryMemberEditProps {
 const SecretaryMemberEdit = ({ member, onUpdate, onCancel }: SecretaryMemberEditProps) => {
   const [editingMember, setEditingMember] = useState<Member>({ ...member });
 
-  const mowcubPositions = [
-    "None",
-    "President (PRES)",
-    "Vice President (VP)",
-    "Secretary General (SEC-GEN)",
-    "Assistant Secretary General (ASST SEC-GEN)",
-    "Financial Secretary (FIN-SEC)",
-    "Treasurer (TREAS)",
-    "Director of Socials (DOS)",
-    "Public Relations Officer (PRO)",
-    "Welfare Officer (WO)",
-    "Squad Leader Alpha (SL-A)",
-    "Squad Leader Bravo (SL-B)",
-    "Squad Leader Charlie (SL-C)",
-    "Assistant Squad Leader Alpha (ASL-A)",
-    "Assistant Squad Leader Bravo (ASL-B)",
-    "Assistant Squad Leader Charlie (ASL-C)"
-  ];
 
-  const councilOffices = [
-    "None",
-    "President (PRES)",
-    "Vice President (VP)",
-    "Secretary General (SEC-GEN)",
-    "Assistant Secretary General (ASST SEC-GEN)",
-    "Financial Secretary (FIN-SEC)",
-    "Treasurer (TREAS)",
-    "Director of Socials (DOS)",
-    "Public Relations Officer (PRO)",
-    "Welfare Officer (WO)",
-    "Legal Advisor (LA)",
-    "Publicity Secretary (PUB-SEC)",
-    "Ex-Officio Member (EX-OFF)"
-  ];
+
+
 
   const handleSave = () => {
     onUpdate(member.id, {
@@ -90,9 +60,9 @@ const SecretaryMemberEdit = ({ member, onUpdate, onCancel }: SecretaryMemberEdit
               <SelectValue placeholder="Select position" />
             </SelectTrigger>
             <SelectContent className="dark:bg-popover dark:border-border">
-              {mowcubPositions.map(position => (
-                <SelectItem key={position} value={position} className="dark:text-foreground dark:focus:bg-accent">
-                  {position}
+              {MOWCUB_POSITIONS.map(position => (
+                <SelectItem key={position.code} value={position.code} className="dark:text-foreground dark:focus:bg-accent">
+                  {position.title}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -118,7 +88,7 @@ const SecretaryMemberEdit = ({ member, onUpdate, onCancel }: SecretaryMemberEdit
               <SelectItem value="none" className="dark:text-foreground dark:focus:bg-accent">
                 No Office
               </SelectItem>
-              {councilOffices.map(office => (
+              {COUNCIL_OFFICES.map(office => (
                 <SelectItem key={office} value={office} className="dark:text-foreground dark:focus:bg-accent">
                   {office}
                 </SelectItem>

@@ -218,7 +218,7 @@ export default function SignUp() {
                       <SelectContent>
                         {MOWCUB_POSITIONS.map((p) => (
                           <SelectItem key={p.code} value={p.code}>
-                            {p.code} – {p.title}
+                            {p.title}
                           </SelectItem>
                         ))}
                       </SelectContent>
