@@ -49,13 +49,7 @@ CREATE POLICY "Users can update their own profile" ON members
 FOR UPDATE 
 TO authenticated 
 USING (auth.uid() = user_id::uuid) 
-WITH CHECK (
-  auth.uid() = user_id::uuid AND 
-  -- Prevent users from changing sensitive fields
-  (OLD.status = NEW.status) AND 
-  (OLD.role = NEW.role) AND
-  (OLD.user_id = NEW.user_id)
-);
+WITH CHECK (auth.uid() = user_id::uuid);
 
 -- Allow anonymous users to view active members (for public directory)
 CREATE POLICY "Anonymous can view active members" ON members 
