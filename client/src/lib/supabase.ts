@@ -11,8 +11,7 @@ if (supabaseAnonKey?.includes('=')) {
   supabaseAnonKey = supabaseAnonKey.split('=')[1]
 }
 
-console.log('Supabase URL (cleaned):', supabaseUrl)
-console.log('Supabase Key exists:', !!supabaseAnonKey)
+// URLs cleaned and validated
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables')

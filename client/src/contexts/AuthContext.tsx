@@ -127,13 +127,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Create member record
         const memberResult = await db.createMember({
           user_id: authData.user.id,
-          full_name: memberData.fullName,
+          full_name: memberData.full_name,
           nickname: memberData.nickname,
-          stateship_year: memberData.stateshipYear,
-          last_mowcub_position: memberData.lastMowcubPosition,
-          current_council_office: memberData.currentCouncilOffice,
-          photo_url: memberData.photoUrl,
-          dues_proof_url: memberData.duesProofUrl,
+          stateship_year: memberData.stateship_year,
+          last_mowcub_position: memberData.last_mowcub_position,
+          current_council_office: memberData.current_council_office,
+          photo_url: memberData.photo_url,
+          dues_proof_url: memberData.dues_proof_url,
           latitude: memberData.latitude,
           longitude: memberData.longitude
         });
