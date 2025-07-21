@@ -89,40 +89,48 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   // User operations
   async getUser(id: number): Promise<User | undefined> {
+    if (!db) throw new Error("Database not available");
     const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
     return result[0];
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
+    if (!db) throw new Error("Database not available");
     const result = await db.select().from(users).where(eq(users.username, username)).limit(1);
     return result[0];
   }
 
   async createUser(user: InsertUser): Promise<User> {
+    if (!db) throw new Error("Database not available");
     const result = await db.insert(users).values(user).returning();
     return result[0];
   }
 
   // Member operations
   async getMember(id: string): Promise<Member | undefined> {
+    if (!db) throw new Error("Database not available");
     const result = await db.select().from(members).where(eq(members.id, id)).limit(1);
     return result[0];
   }
 
   async getMemberByUserId(userId: string): Promise<Member | undefined> {
+    if (!db) throw new Error("Database not available");
     const result = await db.select().from(members).where(eq(members.userId, userId)).limit(1);
     return result[0];
   }
 
   async getAllMembers(): Promise<Member[]> {
+    if (!db) throw new Error("Database not available");
     return await db.select().from(members).orderBy(desc(members.createdAt));
   }
 
   async getActiveMembers(): Promise<Member[]> {
+    if (!db) throw new Error("Database not available");
     return await db.select().from(members).where(eq(members.status, 'active')).orderBy(desc(members.createdAt));
   }
 
   async getPendingMembers(): Promise<Member[]> {
+    if (!db) throw new Error("Database not available");
     return await db.select().from(members).where(eq(members.status, 'pending')).orderBy(desc(members.createdAt));
   }
 
@@ -142,25 +150,30 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateMember(id: string, updates: Partial<InsertMember>): Promise<Member> {
+    if (!db) throw new Error("Database not available");
     const result = await db.update(members).set(updates).where(eq(members.id, id)).returning();
     return result[0];
   }
 
   async deleteMember(id: string): Promise<void> {
+    if (!db) throw new Error("Database not available");
     await db.delete(members).where(eq(members.id, id));
   }
 
   // Badge operations
   async getBadgesByMemberId(memberId: string): Promise<Badge[]> {
+    if (!db) throw new Error("Database not available");
     return await db.select().from(badges).where(eq(badges.memberId, memberId)).orderBy(desc(badges.awardedAt));
   }
 
   async createBadge(badge: InsertBadge): Promise<Badge> {
+    if (!db) throw new Error("Database not available");
     const result = await db.insert(badges).values(badge).returning();
     return result[0];
   }
 
   async deleteBadge(id: string): Promise<void> {
+    if (!db) throw new Error("Database not available");
     await db.delete(badges).where(eq(badges.id, id));
   }
 
@@ -434,7 +447,18 @@ export class MemoryStorage implements IStorage {
       id: randomUUID(),
       createdAt: new Date(),
       updatedAt: new Date(),
-      ...member
+      ...member,
+      userId: member.userId || null,
+      nickname: member.nickname || null,
+      currentCouncilOffice: member.currentCouncilOffice || null,
+      photoUrl: member.photoUrl || null,
+      duesProofUrl: member.duesProofUrl || null,
+      latitude: member.latitude || null,
+      longitude: member.longitude || null,
+      paidThrough: member.paidThrough || null,
+      role: member.role || "member",
+      status: member.status || "pending",
+      approvedAt: member.approvedAt || null
     };
     this.members.push(newMember);
     return newMember;
