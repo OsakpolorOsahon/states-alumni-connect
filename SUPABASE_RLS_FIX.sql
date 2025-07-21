@@ -42,15 +42,15 @@ USING (status = 'active');
 CREATE POLICY "Users can view their own record" ON members 
 FOR SELECT 
 TO authenticated 
-USING (auth.uid()::text = user_id);
+USING (auth.uid() = user_id::uuid);
 
 -- Allow users to update their own profile (basic info only, not status/role)
 CREATE POLICY "Users can update their own profile" ON members 
 FOR UPDATE 
 TO authenticated 
-USING (auth.uid()::text = user_id) 
+USING (auth.uid() = user_id::uuid) 
 WITH CHECK (
-  auth.uid()::text = user_id AND 
+  auth.uid() = user_id::uuid AND 
   -- Prevent users from changing sensitive fields
   (OLD.status = NEW.status) AND 
   (OLD.role = NEW.role) AND
