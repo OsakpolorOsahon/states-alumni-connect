@@ -127,8 +127,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createMember(member: InsertMember): Promise<Member> {
-    const result = await db.insert(members).values(member).returning();
-    return result[0];
+    // Use Supabase admin client for member creation to bypass RLS
+    const { data, error } = await supabaseAdmin
+      .from('members')
+      .insert(member)
+      .select()
+      .single();
+    
+    if (error) {
+      throw new Error(`Failed to create member: ${error.message}`);
+    }
+    
+    return data;
   }
 
   async updateMember(id: string, updates: Partial<InsertMember>): Promise<Member> {
