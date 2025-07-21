@@ -1,10 +1,28 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+let supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+let supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+// Handle case where environment variables include the variable name
+if (supabaseUrl?.includes('=')) {
+  supabaseUrl = supabaseUrl.split('=')[1]
+}
+if (supabaseAnonKey?.includes('=')) {
+  supabaseAnonKey = supabaseAnonKey.split('=')[1]
+}
+
+console.log('Supabase URL (cleaned):', supabaseUrl)
+console.log('Supabase Key exists:', !!supabaseAnonKey)
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables')
+}
+
+// Validate URL format
+try {
+  new URL(supabaseUrl)
+} catch (error) {
+  throw new Error(`Invalid Supabase URL format: ${supabaseUrl}`)
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
