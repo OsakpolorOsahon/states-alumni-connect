@@ -56,9 +56,17 @@ export async function registerRoutes(app: Express): Promise<void> {
     try {
       const { email, password, ...memberData } = req.body;
 
+      // Log the incoming data to debug
+      console.log("Registration data:", { email, memberData });
+
       // Validate required fields
       if (!email || !password) {
         return res.status(400).json({ error: "Email and password are required" });
+      }
+
+      // Validate full name specifically
+      if (!memberData.fullName && !memberData.full_name) {
+        return res.status(400).json({ error: "Full name is required" });
       }
 
       // Create user with Supabase Auth
@@ -77,23 +85,27 @@ export async function registerRoutes(app: Express): Promise<void> {
         return res.status(400).json({ error: "Failed to create user" });
       }
 
-      // Create member record directly using supabaseAdmin with explicit RLS bypass
+      // Create member record with proper field mapping
+      const memberInsert = {
+        user_id: authData.user.id,
+        full_name: memberData.fullName || memberData.full_name || 'Unknown',
+        nickname: memberData.nickname || null,
+        stateship_year: memberData.stateshipYear || memberData.stateship_year || 2024,
+        last_mowcub_position: memberData.lastMowcubPosition || memberData.last_mowcub_position || 'Member',
+        current_council_office: memberData.currentCouncilOffice || memberData.current_council_office || null,
+        latitude: memberData.latitude || null,
+        longitude: memberData.longitude || null,
+        status: 'pending',
+        role: 'member',
+        photo_url: memberData.photoUrl || memberData.photo_url || null,
+        dues_proof_url: memberData.duesProofUrl || memberData.dues_proof_url || null
+      };
+
+      console.log("Member insert data:", memberInsert);
+
       const { data: member, error: memberError } = await supabaseAdmin
         .from('members')
-        .insert({
-          user_id: authData.user.id,
-          full_name: memberData.fullName,
-          nickname: memberData.nickname,
-          stateship_year: memberData.stateshipYear,
-          last_mowcub_position: memberData.lastMowcubPosition,
-          current_council_office: memberData.currentCouncilOffice,
-          latitude: memberData.latitude,
-          longitude: memberData.longitude,
-          status: 'pending',
-          role: 'member',
-          photo_url: memberData.photoUrl,
-          dues_proof_url: memberData.duesProofUrl
-        })
+        .insert(memberInsert)
         .select()
         .single();
 
