@@ -131,7 +131,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           nickname: memberData.nickname || null,
           stateship_year: memberData.stateship_year,
           last_mowcub_position: memberData.last_mowcub_position,
-          current_council_office: memberData.current_council_office || null,
+          current_council_office: memberData.current_council_office === 'none' ? null : memberData.current_council_office,
           photo_url: memberData.photo_url || null,
           dues_proof_url: memberData.dues_proof_url || null,
           latitude: memberData.latitude,
