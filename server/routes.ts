@@ -77,21 +77,32 @@ export async function registerRoutes(app: Express): Promise<void> {
         return res.status(400).json({ error: "Failed to create user" });
       }
 
-      // Create member record
-      const member = await storage.createMember({
-        userId: authData.user.id,
-        fullName: memberData.fullName,
-        nickname: memberData.nickname,
-        stateshipYear: memberData.stateshipYear,
-        lastMowcubPosition: memberData.lastMowcubPosition,
-        currentCouncilOffice: memberData.currentCouncilOffice,
-        latitude: memberData.latitude,
-        longitude: memberData.longitude,
-        status: 'pending',
-        role: 'member',
-        photoUrl: memberData.photoUrl,
-        duesProofUrl: memberData.duesProofUrl
-      });
+      // Create member record directly using supabaseAdmin with explicit RLS bypass
+      const { data: member, error: memberError } = await supabaseAdmin
+        .from('members')
+        .insert({
+          user_id: authData.user.id,
+          full_name: memberData.fullName,
+          nickname: memberData.nickname,
+          stateship_year: memberData.stateshipYear,
+          last_mowcub_position: memberData.lastMowcubPosition,
+          current_council_office: memberData.currentCouncilOffice,
+          latitude: memberData.latitude,
+          longitude: memberData.longitude,
+          status: 'pending',
+          role: 'member',
+          photo_url: memberData.photoUrl,
+          dues_proof_url: memberData.duesProofUrl
+        })
+        .select()
+        .single();
+
+      if (memberError) {
+        console.error("Member creation error:", memberError);
+        // If member creation fails, clean up the auth user
+        await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+        return res.status(400).json({ error: `Failed to create member profile: ${memberError.message}` });
+      }
 
       res.status(201).json({
         user: { id: authData.user.id, email: authData.user.email },
