@@ -70,8 +70,7 @@ const Footer = () => {
                 alt="SMMOWCUB Logo"
                 style={{
                   height: '50px',
-                  width: 'auto',
-                  filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.3))'
+                  width: 'auto'
                 }}
               />
             </div>
