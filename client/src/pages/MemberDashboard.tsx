@@ -10,7 +10,7 @@ import Footer from "@/components/Footer";
 import PushNotifications from "@/components/PushNotifications";
 
 const MemberDashboard = () => {
-  // Removed broken hooks
+  const { user, member, signOut, isSecretary } = useAuth();
 
   const quickLinks = [
     { title: "News & Events", description: "Latest updates and upcoming events", icon: FileText, href: "/news-events" },
