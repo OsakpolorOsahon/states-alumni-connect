@@ -151,17 +151,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log('Starting sign in process...');
       const { data, error } = await auth.signIn(email, password);
       
       if (error) {
+        console.error('Supabase auth error:', error);
         throw new Error(error.message);
       }
 
-      if (data.user) {
+      if (data?.user) {
+        console.log('User authenticated successfully');
         await refreshSession();
         return { success: true, message: 'Signed in successfully' };
+      } else {
+        throw new Error('Authentication failed');
       }
     } catch (error: any) {
+      console.error('SignIn error:', error);
       throw new Error(error.message || 'Login failed');
     }
   };

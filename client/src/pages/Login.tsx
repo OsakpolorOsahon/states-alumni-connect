@@ -28,27 +28,22 @@ const Login = () => {
     try {
       const result = await signIn(formData.email, formData.password);
       
-      if (result.error) {
-        toast({
-          title: "Login Failed",
-          description: result.error,
-          variant: "destructive"
-        });
-      } else {
-        // Wait a moment for auth context to update
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 500);
-        
+      if (result && result.success) {
         toast({
           title: "Login Successful", 
           description: "Redirecting to dashboard...",
         });
+        
+        // Wait a moment for auth context to update
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 500);
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Login error:', error);
       toast({
-        title: "Error",
-        description: "An unexpected error occurred",
+        title: "Login Failed",
+        description: error.message || "Invalid email or password. Please try again.",
         variant: "destructive"
       });
     } finally {
