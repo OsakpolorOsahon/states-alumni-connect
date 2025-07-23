@@ -7,7 +7,7 @@ import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
 
 const EmailVerification = () => {
-  // Removed broken hooks
+  const { signOut } = useAuth();
 
   return (
     <div className="min-h-screen bg-background">

@@ -55,33 +55,37 @@ const Footer = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '20px',
-            marginBottom: '20px'
+            gap: 'clamp(10px, 4vw, 20px)',
+            marginBottom: '20px',
+            flexWrap: 'wrap'
           }}>
             <div style={{
               position: 'relative',
-              padding: '10px',
+              padding: '8px',
               borderRadius: '50%',
-              background: 'linear-gradient(45deg, #E10600, #ff4444)',
-              boxShadow: '0 0 20px rgba(225, 6, 0, 0.3)'
+              background: 'rgba(255,255,255,0.1)',
+              border: '2px solid rgba(255,255,255,0.2)',
+              boxShadow: '0 0 15px rgba(225, 6, 0, 0.2)'
             }}>
               <img
                 src="/images/logo-transparent.png"
                 alt="SMMOWCUB Logo"
                 style={{
-                  height: '50px',
-                  width: '50px'
+                  height: '40px',
+                  width: '40px',
+                  objectFit: 'contain',
+                  filter: 'brightness(1.1)'
                 }}
               />
             </div>
             <div>
               <h1 style={{
-                fontSize: '42px',
+                fontSize: 'clamp(24px, 6vw, 42px)',
                 fontWeight: '800',
                 margin: 0,
                 color: 'white',
                 textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-                letterSpacing: '2px'
+                letterSpacing: 'clamp(1px, 0.5vw, 2px)'
               }}>
                 SMMOWCUB
               </h1>

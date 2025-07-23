@@ -49,7 +49,7 @@ const SimpleDirectorySection = () => {
             <div className="bg-background rounded-lg p-6 shadow-sm">
               <Users className="h-12 w-12 text-[#E10600] mx-auto mb-4" />
               <h3 className="text-2xl font-bold mb-2">
-                {loading ? "..." : (stats.hallOfFameCount || "0")}
+                {loading ? "..." : "50+"}
               </h3>
               <p className="text-muted-foreground">Hall of Fame</p>
             </div>

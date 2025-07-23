@@ -12,9 +12,9 @@ import Footer from '@/components/Footer';
 import PasswordInput from '@/components/PasswordInput';
 
 const Login = () => {
-  // Removed broken hooks
-  // Removed broken hooks
-  // Removed broken hooks
+  const navigate = useNavigate();
+  const { signIn } = useAuth();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
