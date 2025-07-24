@@ -15,7 +15,7 @@ const ContactSection = () => {
     {
       icon: Phone,
       title: "Call Us",
-      info: "+234 802 300 5113",
+      info: "+234 705 735 8410",
       description: "Speak directly with our team"
     },
     {
