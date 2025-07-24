@@ -450,7 +450,7 @@ const Footer = () => {
               margin: 0,
               fontStyle: 'italic'
             }}>
-              "Build The Man... Build The Community"
+              "Consolidating The Built Man"
             </p>
           </div>
         </div>
