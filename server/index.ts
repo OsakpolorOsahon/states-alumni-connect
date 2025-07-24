@@ -10,6 +10,12 @@ app.use(express.urlencoded({ extended: false }));
 // Serve attached assets
 app.use('/attached_assets', express.static('attached_assets'));
 
+// Serve client public directory for images in development
+if (app.get("env") === "development") {
+  app.use('/images', express.static('client/public/images'));
+  app.use('/icons', express.static('client/public/icons'));
+}
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;

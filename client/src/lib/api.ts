@@ -97,3 +97,40 @@ export const mentorshipAPI = {
 export const statsAPI = {
   get: () => apiRequest('/api/stats'),
 };
+
+// Combined API object for backwards compatibility
+export const api = {
+  // Auth
+  login: authAPI.login,
+  register: authAPI.register,
+  logout: authAPI.logout,
+  getMe: authAPI.getMe,
+  
+  // Members
+  getMembers: membersAPI.getAll,
+  getActiveMembers: membersAPI.getActive,
+  getPendingMembers: membersAPI.getPending,
+  approveMember: membersAPI.approve,
+  
+  // News
+  getNews: newsAPI.getAll,
+  getPublishedNews: () => apiRequest('/api/news/published'),
+  createNews: newsAPI.create,
+  
+  // Forum
+  getForumThreads: forumAPI.getThreads,
+  createForumThread: forumAPI.createThread,
+  getForumReplies: forumAPI.getReplies,
+  createForumReply: forumAPI.createReply,
+  
+  // Jobs
+  getJobs: jobsAPI.getAll,
+  createJob: jobsAPI.create,
+  
+  // Mentorship
+  getMentorships: mentorshipAPI.getAll,
+  createMentorship: mentorshipAPI.create,
+  
+  // Stats
+  getStats: statsAPI.get,
+};

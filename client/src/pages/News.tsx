@@ -24,7 +24,7 @@ const News = () => {
   });
 
   // Filter and sort news
-  const filteredNews = news.filter(article => {
+  const filteredNews = news.filter((article: any) => {
     const matchesSearch = searchTerm === '' || 
       article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       article.content.toLowerCase().includes(searchTerm.toLowerCase());
@@ -33,7 +33,7 @@ const News = () => {
       article.category === selectedCategory;
     
     return matchesSearch && matchesCategory;
-  }).sort((a, b) => {
+  }).sort((a: any, b: any) => {
     switch (sortBy) {
       case 'newest':
         return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
@@ -46,7 +46,7 @@ const News = () => {
     }
   });
 
-  const categories = [...new Set(news.map(article => article.category))];
+  const categories = Array.from(new Set(news.map((article: any) => article.category)));
 
   if (isLoading) {
     return (
@@ -143,7 +143,8 @@ const News = () => {
                 </span>
               </div>
               
-              {user && (
+              {/* user && ( */}
+              {false && (
                 <Button 
                   size="sm" 
                   className="bg-[#E10600] hover:bg-[#C10500]"
@@ -164,7 +165,7 @@ const News = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredNews.map((article) => (
+            {filteredNews.map((article: any) => (
               <Card key={article.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between mb-2">
