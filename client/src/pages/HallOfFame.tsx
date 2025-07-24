@@ -1,14 +1,11 @@
-import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from '@/contexts/AuthContext';
-import { Trophy, Star, Medal, Award, Plus } from "lucide-react";
+import { Trophy, Star, Medal, Award, Plus, Search } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 
@@ -29,263 +26,181 @@ interface HallOfFameMember {
 }
 
 const HallOfFame = () => {
-  const [hallOfFameMembers, setHallOfFameMembers] = useState<HallOfFameMember[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [newEntry, setNewEntry] = useState({
-    member_id: '',
-    achievement_title: '',
-    achievement_description: '',
-    achievement_date: ''
-  });
-  const [availableMembers, setAvailableMembers] = useState<any[]>([]);
-  // Removed broken hooks
-  // Removed broken hooks
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  
+  // Empty data for now - will be populated when backend is available
+  const hallOfFameMembers: HallOfFameMember[] = [];
+  const loading = false;
 
-  useEffect(() => {
-    fetchHallOfFame();
-    if (isSecretary) {
-      fetchAvailableMembers();
-    }
-  }, [isSecretary]);
-
-  const fetchHallOfFame = async () => {
-    try {
-      const response = await fetch('/api/hall-of-fame');
-      if (!response.ok) {
-        throw new Error('Failed to fetch hall of fame');
-      }
-      // Removed broken hooks
-      setHallOfFameMembers(data || []);
-    } catch (error) {
-      console.error('Error fetching hall of fame:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load Hall of Fame",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchAvailableMembers = async () => {
-    try {
-      const response = await fetch('/api/members/active');
-      if (!response.ok) {
-        throw new Error('Failed to fetch members');
-      }
-      // Removed broken hooks
-      setAvailableMembers(data || []);
-    } catch (error) {
-      console.error('Error fetching members:', error);
-    }
-  };
-
-  const addHallOfFameEntry = async () => {
-    if (!newEntry.member_id || !newEntry.achievement_title) {
-      toast({
-        title: "Missing Information",
-        description: "Please select a member and provide an achievement title",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/hall-of-fame', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          memberId: newEntry.member_id,
-          achievementTitle: newEntry.achievement_title,
-          achievementDescription: newEntry.achievement_description,
-          achievementDate: newEntry.achievement_date
-        })
-      });
-
-      // Removed broken hooks
-
-      if (response.ok && result.success) {
-        toast({
-          title: "Entry Added",
-          description: "Hall of Fame entry has been added successfully"
-        });
-        setNewEntry({
-          member_id: '',
-          achievement_title: '',
-          achievement_description: '',
-          achievement_date: ''
-        });
-        setShowAddForm(false);
-        fetchHallOfFame();
-      } else {
-        throw new Error(result.error || 'Failed to add entry');
-      }
-    } catch (error) {
-      console.error('Error adding hall of fame entry:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add Hall of Fame entry",
-        variant: "destructive"
-      });
-    }
-  };
+  const categories = [
+    { id: 'all', name: 'All Categories', icon: Trophy, count: 0 },
+    { id: 'academic', name: 'Academic Excellence', icon: Star, count: 0 },
+    { id: 'leadership', name: 'Leadership', icon: Award, count: 0 },
+    { id: 'innovation', name: 'Innovation', icon: Medal, count: 0 },
+  ];
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
-  const getAchievementIcon = (title: string) => {
-    // Removed broken hooks
-    if (lowerTitle.includes('leadership') || lowerTitle.includes('president')) return Trophy;
-    if (lowerTitle.includes('service') || lowerTitle.includes('community')) return Star;
-    if (lowerTitle.includes('excellence') || lowerTitle.includes('outstanding')) return Medal;
-    return Award;
+  const getCategoryIcon = (category: string) => {
+    const cat = categories.find(c => c.id === category);
+    return cat ? cat.icon : Trophy;
   };
+
+  const filteredMembers = hallOfFameMembers.filter(member => {
+    const matchesSearch = !searchTerm || 
+      member.achievement_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.members.full_name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = selectedCategory === 'all' || 
+      member.achievement_title.toLowerCase().includes(selectedCategory);
+    
+    return matchesSearch && matchesCategory;
+  });
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="container mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, index) => (
+              <div key={index} className="h-64 bg-gray-200 animate-pulse rounded-lg"></div>
+            ))}
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      <div className="container mx-auto py-12 px-4">
+      <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Hall of Fame</h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Celebrating the outstanding achievements and contributions of SMMOWCUB members
-            who have made significant impacts in their communities and professions.
+          <h1 className="text-4xl font-bold text-foreground mb-4">
+            Hall of <span className="text-[#E10600]">Fame</span>
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            Celebrating the extraordinary achievements of our distinguished statesmen who have made 
+            significant contributions to society and brought honor to our Organization.
           </p>
         </div>
 
-        {/* Add New Entry Button for Secretaries */}
-        {isSecretary && (
-          <div className="mb-8">
-            <Button 
-              onClick={() => setShowAddForm(!showAddForm)}
-              className="bg-[#E10600] hover:bg-[#C10500]"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Hall of Fame Entry
-            </Button>
-          </div>
-        )}
+        {/* Category Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {categories.map((category) => {
+            const IconComponent = category.icon;
+            return (
+              <Card key={category.id} className="p-4 cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => setSelectedCategory(category.id)}>
+                <div className="flex items-center justify-center mb-2">
+                  <IconComponent className="h-6 w-6 text-[#E10600] mr-2" />
+                  <span className="text-2xl font-bold text-[#E10600]">
+                    {category.count}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground text-center">{category.name}</p>
+                {selectedCategory === category.id && (
+                  <div className="mt-2 h-1 bg-[#E10600] rounded-full"></div>
+                )}
+              </Card>
+            );
+          })}
+        </div>
 
-        {/* Add New Entry Form */}
-        {showAddForm && isSecretary && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Add New Hall of Fame Entry</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Select Member</label>
-                <select
-                  value={newEntry.member_id}
-                  onChange={(e) => setNewEntry({...newEntry, member_id: e.target.value})}
-                  className="w-full p-2 border rounded-md"
-                >
-                  <option value="">Choose a member...</option>
-                  {availableMembers.map((member) => (
-                    <option key={member.id} value={member.id}>
-                      {member.full_name} ({member.stateship_year})
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-sm font-medium">Achievement Title</label>
-                <Input
-                  value={newEntry.achievement_title}
-                  onChange={(e) => setNewEntry({...newEntry, achievement_title: e.target.value})}
-                  placeholder="e.g., Outstanding Leadership in Community Development"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Achievement Description</label>
-                <Textarea
-                  value={newEntry.achievement_description}
-                  onChange={(e) => setNewEntry({...newEntry, achievement_description: e.target.value})}
-                  placeholder="Describe the achievement in detail..."
-                  rows={4}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Achievement Date</label>
-                <Input
-                  type="date"
-                  value={newEntry.achievement_date}
-                  onChange={(e) => setNewEntry({...newEntry, achievement_date: e.target.value})}
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button onClick={addHallOfFameEntry}>
-                  Add Entry
-                </Button>
-                <Button variant="outline" onClick={() => setShowAddForm(false)}>
-                  Cancel
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* Search */}
+        <Card className="mb-8">
+          <CardContent className="p-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search achievements or member names..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Hall of Fame Grid */}
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#E10600] mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Loading Hall of Fame...</p>
-          </div>
-        ) : hallOfFameMembers.length === 0 ? (
-          <div className="text-center py-12">
-            <Trophy className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No Hall of Fame Entries Yet</h3>
-            <p className="text-muted-foreground">
-              Hall of Fame entries will appear here as members achieve outstanding recognition.
+        {/* Hall of Fame Members - Empty State */}
+        {hallOfFameMembers.length === 0 ? (
+          <Card className="p-12 text-center">
+            <Trophy className="h-16 w-16 text-muted-foreground mx-auto mb-6" />
+            <h3 className="text-2xl font-semibold mb-4">No Honorees Yet</h3>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+              The Hall of Fame is being prepared to showcase the remarkable achievements of our 
+              distinguished Statesmen. Check back soon to celebrate their contributions.
             </p>
-          </div>
+            <div className="flex gap-4 justify-center">
+              <Link to="/directory">
+                <Button className="bg-[#E10600] hover:bg-[#C10500]">
+                  View Member Directory
+                </Button>
+              </Link>
+              <Link to="/contact">
+                <Button variant="outline">
+                  Contact Secretariat
+                </Button>
+              </Link>
+            </div>
+          </Card>
         ) : (
+          // This will show when hall of fame data is available
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {hallOfFameMembers.map((entry) => {
-              const IconComponent = getAchievementIcon(entry.achievement_title);
+            {filteredMembers.map((member) => {
+              const IconComponent = getCategoryIcon(selectedCategory);
               return (
-                <Card key={entry.id} className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <Avatar className="w-16 h-16">
-                        <AvatarImage src={entry.members.photo_url} alt={entry.members.full_name} />
+                <Card key={member.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center justify-between">
+                      <IconComponent className="h-6 w-6 text-[#E10600]" />
+                      <Badge variant="secondary" className="text-xs">
+                        {member.achievement_date ? new Date(member.achievement_date).getFullYear() : 'Recent'}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center space-x-4 mb-4">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={member.members.photo_url} alt={member.members.full_name} />
                         <AvatarFallback className="bg-[#E10600] text-white">
-                          {getInitials(entry.members.full_name)}
+                          {getInitials(member.members.full_name)}
                         </AvatarFallback>
                       </Avatar>
-                      
                       <div className="flex-1">
-                        <h3 className="font-semibold text-lg">{entry.members.full_name}</h3>
-                        {entry.members.nickname && (
-                          <p className="text-sm text-muted-foreground">"{entry.members.nickname}"</p>
+                        <h3 className="font-semibold text-foreground">
+                          {member.members.full_name}
+                        </h3>
+                        {member.members.nickname && (
+                          <p className="text-sm text-muted-foreground">
+                            "{member.members.nickname}"
+                          </p>
                         )}
-                        <Badge variant="secondary" className="text-xs mt-1">
-                          {entry.members.stateship_year}
+                        <Badge variant="outline" className="text-xs mt-1">
+                          {member.members.stateship_year}
                         </Badge>
                       </div>
-
-                      <IconComponent className="h-6 w-6 text-[#E10600]" />
                     </div>
-
-                    <div className="mt-4">
-                      <h4 className="font-semibold text-[#E10600] mb-2">
-                        {entry.achievement_title}
+                    
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-[#E10600]">
+                        {member.achievement_title}
                       </h4>
-                      {entry.achievement_description && (
-                        <p className="text-sm text-muted-foreground mb-3">
-                          {entry.achievement_description}
+                      {member.achievement_description && (
+                        <p className="text-sm text-muted-foreground">
+                          {member.achievement_description}
                         </p>
                       )}
-                      {entry.achievement_date && (
-                        <p className="text-xs text-muted-foreground">
-                          Achievement Date: {new Date(entry.achievement_date).toLocaleDateString()}
-                        </p>
+                      {member.members.current_council_office && (
+                        <Badge variant="outline" className="text-xs">
+                          {member.members.current_council_office}
+                        </Badge>
                       )}
                     </div>
                   </CardContent>
@@ -293,6 +208,27 @@ const HallOfFame = () => {
               );
             })}
           </div>
+        )}
+
+        {/* No results message */}
+        {hallOfFameMembers.length > 0 && filteredMembers.length === 0 && (
+          <Card className="p-8 text-center">
+            <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No Results Found</h3>
+            <p className="text-muted-foreground">
+              Try adjusting your search criteria or browse all categories.
+            </p>
+            <Button 
+              variant="outline" 
+              className="mt-4"
+              onClick={() => {
+                setSearchTerm('');
+                setSelectedCategory('all');
+              }}
+            >
+              Clear Filters
+            </Button>
+          </Card>
         )}
       </div>
       <Footer />

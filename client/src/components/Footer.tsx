@@ -236,12 +236,12 @@ const Footer = () => {
               }}>
                 <Mail style={{ width: '18px', height: '18px', color: 'white' }} />
               </div>
-              <a href="mailto:secretary@smmowcub.org" style={{ 
+              <a href="mailto:csmowcub1154@gmail.com" style={{ 
                 color: '#e0e0e0', 
                 textDecoration: 'none',
                 fontSize: '16px'
               }}>
-                secretary@smmowcub.org
+                csmowcub1154@gmail.com
               </a>
             </div>
             <div style={{ marginBottom: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
@@ -255,12 +255,12 @@ const Footer = () => {
               }}>
                 <Phone style={{ width: '18px', height: '18px', color: 'white' }} />
               </div>
-              <a href="tel:+2348030000000" style={{ 
+              <a href="tel:+2348023005113" style={{ 
                 color: '#e0e0e0', 
                 textDecoration: 'none',
                 fontSize: '16px'
               }}>
-                +234 (0) 803 xxx xxxx
+                +234 802 300 5113
               </a>
             </div>
             <div style={{ marginBottom: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
@@ -280,7 +280,7 @@ const Footer = () => {
                 maxWidth: '200px',
                 textAlign: 'left'
               }}>
-                University of Benin, Benin City, Edo State, Nigeria
+                University of Benin, Ugbowo Campus, Benin City, Edo State, Nigeria
               </span>
             </div>
           </div>

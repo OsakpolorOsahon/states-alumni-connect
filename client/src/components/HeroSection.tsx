@@ -5,8 +5,7 @@ import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const HeroSection = () => {
-  // Removed broken hooks
-  // Removed broken hooks
+  const navigate = useNavigate();
 
   const handleDirectoryClick = () => {
     // Directory is public, always navigate to it
@@ -42,15 +41,16 @@ const HeroSection = () => {
           >
             View Directory
           </Button>
-          <Link to="/contact">
+          <Link to="/signup">
             <Button 
               size="lg" 
-              className="bg-[#E10600] hover:bg-[#C10500] text-white px-8 py-3 text-lg font-semibold btn-animated ripple-effect tilt-hover"
-              aria-label="Contact Us"
+              className="bg-white hover:bg-gray-100 text-[#E10600] border-2 border-white px-8 py-3 text-lg font-semibold btn-animated ripple-effect tilt-hover"
+              aria-label="Member Sign Up"
             >
-              Contact Us
+              Member Sign Up
             </Button>
           </Link>
+
         </div>
 
         {/* Social Media Icons */}

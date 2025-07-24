@@ -10,8 +10,19 @@ import { Search, MapPin, User, Users, Crown, Star, Filter, ArrowUpDown } from 'l
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import InteractiveMap from '@/components/InteractiveMap';
-// Removed useMembers hook
 import { STATESHIP_YEARS, MOWCUB_POSITIONS, COUNCIL_OFFICES } from '@/data/memberData';
+
+interface Member {
+  id: string;
+  fullName: string;
+  nickname?: string;
+  stateshipYear: string;
+  currentCouncilOffice?: string;
+  mowcubPosition?: string;
+  photoUrl?: string;
+  location?: string;
+  status: string;
+}
 
 const Directory = () => {
   const [filters, setFilters] = useState({
@@ -24,9 +35,12 @@ const Directory = () => {
   const [viewType, setViewType] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'hierarchy' | 'year' | 'name'>('hierarchy');
 
-  const members = [];
+  // Empty members array for now - will be populated when data is available
+  const members: Member[] = [];
   const loading = false;
   const error = null;
+  const stats = { totalMembers: 0, activeMembers: 0, hallOfFameCount: 0 };
+  const statsLoading = false;
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
@@ -55,102 +69,107 @@ const Directory = () => {
 
   // Sort members by hierarchy
   const sortedMembers = useMemo(() => {
-    if (!members) return [];
+    if (!members || members.length === 0) return [];
     
     return [...members].sort((a, b) => {
       switch (sortBy) {
         case 'hierarchy':
           // First: Council Office (President first, then all the way to none)
-          const aCouncilIndex = councilOfficeOrder.indexOf(a.currentCouncilOffice || a.current_council_office || null);
-          const bCouncilIndex = councilOfficeOrder.indexOf(b.currentCouncilOffice || b.current_council_office || null);
+          const aCouncilIndex = councilOfficeOrder.indexOf(a.currentCouncilOffice || null);
+          const bCouncilIndex = councilOfficeOrder.indexOf(b.currentCouncilOffice || null);
           
           if (aCouncilIndex !== bCouncilIndex) {
             return aCouncilIndex - bCouncilIndex;
           }
           
           // Second: Year of Statesmanship (Oldest to youngest)
-          const aYear = parseInt((a.stateshipYear || a.stateship_year).split('/')[0] || (a.stateshipYear || a.stateship_year));
-          const bYear = parseInt((b.stateshipYear || b.stateship_year).split('/')[0] || (b.stateshipYear || b.stateship_year));
+          const aYear = parseInt(a.stateshipYear.split('/')[0] || a.stateshipYear);
+          const bYear = parseInt(b.stateshipYear.split('/')[0] || b.stateshipYear);
           
           if (aYear !== bYear) {
             return aYear - bYear;
           }
           
-          // Third: Last MOWCUB Position (Commander In Chief to Director of Intelligence)
-          const aMowcubIndex = mowcubPositionOrder.indexOf(a.lastMowcubPosition || a.last_mowcub_position);
-          const bMowcubIndex = mowcubPositionOrder.indexOf(b.lastMowcubPosition || b.last_mowcub_position);
+          // Third: MOWCUB Position (higher ranks first)
+          const aMowcubIndex = mowcubPositionOrder.indexOf(a.mowcubPosition || 'Recruit');
+          const bMowcubIndex = mowcubPositionOrder.indexOf(b.mowcubPosition || 'Recruit');
           
           return aMowcubIndex - bMowcubIndex;
+          
         case 'year':
-          return (a.stateshipYear || a.stateship_year).localeCompare(b.stateshipYear || b.stateship_year);
+          const yearA = parseInt(a.stateshipYear.split('/')[0] || a.stateshipYear);
+          const yearB = parseInt(b.stateshipYear.split('/')[0] || b.stateshipYear);
+          return yearA - yearB;
+          
         case 'name':
-          return (a.fullName || a.full_name).localeCompare(b.fullName || b.full_name);
+          return a.fullName.localeCompare(b.fullName);
+          
         default:
           return 0;
       }
     });
   }, [members, sortBy]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <div className="container mx-auto py-12 px-4">
-          <div className="text-center progressive-load">
-            <div className="spinner-smooth rounded-full h-32 w-32 border-b-2 border-[#E10600] mx-auto"></div>
-            <p className="mt-4 text-muted-foreground fade-in-scroll">Loading directory...</p>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
+  // Filter members based on search criteria
+  const filteredMembers = useMemo(() => {
+    return sortedMembers.filter(member => {
+      const matchesSearch = !filters.search || 
+        member.fullName.toLowerCase().includes(filters.search.toLowerCase()) ||
+        (member.nickname && member.nickname.toLowerCase().includes(filters.search.toLowerCase()));
+      
+      const matchesYear = filters.year === 'all' || member.stateshipYear === filters.year;
+      const matchesPosition = filters.position === 'all' || member.mowcubPosition === filters.position;
+      const matchesOffice = filters.office === 'all' || member.currentCouncilOffice === filters.office;
+      
+      return matchesSearch && matchesYear && matchesPosition && matchesOffice;
+    });
+  }, [sortedMembers, filters]);
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      <div className="container mx-auto py-8 px-4">
-        {/* Header with Real-time Stats */}
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-foreground mb-4">
-            Member Directory
+            Member <span className="text-[#E10600]">Directory</span>
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
-            Connect with our distinguished network of Statesmen from across the globe
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            Connect with fellow Statesmen from across the globe. Our network spans multiple generations of leadership and excellence.
           </p>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="p-4">
+            <div className="flex items-center justify-center mb-2">
+              <Users className="h-6 w-6 text-[#E10600] mr-2" />
+              <span className="text-2xl font-bold text-[#E10600]">
+                {statsLoading ? '...' : stats.activeMembers}
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground text-center">Active Members</p>
+          </Card>
           
-          {/* Real-time Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-md mx-auto mb-8">
-            <Card className="p-4">
-              <div className="flex items-center justify-center mb-2">
-                <Users className="h-6 w-6 text-[#E10600] mr-2" />
-                <span className="text-2xl font-bold text-[#E10600]">
-                  {statsLoading ? '...' : stats.activeMembers}
-                </span>
-              </div>
-              <p className="text-sm text-muted-foreground">Active Members</p>
-            </Card>
-            
-            <Card className="p-4">
-              <div className="flex items-center justify-center mb-2">
-                <Crown className="h-6 w-6 text-[#E10600] mr-2" />
-                <span className="text-2xl font-bold text-[#E10600]">
-                  {statsLoading ? '...' : stats.hallOfFameCount}
-                </span>
-              </div>
-              <p className="text-sm text-muted-foreground">Hall of Fame</p>
-            </Card>
-            
-            <Card className="p-4">
-              <div className="flex items-center justify-center mb-2">
-                <Star className="h-6 w-6 text-[#E10600] mr-2" />
-                <span className="text-2xl font-bold text-[#E10600]">
-                  {statsLoading ? '...' : stats.recentMembers}
-                </span>
-              </div>
-              <p className="text-sm text-muted-foreground">Recent Members</p>
-            </Card>
-          </div>
+          <Card className="p-4">
+            <div className="flex items-center justify-center mb-2">
+              <User className="h-6 w-6 text-[#E10600] mr-2" />
+              <span className="text-2xl font-bold text-[#E10600]">
+                {statsLoading ? '...' : stats.totalMembers}
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground text-center">Total Members</p>
+          </Card>
+          
+          <Card className="p-4">
+            <div className="flex items-center justify-center mb-2">
+              <Crown className="h-6 w-6 text-[#E10600] mr-2" />
+              <span className="text-2xl font-bold text-[#E10600]">
+                {statsLoading ? '...' : '50+'}
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground text-center">Hall of Fame</p>
+          </Card>
         </div>
 
         {/* Search and Filters */}
@@ -180,7 +199,7 @@ const Directory = () => {
                 <SelectContent>
                   <SelectItem value="all">All Years</SelectItem>
                   {STATESHIP_YEARS.map(year => (
-                    <SelectItem key={year.value} value={year.value}>{year.label}</SelectItem>
+                    <SelectItem key={year} value={year}>{year}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -204,14 +223,14 @@ const Directory = () => {
                 <SelectContent>
                   <SelectItem value="all">All Offices</SelectItem>
                   {COUNCIL_OFFICES.map(office => (
-                    <SelectItem key={office.value} value={office.value}>{office.label}</SelectItem>
+                    <SelectItem key={office} value={office}>{office}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Select value={sortBy} onValueChange={setSortBy}>
+              <Select value={sortBy} onValueChange={(value: 'hierarchy' | 'year' | 'name') => setSortBy(value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
@@ -252,7 +271,7 @@ const Directory = () => {
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  {sortedMembers.length} members
+                  {filteredMembers.length} members
                 </span>
                 {sortBy === 'hierarchy' && (
                   <Badge variant="secondary" className="text-xs">
@@ -272,23 +291,42 @@ const Directory = () => {
               <CardTitle>Member Locations</CardTitle>
             </CardHeader>
             <CardContent>
-              <InteractiveMap members={sortedMembers} />
+              <div className="h-96 bg-muted rounded-lg flex items-center justify-center">
+                <p className="text-muted-foreground">Map view will be available when members are added</p>
+              </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Members Grid/List */}
-        {sortedMembers.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">No members found matching your criteria.</p>
-          </div>
+        {/* Members Display - Empty State */}
+        {members.length === 0 ? (
+          <Card className="p-12 text-center">
+            <Users className="h-16 w-16 text-muted-foreground mx-auto mb-6" />
+            <h3 className="text-2xl font-semibold mb-4">No Members Yet</h3>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+              The member directory is currently being built. Check back soon to connect with fellow Statesmen from across the globe.
+            </p>
+            <div className="flex gap-4 justify-center">
+              <Link to="/signup">
+                <Button className="bg-[#E10600] hover:bg-[#C10500]">
+                  Join Our Community
+                </Button>
+              </Link>
+              <Link to="/contact">
+                <Button variant="outline">
+                  Contact Secretariat
+                </Button>
+              </Link>
+            </div>
+          </Card>
         ) : (
+          // This will show when members data is available
           <div className={`${
             viewType === 'grid' 
               ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
               : 'space-y-4'
           }`}>
-            {sortedMembers.map((member) => (
+            {filteredMembers.map((member) => (
               <Card key={member.id} className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-4 mb-4">
@@ -311,30 +349,19 @@ const Directory = () => {
                         <Badge variant="secondary" className="text-xs">
                           {member.stateshipYear}
                         </Badge>
-                        {member.currentCouncilOffice && member.currentCouncilOffice !== 'None' && (
-                          <Badge variant="outline" className="text-xs">
+                        {member.currentCouncilOffice && (
+                          <Badge variant="outline" className="text-[#E10600] border-[#E10600] text-xs">
+                            <Crown className="h-3 w-3 mr-1" />
                             {member.currentCouncilOffice}
+                          </Badge>
+                        )}
+                        {member.mowcubPosition && (
+                          <Badge variant="secondary" className="text-xs">
+                            {getPositionTitle(member.mowcubPosition)}
                           </Badge>
                         )}
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">
-                        {getPositionTitle(member.lastMowcubPosition)}
-                      </span>
-                    </div>
-                    {member.latitude && member.longitude && (
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">
-                          Location Available
-                        </span>
-                      </div>
-                    )}
                   </div>
                 </CardContent>
               </Card>
