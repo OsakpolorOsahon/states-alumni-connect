@@ -4,7 +4,6 @@ import { Users, BookOpen, Award } from "lucide-react";
 // Removed useScrollAnimation hook
 
 const FeaturesSection = () => {
-  const titleRef = null;
   const features = [
     {
       icon: Users,
@@ -26,10 +25,7 @@ const FeaturesSection = () => {
   return (
     <section className="py-16 lg:py-24 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div 
-          ref={titleRef as React.RefObject<HTMLDivElement>}
-          className="text-center mb-16 fade-in-scroll"
-        >
+        <div className="text-center mb-16 fade-in-scroll">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 bounce-in">
             Member Features
           </h2>

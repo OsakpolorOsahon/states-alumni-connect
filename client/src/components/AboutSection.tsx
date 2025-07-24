@@ -5,17 +5,11 @@ import { Link } from "react-router-dom";
 // Removed useScrollAnimation hook
 
 const AboutSection = () => {
-  const titleRef = null;
-  const contentRef = null;
-  const imageRef = null;
 
   return (
     <section className="py-16 lg:py-24 bg-background dark:bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div 
-          ref={titleRef as React.RefObject<HTMLDivElement>}
-          className="text-center mb-16 fade-in-scroll"
-        >
+        <div className="text-center mb-16 fade-in-scroll">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground dark:text-foreground mb-4 bounce-in">
             About SMMOWCUB
           </h2>
@@ -23,10 +17,7 @@ const AboutSection = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Column with red accent border */}
-          <div 
-            ref={contentRef as React.RefObject<HTMLDivElement>}
-            className="relative fade-in-scroll slide-in-left"
-          >
+          <div className="relative fade-in-scroll slide-in-left">
             <div className="absolute left-0 top-0 w-1 h-full bg-[#E10600]"></div>
             <div className="pl-8">
               <p className="text-lg text-muted-foreground dark:text-muted-foreground leading-relaxed mb-8">
@@ -52,10 +43,7 @@ const AboutSection = () => {
           </div>
 
           {/* Right Column with image */}
-          <div 
-            ref={imageRef as React.RefObject<HTMLDivElement>}
-            className="relative fade-in-scroll slide-in-right"
-          >
+          <div className="relative fade-in-scroll slide-in-right">
             <div className="aspect-[4/3] rounded-lg overflow-hidden shadow-lg image-scale interactive-shadow">
               <img
                 src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"

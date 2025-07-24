@@ -32,7 +32,7 @@ const History = () => {
                 Our Journey Through the Years
               </h1>
               <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto">
-                Explore the rich history and milestones that have shaped SMMOWCUB into the distinguished organization it is today.
+                Explore the milestones that shaped SMMOWCUB into the distinguished organization it is today.
               </p>
             </div>
           </div>
@@ -52,15 +52,15 @@ const History = () => {
               A Legacy of Excellence
             </h2>
             <p className="text-lg text-muted-foreground dark:text-muted-foreground leading-relaxed mb-8">
-              From our humble beginnings in 1970 to our current status as a premier alumni network, 
+              From our humble beginnings in 1976 to our current status as a premier alumni network, 
               SMMOWCUB has consistently upheld the highest standards of leadership, integrity, and service. 
               Our journey reflects not just institutional growth, but the collective achievements of 
-              thousands of Statesmen who have carried our values into every corner of society.
+              hundreds of Statesmen who have carried our values into every corner of society.
             </p>
             <p className="text-lg text-muted-foreground dark:text-muted-foreground leading-relaxed">
               As we look toward the future, we remain committed to fostering the next generation of leaders 
               while honoring the traditions that have made us who we are. The spirit of Man O' War lives on 
-              in every graduate, every achievement, and every act of service to humanity.
+              in every statesman, every achievement, and every act of service to humanity.
             </p>
           </div>
         </section>
