@@ -87,8 +87,8 @@ const About = () => {
               className="relative"
             >
               <img
-                src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
-                alt="SMMOWCUB gathering"
+                src="/attached_assets/IMG-20250724-WA0007(1)_1753347494775.jpg"
+                alt="SMMOWCUB community gathering and celebration"
                 className="rounded-lg shadow-lg"
               />
             </motion.div>

@@ -65,22 +65,43 @@ const HistorySection = () => {
           })}
         </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="text-center"
-        >
-          <Link to="/history">
-            <Button 
-              variant="outline" 
-              className="border-[#E10600] text-[#E10600] hover:bg-[#E10600] hover:text-white group"
-            >
-              Explore Full History
-              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </Link>
-        </motion.div>
+        <div className="grid lg:grid-cols-2 gap-12 items-center mt-16">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <div className="aspect-[4/3] rounded-lg overflow-hidden shadow-lg">
+              <img
+                src="/attached_assets/IMG-20250724-WA0008(1)_1753347494716.jpg"
+                alt="SMMOWCUB distinguished elder addressing the community"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="text-center lg:text-left"
+          >
+            <h3 className="text-2xl font-bold mb-4">Leadership Legacy</h3>
+            <p className="text-muted-foreground mb-6 leading-relaxed">
+              Our distinguished statesmen continue to lead and inspire new generations, 
+              sharing wisdom and maintaining the traditions that have shaped our organization for decades.
+            </p>
+            <Link to="/history">
+              <Button 
+                variant="outline" 
+                className="border-[#E10600] text-[#E10600] hover:bg-[#E10600] hover:text-white group"
+              >
+                Explore Full History
+                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+          </motion.div>
+        </div>
       </div>
     </section>
   );
