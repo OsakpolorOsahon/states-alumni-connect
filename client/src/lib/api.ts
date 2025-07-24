@@ -1,130 +1,99 @@
-import { Member } from '@/types/member';
+// API client for Express backend
+export const apiRequest = async (url: string, options: RequestInit = {}) => {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    credentials: 'include', // Include cookies for session management
+  });
 
-const API_BASE = '/api';
-
-// Generic API call function
-async function apiCall(endpoint: string, options?: RequestInit) {
-  try {
-    const response = await fetch(`${API_BASE}${endpoint}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
-      ...options,
-    });
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error(`API call failed for ${endpoint}:`, error);
-    throw error;
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'Request failed' }));
+    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
   }
-}
 
-export const api = {
-  // Member operations
-  getAllMembers: () => apiCall('/members'),
-  getActiveMembers: () => apiCall('/members?status=active'),
-  getPendingMembers: () => apiCall('/members?status=pending'),
-  getMember: (id: string) => apiCall(`/members/${id}`),
-  createMember: (data: any) => apiCall('/members', {
+  return response.json();
+};
+
+// Auth API
+export const authAPI = {
+  login: async (email: string, password: string) => {
+    return apiRequest('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+  },
+
+  register: async (email: string, password: string, memberData: any) => {
+    return apiRequest('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ email, password, ...memberData }),
+    });
+  },
+
+  logout: async () => {
+    return apiRequest('/api/auth/logout', {
+      method: 'POST',
+    });
+  },
+
+  getMe: async () => {
+    return apiRequest('/api/auth/me');
+  },
+};
+
+// Members API
+export const membersAPI = {
+  getAll: () => apiRequest('/api/members'),
+  getActive: () => apiRequest('/api/members/active'),
+  getPending: () => apiRequest('/api/members/pending'),
+  approve: (id: string) => apiRequest(`/api/members/${id}/approve`, { method: 'PATCH' }),
+};
+
+// News API
+export const newsAPI = {
+  getAll: () => apiRequest('/api/news'),
+  create: (data: any) => apiRequest('/api/news', {
     method: 'POST',
     body: JSON.stringify(data),
   }),
-  updateMember: (id: string, data: any) => apiCall(`/members/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  }),
-  deleteMember: (id: string) => apiCall(`/members/${id}`, {
-    method: 'DELETE',
-  }),
+};
 
-  // Badge operations
-  getBadgesByMemberId: (memberId: string) => apiCall(`/badges?memberId=${memberId}`),
-  createBadge: (data: any) => apiCall('/badges', {
+// Forum API
+export const forumAPI = {
+  getThreads: () => apiRequest('/api/forum/threads'),
+  createThread: (data: any) => apiRequest('/api/forum/threads', {
     method: 'POST',
     body: JSON.stringify(data),
   }),
-  deleteBadge: (id: string) => apiCall(`/badges/${id}`, {
-    method: 'DELETE',
-  }),
-
-  // Hall of Fame operations
-  getAllHallOfFame: () => apiCall('/hall-of-fame'),
-  createHallOfFameEntry: (data: any) => apiCall('/hall-of-fame', {
+  getReplies: (threadId: string) => apiRequest(`/api/forum/threads/${threadId}/replies`),
+  createReply: (threadId: string, data: any) => apiRequest(`/api/forum/threads/${threadId}/replies`, {
     method: 'POST',
     body: JSON.stringify(data),
   }),
-  deleteHallOfFameEntry: (id: string) => apiCall(`/hall-of-fame/${id}`, {
-    method: 'DELETE',
-  }),
+};
 
-  // News operations
-  getAllNews: () => apiCall('/news'),
-  getPublishedNews: () => apiCall('/news?published=true'),
-  getNewsById: (id: string) => apiCall(`/news/${id}`),
-  createNews: (data: any) => apiCall('/news', {
+// Jobs API
+export const jobsAPI = {
+  getAll: () => apiRequest('/api/jobs'),
+  create: (data: any) => apiRequest('/api/jobs', {
     method: 'POST',
     body: JSON.stringify(data),
   }),
-  updateNews: (id: string, data: any) => apiCall(`/news/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  }),
-  deleteNews: (id: string) => apiCall(`/news/${id}`, {
-    method: 'DELETE',
-  }),
+};
 
-  // Job operations
-  getAllJobPosts: () => apiCall('/jobs'),
-  getActiveJobPosts: () => apiCall('/jobs?active=true'),
-  getJobPostById: (id: string) => apiCall(`/jobs/${id}`),
-  createJobPost: (data: any) => apiCall('/jobs', {
+// Mentorship API
+export const mentorshipAPI = {
+  getAll: () => apiRequest('/api/mentorship'),
+  create: (data: any) => apiRequest('/api/mentorship', {
     method: 'POST',
     body: JSON.stringify(data),
   }),
-  updateJobPost: (id: string, data: any) => apiCall(`/jobs/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  }),
-  deleteJobPost: (id: string) => apiCall(`/jobs/${id}`, {
-    method: 'DELETE',
-  }),
+};
 
-  // Forum operations
-  getAllForumThreads: () => apiCall('/forum/threads'),
-  getForumThreadById: (id: string) => apiCall(`/forum/threads/${id}`),
-  createForumThread: (data: any) => apiCall('/forum/threads', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  }),
-  getForumReplies: (threadId: string) => apiCall(`/forum/threads/${threadId}/replies`),
-  createForumReply: (data: any) => apiCall('/forum/replies', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  }),
-
-  // Event operations
-  getAllEvents: () => apiCall('/events'),
-  getUpcomingEvents: () => apiCall('/events?upcoming=true'),
-  createEvent: (data: any) => apiCall('/events', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  }),
-
-  // Mentorship operations
-  getAllMentorshipRequests: () => apiCall('/mentorship'),
-  createMentorshipRequest: (data: any) => apiCall('/mentorship', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  }),
-
-  // Notification operations
-  getNotifications: (memberId: string) => apiCall(`/notifications?memberId=${memberId}`),
-  markNotificationAsRead: (id: string) => apiCall(`/notifications/${id}/read`, {
-    method: 'PUT',
-  }),
+// Stats API
+export const statsAPI = {
+  get: () => apiRequest('/api/stats'),
 };

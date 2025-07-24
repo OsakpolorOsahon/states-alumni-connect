@@ -1,27 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { db } from '@/lib/supabase';
-import { toast } from 'sonner';
+import { forumAPI } from '@/lib/api';
 
 export const useForumThreads = () => {
   return useQuery({
-    queryKey: ['forum-threads'],
-    queryFn: async () => {
-      const result = await db.getForumThreads();
-      if (result.error) throw new Error(result.error.message);
-      return result.data || [];
-    }
+    queryKey: ['forum', 'threads'],
+    queryFn: forumAPI.getThreads,
   });
 };
 
 export const useForumReplies = (threadId: string) => {
   return useQuery({
-    queryKey: ['forum-replies', threadId],
-    queryFn: async () => {
-      const result = await db.getForumReplies(threadId);
-      if (result.error) throw new Error(result.error.message);
-      return result.data || [];
-    },
-    enabled: !!threadId
+    queryKey: ['forum', 'threads', threadId, 'replies'],
+    queryFn: () => forumAPI.getReplies(threadId),
+    enabled: !!threadId,
   });
 };
 
@@ -29,18 +20,10 @@ export const useCreateForumThread = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (threadData: any) => {
-      const result = await db.createForumThread(threadData);
-      if (result.error) throw new Error(result.error.message);
-      return result.data;
-    },
+    mutationFn: forumAPI.createThread,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['forum-threads'] });
-      toast.success('Discussion thread created successfully!');
+      queryClient.invalidateQueries({ queryKey: ['forum', 'threads'] });
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to create discussion thread');
-    }
   });
 };
 
@@ -48,18 +31,12 @@ export const useCreateForumReply = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (replyData: any) => {
-      const result = await db.createForumReply(replyData);
-      if (result.error) throw new Error(result.error.message);
-      return result.data;
+    mutationFn: ({ threadId, data }: { threadId: string; data: any }) => 
+      forumAPI.createReply(threadId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ 
+        queryKey: ['forum', 'threads', variables.threadId, 'replies'] 
+      });
     },
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['forum-replies', variables.thread_id] });
-      queryClient.invalidateQueries({ queryKey: ['forum-threads'] });
-      toast.success('Reply posted successfully!');
-    },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to post reply');
-    }
   });
 };

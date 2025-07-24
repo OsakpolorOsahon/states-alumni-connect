@@ -1,288 +1,267 @@
-import { pgTable, text, serial, integer, boolean, timestamp, uuid, pgEnum, real } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Enums
-export const userRoleEnum = pgEnum("user_role", ["member", "secretary"]);
-export const memberStatusEnum = pgEnum("member_status", ["pending", "active", "inactive"]);
-export const mentorshipStatusEnum = pgEnum("mentorship_status", ["pending", "active", "completed"]);
-export const notificationTypeEnum = pgEnum("notification_type", ["general", "approval", "badge", "hall_of_fame", "job", "mentorship"]);
-export const stateshipYearEnum = pgEnum("stateship_year_enum", [
-  "1976", "1977", "1978", "1979", "1980", "1981", "1982", "1983", "1984", "1985",
-  "1986", "1987", "1988", "1989", "1990", "1991", "1992", "1993", "1994", "1995",
-  "1996", "1997", "1998", "1999", "2000", "2001", "2002", "2003", "2004", "2005",
-  "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015",
-  "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024", "2025", "2026"
-]);
-export const lastPositionEnum = pgEnum("last_position_enum", [
-  "CINC", "CGS", "AG", "GOC", "PM", "EC", "QMG", "DSD", "STO", "BM", "DO", "FCRO",
-  "DOP", "CSO", "DOH", "CDI", "CMO", "HOV", "DAG", "DPM", "DQMG", "DDSD", "DBM", 
-  "DDO", "DFCRO", "DDOP", "DDOH", "PC", "ADC", "DI", "None"
-]);
-export const councilOfficeEnum = pgEnum("council_office_enum", [
-  "President", "Vice President", "Secretary General", "Assistant Secretary General",
-  "Treasurer", "Financial Secretary", "Public Relations Officer", "Welfare Officer",
-  "Provost Marshal", "Organizing Secretary", "Member"
-]);
+// Simple schema for in-memory storage without database dependencies
+export interface User {
+  id: number;
+  username: string;
+  password: string;
+  email: string;
+}
 
-// Tables
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+export interface Member {
+  id: string;
+  userId: string;
+  fullName: string;
+  nickname?: string | null;
+  stateshipYear: string;
+  lastMowcubPosition: string;
+  currentCouncilOffice?: string | null;
+  photoUrl?: string | null;
+  duesProofUrl?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  paidThrough?: string | null;
+  role: "member" | "secretary";
+  status: "pending" | "active" | "inactive";
+  approvedAt?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Badge {
+  id: string;
+  memberId: string;
+  badgeName: string;
+  badgeCode: string;
+  description?: string | null;
+  awardedBy?: string | null;
+  awardedAt?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface HallOfFame {
+  id: string;
+  memberId: string;
+  achievementTitle: string;
+  achievementDescription?: string | null;
+  achievementDate?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface News {
+  id: string;
+  authorId: string;
+  title: string;
+  content: string;
+  isPublished: boolean;
+  publishedAt?: Date | null;
+  updatedAt: Date;
+}
+
+export interface ForumThread {
+  id: string;
+  authorId: string;
+  title: string;
+  content: string;
+  isPinned: boolean;
+  isLocked: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ForumReply {
+  id: string;
+  threadId: string;
+  authorId: string;
+  content: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface JobPost {
+  id: string;
+  postedBy: string;
+  title: string;
+  description: string;
+  company: string;
+  location?: string | null;
+  salaryRange?: string | null;
+  isActive: boolean;
+  expiresAt?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface JobApplication {
+  id: string;
+  jobId: string;
+  applicantId: string;
+  coverLetter?: string | null;
+  resumeUrl?: string | null;
+  status: string;
+  appliedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface MentorshipRequest {
+  id: string;
+  menteeId: string;
+  mentorId?: string | null;
+  requestMessage: string;
+  status: "pending" | "active" | "completed";
+  matchedAt?: Date | null;
+  completedAt?: Date | null;
+  respondedAt?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Notification {
+  id: string;
+  memberId: string;
+  title: string;
+  message: string;
+  type: "general" | "approval" | "badge" | "hall_of_fame" | "job" | "mentorship";
+  isRead: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Event {
+  id: string;
+  organizerId: string;
+  title: string;
+  description?: string | null;
+  eventDate: Date;
+  location?: string | null;
+  maxAttendees?: number | null;
+  isPublic: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Insert types
+export type InsertUser = Omit<User, "id">;
+export type InsertMember = Omit<Member, "id" | "createdAt" | "updatedAt">;
+export type InsertBadge = Omit<Badge, "id" | "createdAt" | "updatedAt">;
+export type InsertHallOfFame = Omit<HallOfFame, "id" | "createdAt" | "updatedAt">;
+export type InsertNews = Omit<News, "id" | "updatedAt">;
+export type InsertForumThread = Omit<ForumThread, "id" | "createdAt" | "updatedAt">;
+export type InsertForumReply = Omit<ForumReply, "id" | "createdAt" | "updatedAt">;
+export type InsertJobPost = Omit<JobPost, "id" | "createdAt" | "updatedAt">;
+export type InsertJobApplication = Omit<JobApplication, "id" | "createdAt" | "updatedAt" | "appliedAt">;
+export type InsertMentorshipRequest = Omit<MentorshipRequest, "id" | "createdAt" | "updatedAt">;
+export type InsertNotification = Omit<Notification, "id" | "createdAt" | "updatedAt">;
+export type InsertEvent = Omit<Event, "id" | "createdAt" | "updatedAt">;
+
+// Validation schemas
+export const insertUserSchema = z.object({
+  username: z.string().min(1),
+  password: z.string().min(6),
+  email: z.string().email().optional()
 });
 
-export const members = pgTable("members", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id"),
-  fullName: text("full_name").notNull(),
-  nickname: text("nickname"),
-  stateshipYear: stateshipYearEnum("stateship_year").notNull(),
-  lastMowcubPosition: lastPositionEnum("last_mowcub_position").notNull(),
-  currentCouncilOffice: councilOfficeEnum("current_council_office"),
-  photoUrl: text("photo_url"),
-  duesProofUrl: text("dues_proof_url"),
-  latitude: real("latitude"),
-  longitude: real("longitude"),
-  paidThrough: text("paid_through"),
-  role: userRoleEnum("role").default("member"),
-  status: memberStatusEnum("status").default("pending"),
-  approvedAt: timestamp("approved_at"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+export const insertMemberSchema = z.object({
+  userId: z.string(),
+  fullName: z.string().min(1),
+  nickname: z.string().optional(),
+  stateshipYear: z.string(),
+  lastMowcubPosition: z.string(),
+  currentCouncilOffice: z.string().optional(),
+  photoUrl: z.string().optional(),
+  duesProofUrl: z.string().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  paidThrough: z.string().optional(),
+  role: z.enum(["member", "secretary"]).default("member"),
+  status: z.enum(["pending", "active", "inactive"]).default("pending"),
+  approvedAt: z.date().optional()
 });
 
-export const badges = pgTable("badges", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  memberId: uuid("member_id").references(() => members.id),
-  badgeName: text("badge_name").notNull(),
-  badgeCode: text("badge_code").notNull(),
-  description: text("description"),
-  awardedBy: uuid("awarded_by").references(() => members.id),
-  awardedAt: timestamp("awarded_at"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+export const insertBadgeSchema = z.object({
+  memberId: z.string(),
+  badgeName: z.string(),
+  badgeCode: z.string(),
+  description: z.string().optional(),
+  awardedBy: z.string().optional(),
+  awardedAt: z.date().optional()
 });
 
-export const hallOfFame = pgTable("hall_of_fame", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  memberId: uuid("member_id").references(() => members.id),
-  achievementTitle: text("achievement_title").notNull(),
-  achievementDescription: text("achievement_description"),
-  achievementDate: text("achievement_date"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+export const insertHallOfFameSchema = z.object({
+  memberId: z.string(),
+  achievementTitle: z.string(),
+  achievementDescription: z.string().optional(),
+  achievementDate: z.string().optional()
 });
 
-export const news = pgTable("news", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  authorId: uuid("author_id").references(() => members.id),
-  title: text("title").notNull(),
-  content: text("content").notNull(),
-  isPublished: boolean("is_published").default(false),
-  publishedAt: timestamp("published_at"),
-  updatedAt: timestamp("updated_at").defaultNow(),
+export const insertNewsSchema = z.object({
+  authorId: z.string(),
+  title: z.string(),
+  content: z.string(),
+  isPublished: z.boolean().default(false),
+  publishedAt: z.date().optional()
 });
 
-export const forumThreads = pgTable("forum_threads", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  authorId: uuid("author_id").references(() => members.id),
-  title: text("title").notNull(),
-  content: text("content").notNull(),
-  isPinned: boolean("is_pinned").default(false),
-  isLocked: boolean("is_locked").default(false),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+export const insertForumThreadSchema = z.object({
+  authorId: z.string(),
+  title: z.string(),
+  content: z.string(),
+  isPinned: z.boolean().default(false),
+  isLocked: z.boolean().default(false)
 });
 
-export const forumReplies = pgTable("forum_replies", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  threadId: uuid("thread_id").references(() => forumThreads.id),
-  authorId: uuid("author_id").references(() => members.id),
-  content: text("content").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+export const insertForumReplySchema = z.object({
+  threadId: z.string(),
+  authorId: z.string(),
+  content: z.string()
 });
 
-export const jobPosts = pgTable("job_posts", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  postedBy: uuid("posted_by").references(() => members.id),
-  title: text("title").notNull(),
-  description: text("description").notNull(),
-  company: text("company").notNull(),
-  location: text("location"),
-  salaryRange: text("salary_range"),
-  isActive: boolean("is_active").default(true),
-  expiresAt: timestamp("expires_at"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+export const insertJobPostSchema = z.object({
+  postedBy: z.string(),
+  title: z.string(),
+  description: z.string(),
+  company: z.string(),
+  location: z.string().optional(),
+  salaryRange: z.string().optional(),
+  isActive: z.boolean().default(true),
+  expiresAt: z.date().optional()
 });
 
-export const jobApplications = pgTable("job_applications", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  jobId: uuid("job_id").references(() => jobPosts.id),
-  applicantId: uuid("applicant_id").references(() => members.id),
-  coverLetter: text("cover_letter"),
-  resumeUrl: text("resume_url"),
-  status: text("status").default("pending"),
-  appliedAt: timestamp("applied_at").defaultNow(),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+export const insertJobApplicationSchema = z.object({
+  jobId: z.string(),
+  applicantId: z.string(),
+  coverLetter: z.string().optional(),
+  resumeUrl: z.string().optional(),
+  status: z.string().default("pending")
 });
 
-export const events = pgTable("events", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  organizerId: uuid("organizer_id").references(() => members.id),
-  title: text("title").notNull(),
-  description: text("description"),
-  eventDate: timestamp("event_date").notNull(),
-  location: text("location"),
-  maxAttendees: integer("max_attendees"),
-  isPublic: boolean("is_public").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+export const insertMentorshipRequestSchema = z.object({
+  menteeId: z.string(),
+  mentorId: z.string().optional(),
+  requestMessage: z.string(),
+  status: z.enum(["pending", "active", "completed"]).default("pending"),
+  matchedAt: z.date().optional(),
+  completedAt: z.date().optional(),
+  respondedAt: z.date().optional()
 });
 
-export const eventAttendees = pgTable("event_attendees", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  eventId: uuid("event_id").references(() => events.id),
-  memberId: uuid("member_id").references(() => members.id),
-  rsvpStatus: text("rsvp_status").default("pending"),
-  registeredAt: timestamp("registered_at").defaultNow(),
-  resumeUrl: text("resume_url"),
-  status: text("status").default("pending"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+export const insertNotificationSchema = z.object({
+  memberId: z.string(),
+  title: z.string(),
+  message: z.string(),
+  type: z.enum(["general", "approval", "badge", "hall_of_fame", "job", "mentorship"]).default("general"),
+  isRead: z.boolean().default(false)
 });
 
-export const mentorshipRequests = pgTable("mentorship_requests", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  menteeId: uuid("mentee_id").references(() => members.id),
-  mentorId: uuid("mentor_id").references(() => members.id),
-  requestMessage: text("request_message").notNull(),
-  status: mentorshipStatusEnum("status").default("pending"),
-  matchedAt: timestamp("matched_at"),
-  completedAt: timestamp("completed_at"),
-  respondedAt: timestamp("responded_at"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+export const insertEventSchema = z.object({
+  organizerId: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  eventDate: z.date(),
+  location: z.string().optional(),
+  maxAttendees: z.number().optional(),
+  isPublic: z.boolean().default(true)
 });
-
-export const notifications = pgTable("notifications", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  memberId: uuid("member_id").references(() => members.id),
-  title: text("title").notNull(),
-  message: text("message").notNull(),
-  type: notificationTypeEnum("type").default("general"),
-  isRead: boolean("is_read").default(false),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// Insert schemas
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-});
-
-export const insertMemberSchema = createInsertSchema(members).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertBadgeSchema = createInsertSchema(badges).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertHallOfFameSchema = createInsertSchema(hallOfFame).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertNewsSchema = createInsertSchema(news).omit({
-  id: true,
-  updatedAt: true,
-});
-
-export const insertForumThreadSchema = createInsertSchema(forumThreads).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertForumReplySchema = createInsertSchema(forumReplies).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertJobPostSchema = createInsertSchema(jobPosts).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertJobApplicationSchema = createInsertSchema(jobApplications).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertMentorshipRequestSchema = createInsertSchema(mentorshipRequests).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertNotificationSchema = createInsertSchema(notifications).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertEventSchema = createInsertSchema(events).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-// Types
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
-
-export type InsertMember = z.infer<typeof insertMemberSchema>;
-export type Member = typeof members.$inferSelect;
-
-export type InsertBadge = z.infer<typeof insertBadgeSchema>;
-export type Badge = typeof badges.$inferSelect;
-
-export type InsertHallOfFame = z.infer<typeof insertHallOfFameSchema>;
-export type HallOfFame = typeof hallOfFame.$inferSelect;
-
-export type InsertNews = z.infer<typeof insertNewsSchema>;
-export type News = typeof news.$inferSelect;
-
-export type InsertForumThread = z.infer<typeof insertForumThreadSchema>;
-export type ForumThread = typeof forumThreads.$inferSelect;
-
-export type InsertForumReply = z.infer<typeof insertForumReplySchema>;
-export type ForumReply = typeof forumReplies.$inferSelect;
-
-export type InsertJobPost = z.infer<typeof insertJobPostSchema>;
-export type JobPost = typeof jobPosts.$inferSelect;
-
-export type InsertJobApplication = z.infer<typeof insertJobApplicationSchema>;
-export type JobApplication = typeof jobApplications.$inferSelect;
-
-export type InsertMentorshipRequest = z.infer<typeof insertMentorshipRequestSchema>;
-export type MentorshipRequest = typeof mentorshipRequests.$inferSelect;
-
-export type InsertNotification = z.infer<typeof insertNotificationSchema>;
-export type Notification = typeof notifications.$inferSelect;
-
-export type InsertEvent = z.infer<typeof insertEventSchema>;
-export type Event = typeof events.$inferSelect;

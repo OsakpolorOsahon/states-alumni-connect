@@ -1,38 +1,39 @@
-import type { Express } from "express";
-import { createServer, type Server } from "http";
+import type { Express, Request, Response } from "express";
 import { storage } from "./storage";
-import { supabase, supabaseAdmin } from "./db";
-import { createRouteHandler } from "uploadthing/server";
-import { uploadRouter } from "./uploadthing";
 import { insertMemberSchema, insertBadgeSchema, insertHallOfFameSchema, insertNewsSchema, insertForumThreadSchema, insertForumReplySchema, insertJobPostSchema, insertJobApplicationSchema, insertMentorshipRequestSchema, insertNotificationSchema, insertEventSchema } from "@shared/schema";
 import { z } from "zod";
-import { sendApprovalEmail } from "./email";
+import bcrypt from "bcrypt";
+import session from "express-session";
+import MemoryStore from "memorystore";
 
-// Authentication middleware using Supabase
-async function requireAuth(req: any, res: any, next: any) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+const MemoryStoreConstructor = MemoryStore(session);
+
+// Session configuration
+declare module 'express-session' {
+  interface SessionData {
+    userId?: number;
+    memberData?: any;
+  }
+}
+
+// Authentication middleware
+async function requireAuth(req: Request, res: Response, next: any) {
+  if (!req.session.userId) {
     return res.status(401).json({ error: "Authentication required" });
   }
 
-  const token = authHeader.split(' ')[1];
-  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
-  
-  if (error || !user) {
-    return res.status(401).json({ error: "Invalid or expired token" });
-  }
-
   // Get member data
-  const member = await storage.getMemberByUserId(user.id);
-  req.user = user;
-  req.member = member;
+  const member = await storage.getMemberByUserId(req.session.userId.toString());
+  (req as any).member = member;
+  (req as any).userId = req.session.userId;
   next();
 }
 
 // Secretary middleware
-async function requireSecretary(req: any, res: any, next: any) {
+async function requireSecretary(req: Request, res: Response, next: any) {
   await requireAuth(req, res, () => {
-    if (!req.member || req.member.role !== 'secretary') {
+    const member = (req as any).member;
+    if (!member || member.role !== 'secretary') {
       return res.status(403).json({ error: "Secretary access required" });
     }
     next();
@@ -40,85 +41,82 @@ async function requireSecretary(req: any, res: any, next: any) {
 }
 
 // Active member middleware
-async function requireActiveMember(req: any, res: any, next: any) {
+async function requireActiveMember(req: Request, res: Response, next: any) {
   await requireAuth(req, res, () => {
-    if (!req.member || req.member.status !== 'active') {
+    const member = (req as any).member;
+    if (!member || member.status !== 'active') {
       return res.status(403).json({ error: "Active member access required" });
     }
     next();
   });
 }
 
-// *** IMPORTANT CHANGE HERE: Changed return type to Promise<void> ***
-export async function registerRoutes(app: Express): Promise<void> {
-  // Authentication routes using Supabase Auth
+export function registerRoutes(app: Express): void {
+  // Session middleware
+  app.use(session({
+    store: new MemoryStoreConstructor({
+      checkPeriod: 86400000 // prune expired entries every 24h
+    }),
+    secret: process.env.SESSION_SECRET || 'smmowcub-session-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+      secure: false, // Set to true in production with HTTPS
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+  }));
+
+  // Authentication routes
   app.post("/api/auth/register", async (req, res) => {
     try {
       const { email, password, ...memberData } = req.body;
-
-      // Log the incoming data to debug
-      console.log("Registration data:", { email, memberData });
 
       // Validate required fields
       if (!email || !password) {
         return res.status(400).json({ error: "Email and password are required" });
       }
 
-      // Validate full name specifically
-      if (!memberData.fullName && !memberData.full_name) {
+      if (!memberData.fullName) {
         return res.status(400).json({ error: "Full name is required" });
       }
 
-      // Create user with Supabase Auth
-      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ error: "User already exists" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create user
+      const user = await storage.createUser({
+        username: email,
         email: email,
-        password: password,
-        email_confirm: true
+        password: hashedPassword
       });
 
-      if (authError) {
-        console.error("Supabase auth error:", authError);
-        return res.status(400).json({ error: authError.message });
-      }
-
-      if (!authData.user) {
-        return res.status(400).json({ error: "Failed to create user" });
-      }
-
-      // Create member record with proper field mapping and null handling
-      const memberInsert = {
-        user_id: authData.user.id,
-        full_name: memberData.fullName || memberData.full_name || 'Unknown',
+      // Create member record
+      const member = await storage.createMember({
+        userId: user.id.toString(),
+        fullName: memberData.fullName,
         nickname: memberData.nickname || null,
-        stateship_year: memberData.stateshipYear || memberData.stateship_year || '2024/2025',
-        last_mowcub_position: memberData.lastPosition || memberData.lastMowcubPosition || memberData.last_mowcub_position || 'None',
-        current_council_office: (memberData.councilOffice === 'none' || memberData.councilOffice === 'Member') ? null : 
-                                (memberData.councilOffice || memberData.currentCouncilOffice || memberData.current_council_office || null),
+        stateshipYear: memberData.stateshipYear || '2024',
+        lastMowcubPosition: memberData.lastMowcubPosition || 'None',
+        currentCouncilOffice: memberData.currentCouncilOffice || null,
         latitude: memberData.latitude || null,
         longitude: memberData.longitude || null,
         status: 'pending',
         role: 'member',
-        photo_url: memberData.photoUrl || memberData.photo_url || null,
-        dues_proof_url: memberData.duesProofUrl || memberData.dues_proof_url || null
-      };
-
-      console.log("Member insert data:", memberInsert);
-
-      const { data: member, error: memberError } = await supabaseAdmin
-        .from('members')
-        .insert(memberInsert)
-        .select()
-        .single();
-
-      if (memberError) {
-        console.error("Member creation error:", memberError);
-        // If member creation fails, clean up the auth user
-        await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
-        return res.status(400).json({ error: `Failed to create member profile: ${memberError.message}` });
-      }
+        photoUrl: memberData.photoUrl || null,
+        duesProofUrl: memberData.duesProofUrl || null,
+        paidThrough: null,
+        approvedAt: null
+      });
 
       res.status(201).json({
-        user: { id: authData.user.id, email: authData.user.email },
+        user: { id: user.id, email: user.email },
         member,
         message: "Registration successful. Awaiting approval."
       });
@@ -136,22 +134,21 @@ export async function registerRoutes(app: Express): Promise<void> {
         return res.status(400).json({ error: "Email and password are required" });
       }
 
-      // Authenticate with Supabase
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password
-      });
-
-      if (authError || !authData.user) {
+      // Validate user
+      const user = await storage.validateUser(email, password);
+      if (!user) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
 
       // Get member data
-      const member = await storage.getMemberByUserId(authData.user.id);
+      const member = await storage.getMemberByUserId(user.id.toString());
+
+      // Set session
+      req.session.userId = user.id;
+      req.session.memberData = member;
 
       res.json({
-        user: { id: authData.user.id, email: authData.user.email },
-        session: authData.session,
+        user: { id: user.id, email: user.email },
         member,
         message: "Login successful"
       });
@@ -161,77 +158,23 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
-  app.post("/api/auth/logout", async (req, res) => {
-    try {
-      const authHeader = req.headers.authorization;
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        const token = authHeader.split(' ')[1];
-        await supabaseAdmin.auth.admin.signOut(token);
+  app.post("/api/auth/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ error: "Logout failed" });
       }
       res.json({ message: "Logout successful" });
-    } catch (error) {
-      console.error("Logout error:", error);
-      res.status(500).json({ error: "Logout failed" });
-    }
+    });
   });
 
-  app.get("/api/auth/me", requireAuth, async (req, res) => {
-    try {
-      // Refresh member data
-      const member = await storage.getMemberByUserId(req.user.id);
-
-      res.json({
-        user: req.user,
-        member
-      });
-    } catch (error) {
-      console.error("Session error:", error);
-      res.status(500).json({ error: "Failed to get user data" });
-    }
-  });
-  // Stats endpoint
-  app.get("/api/stats", async (req, res) => {
-    try {
-      const [
-        allMembers,
-        activeMembers,
-        pendingMembers,
-        hallOfFame,
-        news,
-        forumThreads,
-        jobPosts
-      ] = await Promise.all([
-        storage.getAllMembers(),
-        storage.getActiveMembers(),
-        storage.getPendingMembers(),
-        storage.getAllHallOfFame(),
-        storage.getAllNews(),
-        storage.getAllForumThreads(),
-        storage.getAllJobPosts()
-      ]);
-
-      // Calculate recent members (last 30 days)
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const recentMembers = allMembers.filter(member =>
-        new Date(member.createdAt || 0) >= thirtyDaysAgo
-      );
-
-      const stats = {
-        totalMembers: allMembers.length,
-        activeMembers: activeMembers.length,
-        pendingMembers: pendingMembers.length,
-        recentMembers: recentMembers.length,
-        hallOfFameCount: hallOfFame.length,
-        activeJobs: jobPosts.length,
-        forumThreads: forumThreads.length,
-        newsCount: news.length
-      };
-
-      res.json(stats);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
+  app.get("/api/auth/me", requireAuth, (req, res) => {
+    const member = (req as any).member;
+    const userId = (req as any).userId;
+    
+    res.json({
+      user: { id: userId },
+      member
+    });
   });
 
   // Member routes
@@ -240,7 +183,8 @@ export async function registerRoutes(app: Express): Promise<void> {
       const members = await storage.getAllMembers();
       res.json(members);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error("Get members error:", error);
+      res.status(500).json({ error: "Failed to fetch members" });
     }
   });
 
@@ -249,470 +193,202 @@ export async function registerRoutes(app: Express): Promise<void> {
       const members = await storage.getActiveMembers();
       res.json(members);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error("Get active members error:", error);
+      res.status(500).json({ error: "Failed to fetch active members" });
     }
   });
 
-  app.get("/api/members/pending", async (req, res) => {
+  app.get("/api/members/pending", requireSecretary, async (req, res) => {
     try {
       const members = await storage.getPendingMembers();
       res.json(members);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error("Get pending members error:", error);
+      res.status(500).json({ error: "Failed to fetch pending members" });
     }
   });
 
-  app.get("/api/members/:id", async (req, res) => {
+  app.patch("/api/members/:id/approve", requireSecretary, async (req, res) => {
     try {
-      const member = await storage.getMember(req.params.id);
-      if (!member) {
-        return res.status(404).json({ error: "Member not found" });
-      }
-      res.json(member);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.post("/api/members", async (req, res) => {
-    try {
-      const validatedData = insertMemberSchema.parse(req.body);
-      const member = await storage.createMember(validatedData);
-      res.status(201).json(member);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: error.errors });
-      }
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.put("/api/members/:id", async (req, res) => {
-    try {
-      const validatedData = insertMemberSchema.partial().parse(req.body);
-      const originalMember = await storage.getMember(req.params.id);
-      const member = await storage.updateMember(req.params.id, validatedData);
-
-      // Send email notification if status changed to approved or rejected
-      if (originalMember && originalMember.status !== member.status &&
-          (member.status === 'active' || member.status === 'inactive')) {
-        const approved = member.status === 'active';
-        try {
-          // Assuming `member.email` exists or can be derived for email sending
-          await sendApprovalEmail(
-            member.email || '', // Ensure member.email is available or handle if not
-            member.full_name,
-            approved
-          );
-        } catch (emailError) {
-          console.error('Failed to send approval email:', emailError);
-          // Don't fail the request if email fails
-        }
-      }
-
-      res.json(member);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: error.errors });
-      }
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.delete("/api/members/:id", async (req, res) => {
-    try {
-      await storage.deleteMember(req.params.id);
-      res.status(204).send();
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Badge routes
-  app.get("/api/badges", async (req, res) => {
-    try {
-      const members = await storage.getAllMembers();
-      const allBadges = [];
-
-      for (const member of members) {
-        const badges = await storage.getBadgesByMemberId(member.id);
-        badges.forEach(badge => {
-          allBadges.push({
-            ...badge,
-            member_name: member.full_name,
-            member_nickname: member.nickname
-          });
-        });
-      }
-
-      res.json(allBadges);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.get("/api/badges/member/:memberId", async (req, res) => {
-    try {
-      const badges = await storage.getBadgesByMemberId(req.params.memberId);
-      res.json(badges);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.post("/api/badges", async (req, res) => {
-    try {
-      const validatedData = insertBadgeSchema.parse(req.body);
-      const badge = await storage.createBadge(validatedData);
-      res.status(201).json(badge);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: error.errors });
-      }
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.delete("/api/badges/:id", async (req, res) => {
-    try {
-      await storage.deleteBadge(req.params.id);
-      res.status(204).send();
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Hall of Fame routes
-  app.get("/api/hall-of-fame", async (req, res) => {
-    try {
-      const entries = await storage.getAllHallOfFame();
-      res.json(entries);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.post("/api/hall-of-fame", async (req, res) => {
-    try {
-      const { memberId, achievementTitle, achievementDescription, achievementDate } = req.body;
-
-      if (!memberId || !achievementTitle) {
-        return res.status(400).json({ error: 'Member ID and achievement title are required' });
-      }
-
-      const entry = await storage.createHallOfFameEntry({
-        memberId,
-        achievementTitle,
-        achievementDescription,
-        achievementDate
+      const { id } = req.params;
+      const member = await storage.updateMember(id, {
+        status: 'active',
+        approvedAt: new Date()
       });
 
-      // Get member info for notification
-      const member = await storage.getMember(memberId);
-
-      // Create notification
-      if (member) {
-        await storage.createNotification({
-          memberId: memberId,
-          title: 'Hall of Fame Recognition!',
-          message: `Congratulations! You've been inducted into the Hall of Fame for "${achievementTitle}".`,
-          type: 'hall_of_fame'
-        });
-      }
-
-      res.status(201).json({
-        success: true,
-        message: 'Hall of Fame entry added successfully',
-        entry
-      });
+      res.json({ member, message: "Member approved" });
     } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.delete("/api/hall-of-fame/:id", async (req, res) => {
-    try {
-      await storage.deleteHallOfFameEntry(req.params.id);
-      res.status(204).send();
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error("Approve member error:", error);
+      res.status(500).json({ error: "Failed to approve member" });
     }
   });
 
   // News routes
   app.get("/api/news", async (req, res) => {
     try {
-      const news = await storage.getAllNews();
-      res.json(news);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.get("/api/news/published", async (req, res) => {
-    try {
       const news = await storage.getPublishedNews();
       res.json(news);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error("Get news error:", error);
+      res.status(500).json({ error: "Failed to fetch news" });
     }
   });
 
-  app.get("/api/news/:id", async (req, res) => {
+  app.post("/api/news", requireSecretary, async (req, res) => {
     try {
-      const newsItem = await storage.getNewsById(req.params.id);
-      if (!newsItem) {
-        return res.status(404).json({ error: "News item not found" });
-      }
-      res.json(newsItem);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
+      const newsData = insertNewsSchema.parse({
+        ...req.body,
+        authorId: (req as any).member.id
+      });
 
-  app.post("/api/news", async (req, res) => {
-    try {
-      const validatedData = insertNewsSchema.parse(req.body);
-      const news = await storage.createNews(validatedData);
+      const news = await storage.createNews(newsData);
       res.status(201).json(news);
     } catch (error) {
+      console.error("Create news error:", error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: error.errors });
+        return res.status(400).json({ error: "Invalid news data", details: error.errors });
       }
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.put("/api/news/:id", async (req, res) => {
-    try {
-      const validatedData = insertNewsSchema.partial().parse(req.body);
-      const news = await storage.updateNews(req.params.id, validatedData);
-      res.json(news);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: error.errors });
-      }
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.delete("/api/news/:id", async (req, res) => {
-    try {
-      await storage.deleteNews(req.params.id);
-      res.status(204).send();
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: "Failed to create news" });
     }
   });
 
   // Forum routes
-  app.get("/api/forum/threads", async (req, res) => {
+  app.get("/api/forum/threads", requireActiveMember, async (req, res) => {
     try {
       const threads = await storage.getAllForumThreads();
       res.json(threads);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error("Get forum threads error:", error);
+      res.status(500).json({ error: "Failed to fetch forum threads" });
     }
   });
 
-  app.get("/api/forum/threads/:id", async (req, res) => {
+  app.post("/api/forum/threads", requireActiveMember, async (req, res) => {
     try {
-      const thread = await storage.getForumThreadById(req.params.id);
-      if (!thread) {
-        return res.status(404).json({ error: "Thread not found" });
-      }
-      res.json(thread);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
+      const threadData = insertForumThreadSchema.parse({
+        ...req.body,
+        authorId: (req as any).member.id
+      });
 
-  app.post("/api/forum/threads", async (req, res) => {
-    try {
-      const validatedData = insertForumThreadSchema.parse(req.body);
-      const thread = await storage.createForumThread(validatedData);
+      const thread = await storage.createForumThread(threadData);
       res.status(201).json(thread);
     } catch (error) {
+      console.error("Create forum thread error:", error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: error.errors });
+        return res.status(400).json({ error: "Invalid thread data", details: error.errors });
       }
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: "Failed to create thread" });
     }
   });
 
-  app.put("/api/forum/threads/:id", async (req, res) => {
+  app.get("/api/forum/threads/:id/replies", requireActiveMember, async (req, res) => {
     try {
-      const validatedData = insertForumThreadSchema.partial().parse(req.body);
-      const thread = await storage.updateForumThread(req.params.id, validatedData);
-      res.json(thread);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: error.errors });
-      }
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.delete("/api/forum/threads/:id", async (req, res) => {
-    try {
-      await storage.deleteForumThread(req.params.id);
-      res.status(204).send();
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Note: These two forum reply routes were duplicated, removed the duplicates.
-  app.get("/api/forum/threads/:threadId/replies", async (req, res) => {
-    try {
-      const replies = await storage.getForumRepliesByThreadId(req.params.threadId);
+      const { id } = req.params;
+      const replies = await storage.getForumRepliesByThreadId(id);
       res.json(replies);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error("Get forum replies error:", error);
+      res.status(500).json({ error: "Failed to fetch replies" });
     }
   });
 
-  app.post("/api/forum/replies", async (req, res) => {
+  app.post("/api/forum/threads/:id/replies", requireActiveMember, async (req, res) => {
     try {
-      const validatedData = insertForumReplySchema.parse(req.body);
-      const reply = await storage.createForumReply(validatedData);
+      const { id } = req.params;
+      const replyData = insertForumReplySchema.parse({
+        ...req.body,
+        threadId: id,
+        authorId: (req as any).member.id
+      });
+
+      const reply = await storage.createForumReply(replyData);
       res.status(201).json(reply);
     } catch (error) {
+      console.error("Create forum reply error:", error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: error.errors });
+        return res.status(400).json({ error: "Invalid reply data", details: error.errors });
       }
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: "Failed to create reply" });
     }
   });
 
-  app.delete("/api/forum/replies/:id", async (req, res) => {
+  // Job routes
+  app.get("/api/jobs", requireActiveMember, async (req, res) => {
     try {
-      await storage.deleteForumReply(req.params.id);
-      res.status(204).send();
+      const jobs = await storage.getActiveJobPosts();
+      res.json(jobs);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error("Get jobs error:", error);
+      res.status(500).json({ error: "Failed to fetch jobs" });
     }
   });
 
-  // Job routes (Duplicated section removed, keeping only the first set)
-  // There were duplicated Job routes, removing the second set.
-
-  app.get("/api/jobs/:jobId/applications", async (req, res) => {
+  app.post("/api/jobs", requireActiveMember, async (req, res) => {
     try {
-      const applications = await storage.getJobApplicationsByJobId(req.params.jobId);
-      res.json(applications);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
+      const jobData = insertJobPostSchema.parse({
+        ...req.body,
+        postedBy: (req as any).member.id
+      });
 
-  app.post("/api/job-applications", async (req, res) => {
-    try {
-      const validatedData = insertJobApplicationSchema.parse(req.body);
-      const application = await storage.createJobApplication(validatedData);
-      res.status(201).json(application);
+      const job = await storage.createJobPost(jobData);
+      res.status(201).json(job);
     } catch (error) {
+      console.error("Create job error:", error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: error.errors });
+        return res.status(400).json({ error: "Invalid job data", details: error.errors });
       }
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: "Failed to create job" });
     }
   });
 
-  app.put("/api/job-applications/:id", async (req, res) => {
+  // Mentorship routes
+  app.get("/api/mentorship", requireActiveMember, async (req, res) => {
     try {
-      const validatedData = insertJobApplicationSchema.partial().parse(req.body);
-      const application = await storage.updateJobApplication(req.params.id, validatedData);
-      res.json(application);
+      const requests = await storage.getAllMentorshipRequests();
+      res.json(requests);
     } catch (error) {
+      console.error("Get mentorship requests error:", error);
+      res.status(500).json({ error: "Failed to fetch mentorship requests" });
+    }
+  });
+
+  app.post("/api/mentorship", requireActiveMember, async (req, res) => {
+    try {
+      const requestData = insertMentorshipRequestSchema.parse({
+        ...req.body,
+        menteeId: (req as any).member.id
+      });
+
+      const request = await storage.createMentorshipRequest(requestData);
+      res.status(201).json(request);
+    } catch (error) {
+      console.error("Create mentorship request error:", error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: error.errors });
+        return res.status(400).json({ error: "Invalid request data", details: error.errors });
       }
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: "Failed to create mentorship request" });
     }
   });
 
-  // Mentorship routes (Duplicated section removed, keeping only the first set with "requests" in path)
-  // There were duplicated Mentorship routes, removing the second set which lacked "/requests".
-
-  // Notification routes (Duplicated section removed, keeping only the first set with "/member" in path)
-  // There were duplicated Notification routes, removing the second set which lacked "/member".
-
-  app.put("/api/notifications/:id/read", async (req, res) => {
+  // Statistics routes
+  app.get("/api/stats", async (req, res) => {
     try {
-      await storage.markNotificationAsRead(req.params.id);
-      res.status(204).send(); // Changed to 204 for no content response on update
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.put("/api/notifications/member/:memberId/read-all", async (req, res) => {
-    try {
-      await storage.markAllNotificationsAsRead(req.params.memberId);
-      res.status(204).send(); // Changed to 204 for no content response on update
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Event routes (Duplicated section removed, keeping only the first set)
-  // There were duplicated Event routes, removing the second set.
-
-  // Statistics endpoints (Moved the original /api/stats to /api/stats/overview for consistency)
-  app.get("/api/stats/overview", async (req, res) => {
-    try {
-      const [
-        totalMembers,
-        activeMembers,
-        pendingMembers,
-        hallOfFameEntries,
-        newsArticles,
-        forumThreads,
-        jobPosts,
-        events
-      ] = await Promise.all([
+      const [totalMembers, activeMembers, pendingMembers, totalNews] = await Promise.all([
         storage.getAllMembers(),
         storage.getActiveMembers(),
         storage.getPendingMembers(),
-        storage.getAllHallOfFame(),
-        storage.getAllNews(),
-        storage.getAllForumThreads(),
-        storage.getAllJobPosts(),
-        storage.getAllEvents()
+        storage.getAllNews()
       ]);
 
-      const stats = {
+      res.json({
         totalMembers: totalMembers.length,
         activeMembers: activeMembers.length,
         pendingMembers: pendingMembers.length,
-        hallOfFameCount: hallOfFameEntries.length,
-        newsCount: newsArticles.length,
-        forumThreadsCount: forumThreads.length,
-        jobPostsCount: jobPosts.length,
-        eventsCount: events.length,
-        recentMembers: activeMembers.filter(m => {
-          const joinDate = new Date(m.createdAt);
-          const thirtyDaysAgo = new Date();
-          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-          return joinDate > thirtyDaysAgo;
-        }).length
-      };
-
-      res.json(stats);
+        totalNews: totalNews.length
+      });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error("Get stats error:", error);
+      res.status(500).json({ error: "Failed to fetch statistics" });
     }
   });
-
-  // UploadThing routes
-  const uploadthingHandler = createRouteHandler({
-    router: uploadRouter,
-  });
-
-  app.all("/api/uploadthing", uploadthingHandler);
-
-  // *** IMPORTANT: Removed `const httpServer = createServer(app); return httpServer;` from here ***
-  // This function now solely registers routes and doesn't create/return the HTTP server.
-  // The HTTP server creation is handled in server/index.ts as per the previous suggestion.
 }

@@ -9,34 +9,14 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
-import { db } from '@/lib/supabase';
+import { useMentorshipRequests, useCreateMentorshipRequest } from '@/hooks/useMentorshipRequests';
 import { Users, MessageCircle, Search, Plus, Clock, CheckCircle, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
 const MentorshipPage = () => {
-  const { data: requests = [], isLoading } = useQuery({
-    queryKey: ['mentorship-requests'],
-    queryFn: async () => {
-      const result = await db.getMentorshipRequests();
-      if (result.error) throw new Error(result.error.message);
-      return result.data || [];
-    }
-  });
-
-  const { mutate: createRequest, isPending } = useMutation({
-    mutationFn: async (requestData: any) => {
-      const result = await db.createMentorshipRequest(requestData);
-      if (result.error) throw new Error(result.error.message);
-      return result.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['mentorship-requests'] });
-    }
-  });
-
-  const queryClient = useQueryClient();
+  const { data: requests = [], isLoading } = useMentorshipRequests();
+  const { mutate: createRequest, isPending } = useCreateMentorshipRequest();
   const { member, isActiveMember } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [showRequestForm, setShowRequestForm] = useState(false);
@@ -45,9 +25,7 @@ const MentorshipPage = () => {
   });
 
   const filteredRequests = requests.filter((request: any) => 
-    request.request_message?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    request.mentees?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    request.mentors?.full_name?.toLowerCase().includes(searchTerm.toLowerCase())
+    request.requestMessage?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleCreateRequest = async (e: React.FormEvent) => {
@@ -59,8 +37,8 @@ const MentorshipPage = () => {
 
     try {
       await createRequest({
-        mentee_id: member.id,
-        request_message: newRequest.request_message,
+        menteeId: member.id,
+        requestMessage: newRequest.request_message,
         status: 'pending'
       });
       toast.success('Mentorship request submitted successfully!');
@@ -102,7 +80,6 @@ const MentorshipPage = () => {
       <SEO
         title="Mentorship Program - SMMOWCUB"
         description="Connect with experienced mentors and guide fellow statesmen. Join our mentorship program to share knowledge and grow together."
-        keywords="SMMOWCUB mentorship, career guidance, statesmen mentoring, professional development"
       />
       <Navigation />
       <main className="min-h-screen pt-20">
