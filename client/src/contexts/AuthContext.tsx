@@ -175,13 +175,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log('Starting sign in process for:', email);
       
-      // Add timeout to the auth request
-      const authPromise = auth.signIn(email, password);
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Authentication timeout')), 8000)
-      );
-      
-      const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any;
+      const { data, error } = await auth.signIn(email, password);
       
       if (error) {
         console.error('Supabase auth error:', error);
@@ -189,13 +183,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       if (data?.user) {
-        console.log('User authenticated successfully, updating session...');
+        console.log('User authenticated successfully');
         
-        // Try to get member data with error handling
+        // Set user immediately for faster login experience
+        setUser({
+          id: data.user.id,
+          email: data.user.email || ''
+        });
+        
+        // Try to get member data but don't block on it
         try {
-          await refreshSession();
-        } catch (sessionError) {
-          console.warn('Session refresh failed, but user is authenticated:', sessionError);
+          const memberResult = await db.getMemberByUserId(data.user.id);
+          if (memberResult.data) {
+            setMember({
+              id: memberResult.data.id,
+              userId: memberResult.data.user_id,
+              full_name: memberResult.data.full_name,
+              nickname: memberResult.data.nickname,
+              role: memberResult.data.role as 'member' | 'secretary',
+              status: memberResult.data.status as 'pending' | 'active' | 'inactive',
+              stateship_year: memberResult.data.stateship_year,
+              last_mowcub_position: memberResult.data.last_mowcub_position,
+              current_council_office: memberResult.data.current_council_office,
+              latitude: memberResult.data.latitude,
+              longitude: memberResult.data.longitude,
+              photo_url: memberResult.data.photo_url,
+              dues_proof_url: memberResult.data.dues_proof_url,
+              created_at: memberResult.data.created_at,
+              updated_at: memberResult.data.updated_at
+            });
+          }
+        } catch (memberError) {
+          console.warn('Could not fetch member data:', memberError);
+          // Don't fail the login if member data fails
         }
         
         return { success: true, message: 'Signed in successfully' };
@@ -206,10 +226,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('SignIn error:', error);
       
       // Provide more specific error messages
-      if (error.message?.includes('timeout')) {
-        throw new Error('Login is taking too long. Please check your connection and try again.');
-      } else if (error.message?.includes('Invalid login credentials')) {
+      if (error.message?.includes('Invalid login credentials')) {
         throw new Error('Invalid email or password. Please check your credentials.');
+      } else if (error.message?.includes('Email not confirmed')) {
+        throw new Error('Please verify your email address before signing in.');
       } else {
         throw new Error(error.message || 'Login failed. Please try again.');
       }
