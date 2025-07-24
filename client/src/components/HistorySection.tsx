@@ -76,6 +76,10 @@ const HistorySection = () => {
                 src="/attached_assets/IMG-20250724-WA0008(1)_1753347494716.jpg"
                 alt="SMMOWCUB distinguished elder addressing the community"
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  console.error('Image failed to load:', e.currentTarget.src);
+                  e.currentTarget.style.display = 'none';
+                }}
               />
             </div>
           </motion.div>

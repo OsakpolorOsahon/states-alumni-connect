@@ -201,7 +201,7 @@ const Navigation = () => {
                 </Link>
                 <Link to="/signup">
                   <Button className="bg-[#E10600] hover:bg-[#C10500] btn-animated ripple-effect tilt-hover">
-                    Signup
+                    Member Signup
                   </Button>
                 </Link>
               </div>
@@ -327,7 +327,7 @@ const Navigation = () => {
                         </Link>
                         <Link to="/signup" onClick={handleLinkClick}>
                           <Button className="w-full justify-start bg-[#E10600] hover:bg-[#C10500]">
-                            Join Us
+                            Member Signup
                           </Button>
                         </Link>
                       </div>

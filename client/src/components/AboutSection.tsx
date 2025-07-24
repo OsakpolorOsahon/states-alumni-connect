@@ -49,6 +49,10 @@ const AboutSection = () => {
                 src="/attached_assets/IMG-20250724-WA0006_1753347494449.jpg"
                 alt="SMMOWCUB ceremony with traditional dignitaries and Man O' War members"
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  console.error('Image failed to load:', e.currentTarget.src);
+                  e.currentTarget.style.display = 'none';
+                }}
               />
             </div>
             <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-[#E10600] rounded-lg opacity-20 float-animation"></div>

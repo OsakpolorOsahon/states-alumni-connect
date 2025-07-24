@@ -280,7 +280,7 @@ const Footer = () => {
                 maxWidth: '200px',
                 textAlign: 'left'
               }}>
-                University of Benin, Ugbowo Campus, Benin City, Edo State, Nigeria
+                University of Benin, Benin City, Edo State, Nigeria
               </span>
             </div>
           </div>
@@ -405,7 +405,7 @@ const Footer = () => {
               alignItems: 'center',
               gap: '5px'
             }}>
-              © 2025 SMMOWCUB. All rights reserved. Made with <Heart style={{ width: '14px', height: '14px', color: '#E10600' }} /> for our brotherhood.
+              © 2025 SMMOWCUB. All rights reserved. Web app developed by Velareon.
             </p>
             <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
               <Link to="/privacy-policy" style={{ 
@@ -450,7 +450,7 @@ const Footer = () => {
               margin: 0,
               fontStyle: 'italic'
             }}>
-              "Strong to Serve, Ready to Lead"
+              "Build The Man... Build The Community"
             </p>
           </div>
         </div>
