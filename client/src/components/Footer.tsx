@@ -255,12 +255,12 @@ const Footer = () => {
               }}>
                 <Phone style={{ width: '18px', height: '18px', color: 'white' }} />
               </div>
-              <a href="tel:+2348023005113" style={{ 
+              <a href="tel:+234705735 8410" style={{ 
                 color: '#e0e0e0', 
                 textDecoration: 'none',
                 fontSize: '16px'
               }}>
-                +234 802 300 5113
+                +234 705 735 8410
               </a>
             </div>
             <div style={{ marginBottom: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
