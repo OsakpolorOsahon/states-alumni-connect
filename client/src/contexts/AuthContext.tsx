@@ -186,6 +186,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log('User authenticated successfully');
         
         // Set user immediately for faster login experience
+        console.log('Setting user in context:', data.user.email);
         setUser({
           id: data.user.id,
           email: data.user.email || ''
@@ -218,6 +219,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           // Don't fail the login if member data fails
         }
         
+        console.log('Authentication complete, returning success');
         return { success: true, message: 'Signed in successfully' };
       } else {
         throw new Error('Authentication failed - no user data returned');

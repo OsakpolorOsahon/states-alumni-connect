@@ -26,20 +26,30 @@ const Login = () => {
     setLoading(true);
 
     try {
-      console.log('Starting login attempt...');
+      console.log('Starting login attempt for:', formData.email);
       const result = await signIn(formData.email, formData.password);
       
+      console.log('Login result:', result);
+      
       if (result && result.success) {
+        console.log('Login successful, showing toast and navigating...');
         toast({
           title: "Login Successful", 
           description: "Redirecting to dashboard...",
         });
         
-        // Wait a moment for auth context to update
+        // Navigate immediately instead of waiting
+        console.log('Navigating to dashboard...');
+        // Use both methods to ensure navigation works
+        navigate('/dashboard', { replace: true });
+        // Fallback in case React Router navigation fails
         setTimeout(() => {
-          navigate('/dashboard');
-        }, 500);
+          if (window.location.pathname === '/login') {
+            window.location.href = '/dashboard';
+          }
+        }, 1000);
       } else {
+        console.error('Login failed - no success response');
         throw new Error('Login failed - no success response');
       }
     } catch (error: any) {

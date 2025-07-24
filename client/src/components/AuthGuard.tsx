@@ -16,8 +16,8 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
   requireSecretary = false,
   requireActive = false 
 }) => {
-  // Removed broken hooks
-  // Removed broken hooks
+  const { user, member, loading } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (loading) return;
