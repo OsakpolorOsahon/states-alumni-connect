@@ -54,35 +54,56 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const refreshSession = useCallback(async () => {
     try {
+      console.log('Refreshing session...');
       const { data: { session } } = await auth.getSession();
+      
       if (session?.user) {
+        console.log('Session found, setting user...');
         setUser({
           id: session.user.id,
           email: session.user.email || ''
         });
 
-        // Get member data
-        const memberResult = await db.getMemberByUserId(session.user.id);
-        if (memberResult.data) {
-          setMember({
-            id: memberResult.data.id,
-            userId: memberResult.data.user_id,
-            full_name: memberResult.data.full_name,
-            nickname: memberResult.data.nickname,
-            role: memberResult.data.role as 'member' | 'secretary',
-            status: memberResult.data.status as 'pending' | 'active' | 'inactive',
-            stateship_year: memberResult.data.stateship_year,
-            last_mowcub_position: memberResult.data.last_mowcub_position,
-            current_council_office: memberResult.data.current_council_office,
-            latitude: memberResult.data.latitude,
-            longitude: memberResult.data.longitude,
-            photo_url: memberResult.data.photo_url,
-            dues_proof_url: memberResult.data.dues_proof_url,
-            created_at: memberResult.data.created_at,
-            updated_at: memberResult.data.updated_at
-          });
+        // Get member data with timeout
+        console.log('Fetching member data...');
+        const memberPromise = db.getMemberByUserId(session.user.id);
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Member data fetch timeout')), 5000)
+        );
+        
+        try {
+          const memberResult = await Promise.race([memberPromise, timeoutPromise]) as any;
+          
+          if (memberResult.data) {
+            console.log('Member data found:', memberResult.data.full_name);
+            setMember({
+              id: memberResult.data.id,
+              userId: memberResult.data.user_id,
+              full_name: memberResult.data.full_name,
+              nickname: memberResult.data.nickname,
+              role: memberResult.data.role as 'member' | 'secretary',
+              status: memberResult.data.status as 'pending' | 'active' | 'inactive',
+              stateship_year: memberResult.data.stateship_year,
+              last_mowcub_position: memberResult.data.last_mowcub_position,
+              current_council_office: memberResult.data.current_council_office,
+              latitude: memberResult.data.latitude,
+              longitude: memberResult.data.longitude,
+              photo_url: memberResult.data.photo_url,
+              dues_proof_url: memberResult.data.dues_proof_url,
+              created_at: memberResult.data.created_at,
+              updated_at: memberResult.data.updated_at
+            });
+          } else {
+            console.warn('No member data found for user');
+            setMember(null);
+          }
+        } catch (memberError) {
+          console.error('Error fetching member data:', memberError);
+          // Don't fail the whole process if member data fails
+          setMember(null);
         }
       } else {
+        console.log('No session found');
         setUser(null);
         setMember(null);
       }
@@ -90,6 +111,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('Error refreshing session:', error);
       setUser(null);
       setMember(null);
+      throw error; // Re-throw so calling code knows it failed
     }
   }, []);
 
@@ -151,8 +173,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      console.log('Starting sign in process...');
-      const { data, error } = await auth.signIn(email, password);
+      console.log('Starting sign in process for:', email);
+      
+      // Add timeout to the auth request
+      const authPromise = auth.signIn(email, password);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Authentication timeout')), 8000)
+      );
+      
+      const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any;
       
       if (error) {
         console.error('Supabase auth error:', error);
@@ -160,15 +189,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       if (data?.user) {
-        console.log('User authenticated successfully');
-        await refreshSession();
+        console.log('User authenticated successfully, updating session...');
+        
+        // Try to get member data with error handling
+        try {
+          await refreshSession();
+        } catch (sessionError) {
+          console.warn('Session refresh failed, but user is authenticated:', sessionError);
+        }
+        
         return { success: true, message: 'Signed in successfully' };
       } else {
-        throw new Error('Authentication failed');
+        throw new Error('Authentication failed - no user data returned');
       }
     } catch (error: any) {
       console.error('SignIn error:', error);
-      throw new Error(error.message || 'Login failed');
+      
+      // Provide more specific error messages
+      if (error.message?.includes('timeout')) {
+        throw new Error('Login is taking too long. Please check your connection and try again.');
+      } else if (error.message?.includes('Invalid login credentials')) {
+        throw new Error('Invalid email or password. Please check your credentials.');
+      } else {
+        throw new Error(error.message || 'Login failed. Please try again.');
+      }
     }
   };
 
