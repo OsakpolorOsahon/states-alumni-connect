@@ -2,12 +2,19 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Award, Star, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useQuery } from '@tanstack/react-query';
+import { db } from '@/lib/supabase';
 import { useMemo } from 'react';
 
 const HallOfFameSection = () => {
-  // For now, using sample data since Hall of Fame API isn't yet implemented
-  const achievements: any[] = [];
-  const achievementsLoading = false;
+  const { data: achievements = [], isLoading: achievementsLoading } = useQuery({
+    queryKey: ['hall-of-fame'],
+    queryFn: async () => {
+      const result = await db.getHallOfFame();
+      if (result.error) throw new Error(result.error.message);
+      return result.data || [];
+    }
+  });
 
   const stats = useMemo(() => {
     const thirtyDaysAgo = new Date();
