@@ -46,7 +46,7 @@ const AboutSection = () => {
           <div className="relative fade-in-scroll slide-in-right">
             <div className="aspect-[4/3] rounded-lg overflow-hidden shadow-lg image-scale interactive-shadow">
               <img
-                src="/attached_assets/IMG-20250724-WA0006_1753347494449.jpg"
+                src="/images/community-event-3.jpg"
                 alt="SMMOWCUB ceremony with traditional dignitaries and Man O' War members"
                 className="w-full h-full object-cover"
                 onError={(e) => {

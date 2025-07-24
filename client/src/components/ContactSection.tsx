@@ -84,7 +84,7 @@ const ContactSection = () => {
           >
             <div className="aspect-[4/3] rounded-lg overflow-hidden shadow-xl">
               <img
-                src="/attached_assets/IMG-20250724-WA0004_1753347494663.jpg"
+                src="/images/community-event-2.jpg"
                 alt="SMMOWCUB alumni gathering and fellowship"
                 className="w-full h-full object-cover"
               />

@@ -73,7 +73,7 @@ const HistorySection = () => {
           >
             <div className="aspect-[4/3] rounded-lg overflow-hidden shadow-lg">
               <img
-                src="/attached_assets/IMG-20250724-WA0008(1)_1753347494716.jpg"
+                src="/images/community-event-5.jpg"
                 alt="SMMOWCUB distinguished elder addressing the community"
                 className="w-full h-full object-cover"
                 onError={(e) => {

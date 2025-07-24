@@ -13,7 +13,7 @@ const History = () => {
       <main className="container mx-auto py-12 px-4">
         {/* Header Section */}
         <section className="relative bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900 py-16 rounded-lg mb-8">
-          <div className="absolute inset-0 bg-[url('/attached_assets/IMG-20250724-WA0008(1)_1753347494716.jpg')] bg-cover bg-center opacity-20 rounded-lg"></div>
+          <div className="absolute inset-0 bg-[url('/images/community-event-5.jpg')] bg-cover bg-center opacity-20 rounded-lg"></div>
           <div className="absolute inset-0 bg-[#E10600] opacity-10 rounded-lg"></div>
           
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

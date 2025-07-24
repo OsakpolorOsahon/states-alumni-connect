@@ -44,7 +44,7 @@ const HeroSection = () => {
           <Link to="/signup">
             <Button 
               size="lg" 
-              className="bg-white hover:bg-gray-100 text-[#E10600] border-2 border-white px-8 py-3 text-lg font-semibold btn-animated ripple-effect tilt-hover"
+              className="bg-[#E10600] hover:bg-[#C10500] text-white px-8 py-3 text-lg font-semibold btn-animated ripple-effect tilt-hover"
               aria-label="Member Sign Up"
             >
               Member Sign Up
