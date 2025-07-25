@@ -309,7 +309,7 @@ const Directory = () => {
             <div className="flex gap-4 justify-center">
               <Link to="/signup">
                 <Button className="bg-[#E10600] hover:bg-[#C10500]">
-                  Join Our Community
+                  Member Signup
                 </Button>
               </Link>
               <Link to="/contact">
