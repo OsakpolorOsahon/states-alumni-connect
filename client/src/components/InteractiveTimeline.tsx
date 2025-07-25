@@ -27,7 +27,7 @@ const InteractiveTimeline = () => {
     {
       year: '1985',
       title: 'Alumni Network Formation',
-      description: 'Creation of the first organized alumni network connecting graduates across Nigeria.',
+      description: 'Creation of the first organized alumni network connecting statesmen across Nigeria.',
       icon: MapPin,
       details: 'Alumni began forming professional networks that would span multiple industries and sectors.',
       color: 'bg-purple-500'
@@ -49,7 +49,7 @@ const InteractiveTimeline = () => {
       color: 'bg-red-500'
     },
     {
-      year: '2020',
+      year: '2025',
       title: 'SMMOWCUB Portal',
       description: 'Launch of the comprehensive digital platform connecting all Senior Members globally.',
       icon: Calendar,
