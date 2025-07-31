@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { db } from '@/lib/supabase';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,19 +13,38 @@ import { Search, MessageCircle, User, Calendar, Pin, Filter, Plus, TrendingUp } 
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
 
+interface ForumThread {
+  id: string;
+  title: string;
+  content: string;
+  author?: { full_name: string };
+  replies?: { count: number }[];
+  created_at: string;
+  updated_at: string;
+  is_pinned?: boolean;
+  is_locked?: boolean;
+  category?: string;
+  lastActivityAt?: string;
+  replyCount?: number;
+}
+
 const Forum = () => {
-  // Removed broken hooks
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('recent');
 
   const { data: threads = [], isLoading, error } = useQuery({
     queryKey: ['forum', 'threads'],
-    queryFn: () => api.getAllForumThreads(),
+    queryFn: async () => {
+      const result = await db.getForumThreads();
+      if (result.error) throw new Error(result.error.message);
+      return result.data || [];
+    },
   });
 
   // Filter and sort threads
-  const filteredThreads = threads.filter(thread => {
+  const filteredThreads = threads.filter((thread: ForumThread) => {
     const matchesSearch = searchTerm === '' || 
       thread.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       thread.content.toLowerCase().includes(searchTerm.toLowerCase());
@@ -34,14 +53,14 @@ const Forum = () => {
       thread.category === selectedCategory;
     
     return matchesSearch && matchesCategory;
-  }).sort((a, b) => {
+  }).sort((a: ForumThread, b: ForumThread) => {
     switch (sortBy) {
       case 'recent':
-        return new Date(b.lastActivityAt || b.createdAt).getTime() - new Date(a.lastActivityAt || a.createdAt).getTime();
+        return new Date(b.lastActivityAt || b.created_at).getTime() - new Date(a.lastActivityAt || a.created_at).getTime();
       case 'oldest':
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       case 'popular':
-        return (b.replyCount || 0) - (a.replyCount || 0);
+        return (b.replyCount || b.replies?.length || 0) - (a.replyCount || a.replies?.length || 0);
       case 'title':
         return a.title.localeCompare(b.title);
       default:
@@ -49,7 +68,7 @@ const Forum = () => {
     }
   });
 
-  const categories = [...new Set(threads.map(thread => thread.category))];
+  const categories = Array.from(new Set(threads.map((thread: ForumThread) => thread.category).filter(Boolean)));
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
@@ -126,7 +145,7 @@ const Forum = () => {
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
                   {categories.map(category => (
-                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                    <SelectItem key={category || 'general'} value={category || 'general'}>{category || 'General'}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -172,30 +191,31 @@ const Forum = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredThreads.map((thread) => (
+            {filteredThreads.map((thread: ForumThread) => (
               <Card key={thread.id} className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-start space-x-4">
                     <Avatar className="h-12 w-12 flex-shrink-0">
-                      <AvatarImage src={thread.authorAvatar} alt={thread.authorName} />
                       <AvatarFallback className="bg-[#E10600] text-white">
-                        {getInitials(thread.authorName)}
+                        {getInitials(thread.author?.full_name || 'Unknown')}
                       </AvatarFallback>
                     </Avatar>
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          {thread.isPinned && (
+                          {thread.is_pinned && (
                             <Pin className="h-4 w-4 text-[#E10600]" />
                           )}
                           <h3 className="text-lg font-semibold text-foreground hover:text-[#E10600] cursor-pointer">
                             {thread.title}
                           </h3>
                         </div>
-                        <Badge variant="secondary" className="text-xs">
-                          {thread.category}
-                        </Badge>
+                        {thread.category && (
+                          <Badge variant="secondary" className="text-xs">
+                            {thread.category}
+                          </Badge>
+                        )}
                       </div>
                       
                       <p className="text-muted-foreground mb-4 line-clamp-2">
@@ -206,21 +226,21 @@ const Forum = () => {
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <div className="flex items-center gap-1">
                             <User className="h-4 w-4" />
-                            <span>{thread.authorName}</span>
+                            <span>{thread.author?.full_name || 'Unknown'}</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Calendar className="h-4 w-4" />
-                            <span>{formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}</span>
+                            <span>{formatDistanceToNow(new Date(thread.created_at), { addSuffix: true })}</span>
                           </div>
                         </div>
                         
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
                             <MessageCircle className="h-4 w-4" />
-                            <span>{thread.replyCount || 0} replies</span>
+                            <span>{thread.replies?.length || 0} replies</span>
                           </div>
                           
-                          {thread.replyCount > 10 && (
+                          {(thread.replies?.length || 0) > 10 && (
                             <div className="flex items-center gap-1 text-sm text-[#E10600]">
                               <TrendingUp className="h-4 w-4" />
                               <span>Popular</span>

@@ -8,9 +8,12 @@ import { Link } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import PushNotifications from "@/components/PushNotifications";
+import { useRealTimeStats } from "@/hooks/useRealTimeStats";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const MemberDashboard = () => {
   const { user, member, signOut, isSecretary } = useAuth();
+  const { data: stats, isLoading: statsLoading, error: statsError } = useRealTimeStats();
 
   const quickLinks = [
     { title: "News & Events", description: "Latest updates and upcoming events", icon: FileText, href: "/news-events" },
@@ -53,55 +56,65 @@ const MemberDashboard = () => {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Active Members</p>
-                  <p className="text-2xl font-bold">1,247</p>
+        <ErrorBoundary>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Active Members</p>
+                    <p className="text-2xl font-bold">
+                      {statsLoading ? '...' : (stats?.activeMembers || 0)}
+                    </p>
+                  </div>
+                  <Users className="h-8 w-8 text-[#E10600]" />
                 </div>
-                <Users className="h-8 w-8 text-[#E10600]" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Hall of Fame</p>
-                  <p className="text-2xl font-bold">23</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Total Members</p>
+                    <p className="text-2xl font-bold">
+                      {statsLoading ? '...' : (stats?.totalMembers || 0)}
+                    </p>
+                  </div>
+                  <Users className="h-8 w-8 text-[#E10600]" />
                 </div>
-                <Award className="h-8 w-8 text-[#E10600]" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Events This Month</p>
-                  <p className="text-2xl font-bold">5</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Pending Members</p>
+                    <p className="text-2xl font-bold">
+                      {statsLoading ? '...' : (stats?.pendingMembers || 0)}
+                    </p>
+                  </div>
+                  <Bell className="h-8 w-8 text-[#E10600]" />
                 </div>
-                <FileText className="h-8 w-8 text-[#E10600]" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Your Network</p>
-                  <p className="text-2xl font-bold">156</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">News Articles</p>
+                    <p className="text-2xl font-bold">
+                      {statsLoading ? '...' : (stats?.totalNews || 0)}
+                    </p>
+                  </div>
+                  <FileText className="h-8 w-8 text-[#E10600]" />
                 </div>
-                <MapPin className="h-8 w-8 text-[#E10600]" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </div>
+        </ErrorBoundary>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Quick Links */}

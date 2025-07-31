@@ -12,6 +12,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import PWAInstallBanner from '@/components/PWAInstallBanner'
 import LoadingSpinner from '@/components/LoadingSpinner'
+import ErrorBoundary from '@/components/ErrorBoundary'
 
 // lazy imports
 const Index = lazy(() => import('./pages/Index'))
@@ -60,8 +61,9 @@ export default function App() {
               <Toaster />
               <Sonner />
               <BrowserRouter>
-                <Suspense fallback={<LoadingFallback />}>
-                  <Routes>
+                <ErrorBoundary>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <Routes>
                   {/* public */}
                   <Route path="/" element={<Index />} />
                   <Route path="/about" element={<About />} />
@@ -171,9 +173,10 @@ export default function App() {
 
                   {/* catch-all */}
                   <Route path="*" element={<NotFound />} />
-                </Routes>
-                </Suspense>
-                <PWAInstallBanner />
+                    </Routes>
+                  </Suspense>
+                  <PWAInstallBanner />
+                </ErrorBoundary>
               </BrowserRouter>
           </AuthProvider>
         </ThemeProvider>

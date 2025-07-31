@@ -31,26 +31,19 @@ const Login = () => {
       
       console.log('Login result:', result);
       
-      if (result && result.success) {
+      if (result && !result.error) {
         console.log('Login successful, showing toast and navigating...');
         toast({
           title: "Login Successful", 
           description: "Redirecting to dashboard...",
         });
         
-        // Navigate immediately instead of waiting
+        // Navigate immediately
         console.log('Navigating to dashboard...');
-        // Use both methods to ensure navigation works
         navigate('/dashboard', { replace: true });
-        // Fallback in case React Router navigation fails
-        setTimeout(() => {
-          if (window.location.pathname === '/login') {
-            window.location.href = '/dashboard';
-          }
-        }, 1000);
       } else {
-        console.error('Login failed - no success response');
-        throw new Error('Login failed - no success response');
+        console.error('Login failed - error in response:', result?.error);
+        throw new Error(result?.error?.message || 'Login failed');
       }
     } catch (error: any) {
       console.error('Login error:', error);

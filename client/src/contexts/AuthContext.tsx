@@ -177,8 +177,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw error
       }
 
-      console.log('Login successful')
-      return data
+      console.log('Login successful, returning data:', data)
+      // Return data in format expected by Login component
+      return { ...data, success: true }
     } catch (error) {
       console.error('Login error:', error)
       throw error
