@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -11,6 +11,8 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import InteractiveMap from '@/components/InteractiveMap';
 import { STATESHIP_YEARS, MOWCUB_POSITIONS, COUNCIL_OFFICES } from '@/data/memberData';
+import { supabase } from '@/lib/supabase';
+import { useToast } from '@/hooks/use-toast';
 
 interface Member {
   id: string;
@@ -22,9 +24,14 @@ interface Member {
   photoUrl?: string;
   location?: string;
   status: string;
+  badges?: Array<{
+    badge_name: string;
+    badge_code: string;
+  }>;
 }
 
 const Directory = () => {
+  const { toast } = useToast();
   const [filters, setFilters] = useState({
     search: '',
     year: 'all',
@@ -34,13 +41,115 @@ const Directory = () => {
   const [showMap, setShowMap] = useState(false);
   const [viewType, setViewType] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'hierarchy' | 'year' | 'name'>('hierarchy');
+  const [members, setMembers] = useState<Member[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [stats, setStats] = useState({ totalMembers: 0, activeMembers: 0, hallOfFameCount: 0 });
+  const [statsLoading, setStatsLoading] = useState(true);
 
-  // Empty members array for now - will be populated when data is available
-  const members: Member[] = [];
-  const loading = false;
-  const error = null;
-  const stats = { totalMembers: 0, activeMembers: 0, hallOfFameCount: 0 };
-  const statsLoading = false;
+  useEffect(() => {
+    fetchMembers();
+    fetchStats();
+    
+    // Set up real-time subscriptions for member and badge updates
+    const membersSubscription = supabase
+      .channel('members_changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'members' },
+        () => {
+          fetchMembers();
+          fetchStats();
+        }
+      )
+      .subscribe();
+
+    const badgesSubscription = supabase
+      .channel('badges_changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'badges' },
+        () => {
+          fetchMembers(); // Refetch to update member badges
+        }
+      )
+      .subscribe();
+
+    return () => {
+      membersSubscription.unsubscribe();
+      badgesSubscription.unsubscribe();
+    };
+  }, []);
+
+  const fetchMembers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const { data: membersData, error: membersError } = await supabase
+        .from('members')
+        .select(`
+          id,
+          full_name,
+          nickname,
+          stateship_year,
+          current_council_office,
+          mowcub_position,
+          photo_url,
+          location,
+          status,
+          badges(badge_name, badge_code)
+        `)
+        .eq('status', 'active')
+        .order('full_name');
+
+      if (membersError) throw membersError;
+
+      const formattedMembers: Member[] = (membersData || []).map(member => ({
+        id: member.id,
+        fullName: member.full_name,
+        nickname: member.nickname,
+        stateshipYear: member.stateship_year,
+        currentCouncilOffice: member.current_council_office,
+        mowcubPosition: member.mowcub_position,
+        photoUrl: member.photo_url,
+        location: member.location,
+        status: member.status,
+        badges: member.badges || []
+      }));
+
+      setMembers(formattedMembers);
+    } catch (error) {
+      console.error('Error fetching members:', error);
+      setError('Failed to load members');
+      toast({
+        title: "Error",
+        description: "Failed to load member directory",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      setStatsLoading(true);
+      
+      const [membersResult, hallOfFameResult] = await Promise.all([
+        supabase.from('members').select('status', { count: 'exact' }),
+        supabase.from('hall_of_fame').select('id', { count: 'exact' })
+      ]);
+
+      const totalMembers = membersResult.count || 0;
+      const activeMembers = membersResult.data?.filter(m => m.status === 'active').length || 0;
+      const hallOfFameCount = hallOfFameResult.count || 0;
+
+      setStats({ totalMembers, activeMembers, hallOfFameCount });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();

@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Trophy, Star, Medal, Award, Plus, Search } from "lucide-react";
+import { Trophy, Star, Medal, Award, Plus, Search, Calendar } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import { supabase } from '@/lib/supabase';
+import { useToast } from '@/hooks/use-toast';
 
 interface HallOfFameMember {
   id: string;
@@ -26,18 +28,125 @@ interface HallOfFameMember {
 }
 
 const HallOfFame = () => {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  
-  // Empty data for now - will be populated when backend is available
-  const hallOfFameMembers: HallOfFameMember[] = [];
-  const loading = false;
+  const [hallOfFameMembers, setHallOfFameMembers] = useState<HallOfFameMember[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchHallOfFameMembers();
+    
+    // Set up real-time subscription for hall of fame updates
+    const subscription = supabase
+      .channel('hall_of_fame_changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'hall_of_fame' },
+        () => {
+          fetchHallOfFameMembers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const fetchHallOfFameMembers = async () => {
+    try {
+      setLoading(true);
+      
+      const { data, error } = await supabase
+        .from('hall_of_fame')
+        .select(`
+          id,
+          member_id,
+          achievement_title,
+          achievement_description,
+          achievement_date,
+          created_at,
+          members!inner(
+            full_name,
+            nickname,
+            photo_url,
+            stateship_year,
+            current_council_office
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedMembers: HallOfFameMember[] = (data || []).map(entry => ({
+        id: entry.id,
+        member_id: entry.member_id,
+        achievement_title: entry.achievement_title,
+        achievement_description: entry.achievement_description,
+        achievement_date: entry.achievement_date,
+        created_at: entry.created_at,
+        members: {
+          full_name: (entry.members as any)?.full_name || 'Unknown',
+          nickname: (entry.members as any)?.nickname,
+          photo_url: (entry.members as any)?.photo_url,
+          stateship_year: (entry.members as any)?.stateship_year || 'Unknown',
+          current_council_office: (entry.members as any)?.current_council_office
+        }
+      }));
+
+      setHallOfFameMembers(formattedMembers);
+    } catch (error) {
+      console.error('Error fetching Hall of Fame members:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load Hall of Fame entries",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const categories = [
-    { id: 'all', name: 'All Categories', icon: Trophy, count: 0 },
-    { id: 'academic', name: 'Academic Excellence', icon: Star, count: 0 },
-    { id: 'leadership', name: 'Leadership', icon: Award, count: 0 },
-    { id: 'innovation', name: 'Innovation', icon: Medal, count: 0 },
+    { 
+      id: 'all', 
+      name: 'All Categories', 
+      icon: Trophy, 
+      count: hallOfFameMembers.length 
+    },
+    { 
+      id: 'academic', 
+      name: 'Academic Excellence', 
+      icon: Star, 
+      count: hallOfFameMembers.filter(m => 
+        m.achievement_title.toLowerCase().includes('academic') || 
+        m.achievement_title.toLowerCase().includes('education') ||
+        m.achievement_title.toLowerCase().includes('phd') ||
+        m.achievement_title.toLowerCase().includes('degree')
+      ).length 
+    },
+    { 
+      id: 'leadership', 
+      name: 'Leadership', 
+      icon: Award, 
+      count: hallOfFameMembers.filter(m => 
+        m.achievement_title.toLowerCase().includes('leadership') ||
+        m.achievement_title.toLowerCase().includes('president') ||
+        m.achievement_title.toLowerCase().includes('director') ||
+        m.achievement_title.toLowerCase().includes('ceo')
+      ).length 
+    },
+    { 
+      id: 'innovation', 
+      name: 'Innovation', 
+      icon: Medal, 
+      count: hallOfFameMembers.filter(m => 
+        m.achievement_title.toLowerCase().includes('innovation') ||
+        m.achievement_title.toLowerCase().includes('startup') ||
+        m.achievement_title.toLowerCase().includes('technology') ||
+        m.achievement_title.toLowerCase().includes('entrepreneur')
+      ).length 
+    },
   ];
 
   const getInitials = (name: string) => {

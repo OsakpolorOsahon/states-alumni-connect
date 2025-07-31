@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,14 +20,26 @@ const News = () => {
 
   const { data: news = [], isLoading, error } = useQuery({
     queryKey: ['news', 'published'],
-    queryFn: () => api.getPublishedNews(),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('news')
+        .select(`
+          *,
+          author:members(full_name)
+        `)
+        .eq('is_published', true)
+        .order('published_at', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    },
   });
 
   // Filter and sort news
   const filteredNews = news.filter((article: any) => {
     const matchesSearch = searchTerm === '' || 
-      article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      article.content.toLowerCase().includes(searchTerm.toLowerCase());
+      article.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      article.content?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesCategory = selectedCategory === 'all' || 
       article.category === selectedCategory;
@@ -36,17 +48,17 @@ const News = () => {
   }).sort((a: any, b: any) => {
     switch (sortBy) {
       case 'newest':
-        return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+        return new Date(b.published_at || b.created_at).getTime() - new Date(a.published_at || a.created_at).getTime();
       case 'oldest':
-        return new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime();
+        return new Date(a.published_at || a.created_at).getTime() - new Date(b.published_at || b.created_at).getTime();
       case 'title':
-        return a.title.localeCompare(b.title);
+        return a.title?.localeCompare(b.title) || 0;
       default:
         return 0;
     }
   });
 
-  const categories = Array.from(new Set(news.map((article: any) => article.category)));
+  const categories = Array.from(new Set(news.map((article: any) => article.category).filter(Boolean)));
 
   if (isLoading) {
     return (

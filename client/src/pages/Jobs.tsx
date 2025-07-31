@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,37 +21,49 @@ const Jobs = () => {
 
   const { data: jobs = [], isLoading, error } = useQuery({
     queryKey: ['jobs', 'active'],
-    queryFn: () => api.getActiveJobPosts(),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('job_posts')
+        .select(`
+          *,
+          posted_by_member:members(full_name)
+        `)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    },
   });
 
   // Filter and sort jobs
-  const filteredJobs = jobs.filter(job => {
+  const filteredJobs = jobs.filter((job: any) => {
     const matchesSearch = searchTerm === '' || 
-      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.description.toLowerCase().includes(searchTerm.toLowerCase());
+      job.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.description?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesType = selectedType === 'all' || job.type === selectedType;
+    const matchesType = selectedType === 'all' || job.job_type === selectedType;
     const matchesLocation = selectedLocation === 'all' || job.location === selectedLocation;
     
     return matchesSearch && matchesType && matchesLocation;
-  }).sort((a, b) => {
+  }).sort((a: any, b: any) => {
     switch (sortBy) {
       case 'newest':
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       case 'oldest':
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       case 'salary':
-        return (b.salaryMax || 0) - (a.salaryMax || 0);
+        return (b.salary_max || 0) - (a.salary_max || 0);
       case 'title':
-        return a.title.localeCompare(b.title);
+        return a.title?.localeCompare(b.title) || 0;
       default:
         return 0;
     }
   });
 
-  const jobTypes = [...new Set(jobs.map(job => job.type))];
-  const locations = [...new Set(jobs.map(job => job.location))];
+  const jobTypes = [...new Set(jobs.map((job: any) => job.job_type).filter(Boolean))];
+  const locations = [...new Set(jobs.map((job: any) => job.location).filter(Boolean))];
 
   const formatSalary = (min: number, max: number) => {
     if (min && max) {
