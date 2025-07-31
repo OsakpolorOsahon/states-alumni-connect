@@ -1,0 +1,162 @@
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.badges (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  member_id uuid,
+  badge_name text NOT NULL,
+  badge_code text NOT NULL,
+  description text,
+  awarded_by uuid,
+  awarded_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT badges_pkey PRIMARY KEY (id),
+  CONSTRAINT badges_member_id_fkey FOREIGN KEY (member_id) REFERENCES public.members(id),
+  CONSTRAINT badges_awarded_by_fkey FOREIGN KEY (awarded_by) REFERENCES public.members(id)
+);
+CREATE TABLE public.event_attendees (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  event_id uuid,
+  member_id uuid,
+  rsvp_status text DEFAULT 'pending'::text,
+  registered_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT event_attendees_pkey PRIMARY KEY (id),
+  CONSTRAINT event_attendees_event_id_fkey FOREIGN KEY (event_id) REFERENCES public.events(id),
+  CONSTRAINT event_attendees_member_id_fkey FOREIGN KEY (member_id) REFERENCES public.members(id)
+);
+CREATE TABLE public.events (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  organizer_id uuid,
+  title text NOT NULL,
+  description text,
+  event_date timestamp with time zone NOT NULL,
+  location text,
+  max_attendees integer,
+  is_public boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT events_pkey PRIMARY KEY (id),
+  CONSTRAINT events_organizer_id_fkey FOREIGN KEY (organizer_id) REFERENCES public.members(id)
+);
+CREATE TABLE public.forum_replies (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  thread_id uuid,
+  author_id uuid,
+  content text NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT forum_replies_pkey PRIMARY KEY (id),
+  CONSTRAINT forum_replies_author_id_fkey FOREIGN KEY (author_id) REFERENCES public.members(id),
+  CONSTRAINT forum_replies_thread_id_fkey FOREIGN KEY (thread_id) REFERENCES public.forum_threads(id)
+);
+CREATE TABLE public.forum_threads (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  author_id uuid,
+  title text NOT NULL,
+  content text NOT NULL,
+  is_pinned boolean DEFAULT false,
+  is_locked boolean DEFAULT false,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT forum_threads_pkey PRIMARY KEY (id),
+  CONSTRAINT forum_threads_author_id_fkey FOREIGN KEY (author_id) REFERENCES public.members(id)
+);
+CREATE TABLE public.hall_of_fame (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  member_id uuid,
+  achievement_title text NOT NULL,
+  achievement_description text,
+  achievement_date text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT hall_of_fame_pkey PRIMARY KEY (id),
+  CONSTRAINT hall_of_fame_member_id_fkey FOREIGN KEY (member_id) REFERENCES public.members(id)
+);
+CREATE TABLE public.job_applications (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  job_id uuid,
+  applicant_id uuid,
+  cover_letter text,
+  resume_url text,
+  status text DEFAULT 'pending'::text,
+  applied_at timestamp with time zone DEFAULT now(),
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT job_applications_pkey PRIMARY KEY (id),
+  CONSTRAINT job_applications_job_id_fkey FOREIGN KEY (job_id) REFERENCES public.job_posts(id),
+  CONSTRAINT job_applications_applicant_id_fkey FOREIGN KEY (applicant_id) REFERENCES public.members(id)
+);
+CREATE TABLE public.job_posts (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  posted_by uuid,
+  title text NOT NULL,
+  description text NOT NULL,
+  company text NOT NULL,
+  location text,
+  salary_range text,
+  is_active boolean DEFAULT true,
+  expires_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT job_posts_pkey PRIMARY KEY (id),
+  CONSTRAINT job_posts_posted_by_fkey FOREIGN KEY (posted_by) REFERENCES public.members(id)
+);
+CREATE TABLE public.members (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  user_id uuid,
+  full_name text NOT NULL,
+  nickname text,
+  stateship_year USER-DEFINED NOT NULL,
+  last_mowcub_position USER-DEFINED NOT NULL,
+  current_council_office USER-DEFINED,
+  photo_url text,
+  dues_proof_url text,
+  latitude real,
+  longitude real,
+  paid_through text,
+  role USER-DEFINED DEFAULT 'member'::user_role,
+  status USER-DEFINED DEFAULT 'pending'::member_status,
+  approved_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT members_pkey PRIMARY KEY (id),
+  CONSTRAINT members_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.mentorship_requests (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  mentee_id uuid,
+  mentor_id uuid,
+  request_message text NOT NULL,
+  status USER-DEFINED DEFAULT 'pending'::mentorship_status,
+  matched_at timestamp with time zone,
+  completed_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT mentorship_requests_pkey PRIMARY KEY (id),
+  CONSTRAINT mentorship_requests_mentee_id_fkey FOREIGN KEY (mentee_id) REFERENCES public.members(id),
+  CONSTRAINT mentorship_requests_mentor_id_fkey FOREIGN KEY (mentor_id) REFERENCES public.members(id)
+);
+CREATE TABLE public.news (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  author_id uuid,
+  title text NOT NULL,
+  content text NOT NULL,
+  is_published boolean DEFAULT false,
+  published_at timestamp with time zone,
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT news_pkey PRIMARY KEY (id),
+  CONSTRAINT news_author_id_fkey FOREIGN KEY (author_id) REFERENCES public.members(id)
+);
+CREATE TABLE public.notifications (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  member_id uuid,
+  title text NOT NULL,
+  message text NOT NULL,
+  type USER-DEFINED DEFAULT 'general'::notification_type,
+  is_read boolean DEFAULT false,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT notifications_pkey PRIMARY KEY (id),
+  CONSTRAINT notifications_member_id_fkey FOREIGN KEY (member_id) REFERENCES public.members(id)
+);
