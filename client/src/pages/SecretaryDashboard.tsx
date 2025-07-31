@@ -8,6 +8,8 @@ import Footer from "@/components/Footer";
 import SecretaryMemberManagement from "@/components/SecretaryMemberManagement";
 import SecretaryContentManagement from "@/components/SecretaryContentManagement";
 import SecretaryStats from "@/components/SecretaryStats";
+import BadgeManagement from "@/components/BadgeManagement";
+import HallOfFameManagement from "@/components/HallOfFameManagement";
 
 const SecretaryDashboard = () => {
   const { user, member, loading } = useAuth();
@@ -56,10 +58,11 @@ const SecretaryDashboard = () => {
 
         {/* Main Dashboard Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="management">Member Management</TabsTrigger>
             <TabsTrigger value="content">Content Management</TabsTrigger>
             <TabsTrigger value="badges">Badge Management</TabsTrigger>
+            <TabsTrigger value="halloffame">Hall of Fame</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
@@ -72,14 +75,11 @@ const SecretaryDashboard = () => {
           </TabsContent>
 
           <TabsContent value="badges" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Badge Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Badge management system will be implemented here.</p>
-              </CardContent>
-            </Card>
+            <BadgeManagement />
+          </TabsContent>
+
+          <TabsContent value="halloffame" className="space-y-6">
+            <HallOfFameManagement />
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
