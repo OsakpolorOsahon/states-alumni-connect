@@ -29,6 +29,24 @@ const Navigation = () => {
   const location = useLocation();
   const { theme, setTheme } = useTheme();
   const { user, member, signOut, loading } = useAuth();
+
+  // Show loading state while auth is initializing
+  if (loading) {
+    return (
+      <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex items-center">
+              <span className="text-xl font-bold text-[#E10600]">SMMOWCUB</span>
+            </div>
+            <div className="flex items-center">
+              <div className="animate-pulse h-8 w-8 bg-gray-300 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    );
+  }
   
   const publicNavItems = [
     { name: "Home", href: "/" },
@@ -88,7 +106,7 @@ const Navigation = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
-            {user && member?.status === "Active" ? (
+            {user && member?.status === "active" ? (
               // Authenticated Member Navigation
               memberNavItems.map((item, index) => {
                 const IconComponent = item.icon;
@@ -158,7 +176,7 @@ const Navigation = () => {
             )}
 
             {/* Notification Bell */}
-            {user && member?.status === "Active" && <NotificationBell />}
+            {user && member?.status === "active" && <NotificationBell />}
 
             {/* Theme Toggle */}
             <Button
@@ -210,7 +228,7 @@ const Navigation = () => {
 
           {/* Mobile menu & theme */}
           <div className="md:hidden flex items-center gap-2">
-            {user && member?.status === "Active" && <NotificationBell />}
+            {user && member?.status === "active" && <NotificationBell />}
             
             <Button
               variant="ghost"
@@ -230,7 +248,7 @@ const Navigation = () => {
               </SheetTrigger>
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
                 <div className="flex flex-col space-y-4 mt-8">
-                  {user && member?.status === "Active" ? (
+                  {user && member?.status === "active" ? (
                     <>
                       <div className="pb-4 border-b border-border">
                         <p className="font-medium text-foreground">

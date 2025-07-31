@@ -16,8 +16,27 @@ import Footer from "@/components/Footer";
 import SecretaryMemberManagement from "@/components/SecretaryMemberManagement";
 
 const SecretaryDashboard = () => {
-  // Removed broken hooks
+  const { user, member, loading } = useAuth();
   const [activeTab, setActiveTab] = useState("management");
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#E10600]"></div>
+      </div>
+    );
+  }
+
+  if (!member || member.role !== 'secretary') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Access Denied</h2>
+          <p className="text-muted-foreground">Secretary access required</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background dark:bg-background">

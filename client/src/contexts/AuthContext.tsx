@@ -73,6 +73,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(null)
         setMember(null)
         setSession(null)
+        setLoading(false)
+        return
         return
       }
 
@@ -170,18 +172,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signIn = async (email: string, password: string) => {
     try {
       console.log('Starting login process for:', email)
+      setLoading(true)
+      
       const { data, error } = await auth.signIn(email, password)
       
       if (error) {
         console.error('Login error:', error)
+        setLoading(false)
         throw error
       }
 
-      console.log('Login successful, returning data:', data)
-      // Return data in format expected by Login component
-      return { ...data, success: true }
+      if (data.user && data.session) {
+        console.log('Login successful, setting session...')
+        setUser(data.user)
+        setSession(data.session)
+        
+        // Fetch member data immediately
+        const memberData = await fetchMemberData(data.user.id)
+        setMember(memberData)
+        
+        console.log('Login complete, member data:', memberData)
+        setLoading(false)
+        
+        // Return success format expected by Login component  
+        return { user: data.user, session: data.session, member: memberData, success: true }
+      }
+      
+      setLoading(false)
+      throw new Error('Login failed - no user data returned')
     } catch (error) {
       console.error('Login error:', error)
+      setLoading(false)
       throw error
     }
   }

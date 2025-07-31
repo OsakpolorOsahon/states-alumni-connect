@@ -31,19 +31,21 @@ const Login = () => {
       
       console.log('Login result:', result);
       
-      if (result && !result.error) {
+      if (result && result.success && result.user) {
         console.log('Login successful, showing toast and navigating...');
         toast({
           title: "Login Successful", 
-          description: "Redirecting to dashboard...",
+          description: "Welcome back!",
         });
         
-        // Navigate immediately
-        console.log('Navigating to dashboard...');
-        navigate('/dashboard', { replace: true });
+        // Small delay to ensure auth state is set
+        setTimeout(() => {
+          console.log('Navigating to dashboard...');
+          navigate('/dashboard', { replace: true });
+        }, 100);
       } else {
-        console.error('Login failed - error in response:', result?.error);
-        throw new Error(result?.error?.message || 'Login failed');
+        console.error('Login failed - invalid response:', result);
+        throw new Error('Login failed - please try again');
       }
     } catch (error: any) {
       console.error('Login error:', error);

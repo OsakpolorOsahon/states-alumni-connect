@@ -22,24 +22,29 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
   useEffect(() => {
     if (loading) return;
 
+    console.log('AuthGuard check:', { user: !!user, member: member?.role, requireAuth, requireSecretary, requireActive });
+
     if (requireAuth && !user) {
-      navigate('/login');
+      console.log('No user, redirecting to login');
+      navigate('/login', { replace: true });
       return;
     }
 
     if (requireSecretary && (!member || member.role !== 'secretary')) {
-      navigate('/');
+      console.log('Not secretary, redirecting home');
+      navigate('/dashboard', { replace: true });
       return;
     }
 
     if (requireActive && (!member || member.status !== 'active')) {
+      console.log('Not active member, checking status');
       if (member?.status === 'pending') {
-        navigate('/pending-approval');
+        navigate('/pending-approval', { replace: true });
       } else if (user && !member) {
         // User exists but no member record - redirect to upload documents
-        navigate('/upload-documents');
+        navigate('/upload-documents', { replace: true });
       } else {
-        navigate('/');
+        navigate('/', { replace: true });
       }
       return;
     }
