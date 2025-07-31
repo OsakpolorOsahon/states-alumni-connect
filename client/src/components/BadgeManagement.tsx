@@ -106,8 +106,8 @@ const BadgeManagement = () => {
         description: badge.description,
         member_id: badge.member_id,
         awarded_at: badge.awarded_at,
-        member_name: Array.isArray(badge.members) ? badge.members[0]?.full_name : badge.members?.full_name,
-        member_nickname: Array.isArray(badge.members) ? badge.members[0]?.nickname : badge.members?.nickname
+        member_name: (badge.members as any)?.full_name || 'Unknown',
+        member_nickname: (badge.members as any)?.nickname
       })) || [];
       
       setBadges(badgeRecords);

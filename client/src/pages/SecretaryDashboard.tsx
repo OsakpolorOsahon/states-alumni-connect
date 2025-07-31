@@ -10,6 +10,7 @@ import SecretaryContentManagement from "@/components/SecretaryContentManagement"
 import SecretaryStats from "@/components/SecretaryStats";
 import BadgeManagement from "@/components/BadgeManagement";
 import HallOfFameManagement from "@/components/HallOfFameManagement";
+import SecretaryAnalytics from "@/components/SecretaryAnalytics";
 
 const SecretaryDashboard = () => {
   const { user, member, loading } = useAuth();
@@ -58,12 +59,26 @@ const SecretaryDashboard = () => {
 
         {/* Main Dashboard Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="management">Member Management</TabsTrigger>
-            <TabsTrigger value="content">Content Management</TabsTrigger>
-            <TabsTrigger value="badges">Badge Management</TabsTrigger>
-            <TabsTrigger value="halloffame">Hall of Fame</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto">
+            <TabsTrigger value="management" className="text-xs md:text-sm px-2 py-2">
+              <span className="hidden md:inline">Member Management</span>
+              <span className="md:hidden">Members</span>
+            </TabsTrigger>
+            <TabsTrigger value="content" className="text-xs md:text-sm px-2 py-2">
+              <span className="hidden md:inline">Content Management</span>
+              <span className="md:hidden">Content</span>
+            </TabsTrigger>
+            <TabsTrigger value="badges" className="text-xs md:text-sm px-2 py-2">
+              <span className="hidden md:inline">Badge Management</span>
+              <span className="md:hidden">Badges</span>
+            </TabsTrigger>
+            <TabsTrigger value="halloffame" className="text-xs md:text-sm px-2 py-2">
+              <span className="hidden md:inline">Hall of Fame</span>
+              <span className="md:hidden">Hall</span>
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="text-xs md:text-sm px-2 py-2">
+              Analytics
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="management" className="space-y-6">
@@ -83,14 +98,7 @@ const SecretaryDashboard = () => {
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Analytics & Reports</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Analytics dashboard will be implemented here.</p>
-              </CardContent>
-            </Card>
+            <SecretaryAnalytics />
           </TabsContent>
         </Tabs>
       </div>

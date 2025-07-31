@@ -102,9 +102,9 @@ const HallOfFameManagement = () => {
         achievement_description: entry.achievement_description,
         achievement_date: entry.achievement_date,
         created_at: entry.created_at,
-        member_name: Array.isArray(entry.members) ? entry.members[0]?.full_name : entry.members?.full_name,
-        member_nickname: Array.isArray(entry.members) ? entry.members[0]?.nickname : entry.members?.nickname,
-        member_stateship_year: Array.isArray(entry.members) ? entry.members[0]?.stateship_year : entry.members?.stateship_year
+        member_name: (entry.members as any)?.full_name || 'Unknown',
+        member_nickname: (entry.members as any)?.nickname,
+        member_stateship_year: (entry.members as any)?.stateship_year || 'Unknown'
       })) || [];
       
       setEntries(hallOfFameEntries);
