@@ -9,29 +9,35 @@ import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, XCircle, Eye, User, Clock } from 'lucide-react';
 
 const SecretaryMemberManagement = () => {
-  // Removed broken hooks
-  // Removed broken hooks
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [selectedTab, setSelectedTab] = useState<'pending' | 'active' | 'all'>('pending');
 
-  // Fetch members based on selected tab
+  // Fetch members based on selected tab using Supabase
   const { data: members, isLoading } = useQuery({
     queryKey: ['members', selectedTab],
-    queryFn: () => {
+    queryFn: async () => {
+      const { db } = await import('@/lib/supabase');
       switch (selectedTab) {
         case 'pending':
-          return api.getPendingMembers();
+          const pendingResult = await db.getPendingMembers();
+          return pendingResult.data || [];
         case 'active':
-          return api.getActiveMembers();
+          const activeResult = await db.getActiveMembers();
+          return activeResult.data || [];
         default:
-          return api.getAllMembers();
+          const allResult = await db.getMembers();
+          return allResult.data || [];
       }
     },
   });
 
-  // Approve member mutation
+  // Approve member mutation using Supabase
   const approveMutation = useMutation({
-    mutationFn: (memberId: string) => 
-      api.updateMember(memberId, { status: 'active' }),
+    mutationFn: async (memberId: string) => {
+      const { db } = await import('@/lib/supabase');
+      return await db.updateMember(memberId, { status: 'active' });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['members'] });
       toast({
@@ -48,10 +54,12 @@ const SecretaryMemberManagement = () => {
     },
   });
 
-  // Reject member mutation
+  // Reject member mutation using Supabase
   const rejectMutation = useMutation({
-    mutationFn: (memberId: string) => 
-      api.updateMember(memberId, { status: 'inactive' }),
+    mutationFn: async (memberId: string) => {
+      const { db } = await import('@/lib/supabase');
+      return await db.updateMember(memberId, { status: 'inactive' });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['members'] });
       toast({

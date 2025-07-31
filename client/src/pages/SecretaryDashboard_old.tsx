@@ -1,8 +1,16 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Users, 
+  UserCheck, 
+  Award, 
+  FileText, 
+  TrendingUp
+} from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import SecretaryMemberManagement from "@/components/SecretaryMemberManagement";
@@ -95,6 +103,63 @@ const SecretaryDashboard = () => {
         </Tabs>
       </div>
 
+      <Footer />
+    </div>
+  );
+};
+
+export default SecretaryDashboard;
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Button asChild className="h-24 flex-col gap-2">
+                    <a href="/news-events">
+                      <FileText className="h-6 w-6" />
+                      Manage News & Events
+                    </a>
+                  </Button>
+                  <Button asChild className="h-24 flex-col gap-2" variant="outline">
+                    <a href="/hall-of-fame">
+                      <Award className="h-6 w-6" />
+                      Hall of Fame Management
+                    </a>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="badges" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Badge Management</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Award badges to members directly from the Member Management tab, or manage existing badges here.
+                </p>
+                <Button asChild>
+                  <a href="/directory">Go to Member Directory</a>
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Analytics & Reports</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Analytics dashboard will be implemented here.
+                  This will include membership growth, engagement metrics, and detailed reports.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
       <Footer />
     </div>
   );

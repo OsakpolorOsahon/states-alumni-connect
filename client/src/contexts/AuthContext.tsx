@@ -102,6 +102,47 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [fetchMemberData])
 
+  // Improved session persistence
+  const maintainSession = useCallback(async () => {
+    try {
+      const { data: { session } } = await auth.getSession()
+      if (session?.user && !user) {
+        console.log('Restoring session...')
+        setUser(session.user)
+        setSession(session)
+        const memberData = await fetchMemberData(session.user.id)
+        setMember(memberData)
+      }
+    } catch (error) {
+      console.error('Session maintenance error:', error)
+    }
+  }, [user, fetchMemberData])
+
+  // Check session on navigation/refresh
+  useEffect(() => {
+    const checkSession = () => {
+      if (!loading && !user) {
+        maintainSession()
+      }
+    }
+    
+    // Check session on focus/visibility change
+    const handleFocus = () => checkSession()
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkSession()
+      }
+    }
+
+    window.addEventListener('focus', handleFocus)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [loading, user, maintainSession])
+
   useEffect(() => {
     // Initial session check
     refreshSession()
