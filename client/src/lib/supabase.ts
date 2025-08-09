@@ -1,29 +1,33 @@
 import { createClient } from '@supabase/supabase-js'
 
-let supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-let supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+// Function to create Supabase client with provided config
+export const createSupabaseClient = (supabaseUrl: string, supabaseAnonKey: string) => {
+  // Handle case where environment variables include the variable name
+  let url = supabaseUrl
+  let key = supabaseAnonKey
+  
+  if (url?.includes('=')) {
+    url = url.split('=')[1]
+  }
+  if (key?.includes('=')) {
+    key = key.split('=')[1]
+  }
 
-// Handle case where environment variables include the variable name
-if (supabaseUrl?.includes('=')) {
-  supabaseUrl = supabaseUrl.split('=')[1]
-}
-if (supabaseAnonKey?.includes('=')) {
-  supabaseAnonKey = supabaseAnonKey.split('=')[1]
+  // Validate URL format
+  try {
+    new URL(url)
+  } catch (error) {
+    throw new Error(`Invalid Supabase URL format: ${url}`)
+  }
+
+  return createClient(url, key)
 }
 
-// URLs cleaned and validated
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
-}
+// Default client for immediate use (will be replaced by context)
+const defaultUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co'
+const defaultKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key'
 
-// Validate URL format
-try {
-  new URL(supabaseUrl)
-} catch (error) {
-  throw new Error(`Invalid Supabase URL format: ${supabaseUrl}`)
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createSupabaseClient(defaultUrl, defaultKey)
 
 // Auth helper functions
 export const auth = {

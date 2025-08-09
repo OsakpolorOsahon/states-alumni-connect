@@ -22,6 +22,12 @@
     <meta name="theme-color" content="#E10600" />
   </head>
   <body>
+    <script>
+      // Inject environment variables for Replit development
+      if (typeof window !== 'undefined') {
+        window.__SUPABASE_CONFIG__ = null; // Will be populated by server
+      }
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
 

@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { setupVite, serveStatic, log } from "./vite";
+import { registerRoutes } from "./routes";
 
 import http from 'http';
 
@@ -47,10 +48,11 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Register API routes
+  registerRoutes(app);
+
   // Create the HTTP server using the Express app
   const server = http.createServer(app);
-
-
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from 'next-themes'
 import { HelmetProvider } from 'react-helmet-async'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { ConfigProvider } from '@/contexts/ConfigContext'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import PWAInstallBanner from '@/components/PWAInstallBanner'
 import LoadingSpinner from '@/components/LoadingSpinner'
@@ -57,7 +58,8 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <AuthProvider>
+          <ConfigProvider>
+            <AuthProvider>
               <Toaster />
               <Sonner />
               <BrowserRouter>
@@ -178,7 +180,8 @@ export default function App() {
                   <PWAInstallBanner />
                 </ErrorBoundary>
               </BrowserRouter>
-          </AuthProvider>
+            </AuthProvider>
+          </ConfigProvider>
         </ThemeProvider>
       </HelmetProvider>
     </QueryClientProvider>
