@@ -8,8 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Award, Plus, X, User, Trophy, Star, Crown, Trash2 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useConfig } from '@/contexts/ConfigContext';
+import { createSupabaseClient } from '@/lib/supabase';
 
 interface Member {
   id: string;
@@ -30,6 +31,7 @@ interface BadgeRecord {
 }
 
 const BadgeManagement = () => {
+  const { config } = useConfig();
   const { member } = useAuth();
   const { toast } = useToast();
   const [showAwardForm, setShowAwardForm] = useState(false);
@@ -37,6 +39,9 @@ const BadgeManagement = () => {
   const [badges, setBadges] = useState<BadgeRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Create Supabase client
+  const supabaseClient = config ? createSupabaseClient(config.supabaseUrl, config.supabaseAnonKey) : null;
 
   const [newBadge, setNewBadge] = useState({
     member_id: '',
@@ -57,13 +62,17 @@ const BadgeManagement = () => {
   ];
 
   useEffect(() => {
-    fetchMembers();
-    fetchBadges();
-  }, []);
+    if (supabaseClient) {
+      fetchMembers();
+      fetchBadges();
+    }
+  }, [supabaseClient]);
 
   const fetchMembers = async () => {
+    if (!supabaseClient) return;
+    
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('members')
         .select('id, full_name, nickname, stateship_year')
         .eq('status', 'active')
@@ -82,9 +91,11 @@ const BadgeManagement = () => {
   };
 
   const fetchBadges = async () => {
+    if (!supabaseClient) return;
+    
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('badges')
         .select(`
           id,
@@ -124,6 +135,15 @@ const BadgeManagement = () => {
   };
 
   const awardBadge = async () => {
+    if (!supabaseClient) {
+      toast({
+        title: "Error",
+        description: "Database connection not available",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!newBadge.member_id || !newBadge.badge_code || !newBadge.badge_name) {
       toast({
         title: "Error", 
@@ -135,7 +155,7 @@ const BadgeManagement = () => {
 
     try {
       setSubmitting(true);
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .from('badges')
         .insert({
           member_id: newBadge.member_id,
@@ -174,8 +194,17 @@ const BadgeManagement = () => {
   };
 
   const removeBadge = async (badgeId: string) => {
+    if (!supabaseClient) {
+      toast({
+        title: "Error",
+        description: "Database connection not available",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .from('badges')
         .delete()
         .eq('id', badgeId);

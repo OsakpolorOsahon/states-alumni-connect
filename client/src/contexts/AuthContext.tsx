@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { User, Session } from '@supabase/supabase-js'
-import { supabase, auth, db } from '@/lib/supabase'
+import { createSupabaseClient } from '@/lib/supabase'
+import { useConfig } from '@/contexts/ConfigContext'
 
 interface Member {
   id: string
@@ -44,29 +45,45 @@ export const useAuth = () => {
 }
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const { config, loading: configLoading } = useConfig()
   const [user, setUser] = useState<User | null>(null)
   const [member, setMember] = useState<Member | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  
+  // Create Supabase client when config is available
+  const supabaseClient = config ? createSupabaseClient(config.supabaseUrl, config.supabaseAnonKey) : null
 
   const fetchMemberData = useCallback(async (userId: string) => {
+    if (!supabaseClient) return null
+    
     try {
-      const result = await db.getMemberByUserId(userId)
-      if (result.error) {
-        console.error('Error fetching member data:', result.error)
+      const { data, error } = await supabaseClient
+        .from('members')
+        .select('*')
+        .eq('user_id', userId)
+        .single()
+        
+      if (error) {
+        console.error('Error fetching member data:', error)
         return null
       }
-      return result.data
+      return data
     } catch (error) {
       console.error('Error fetching member data:', error)
       return null
     }
-  }, [])
+  }, [supabaseClient])
 
   const refreshSession = useCallback(async () => {
+    if (!supabaseClient) {
+      setLoading(false)
+      return
+    }
+    
     try {
       console.log('Refreshing session...')
-      const { data: { session }, error } = await auth.getSession()
+      const { data: { session }, error } = await supabaseClient.auth.getSession()
       
       if (error) {
         console.error('Session error:', error)
@@ -74,7 +91,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setMember(null)
         setSession(null)
         setLoading(false)
-        return
         return
       }
 
@@ -100,12 +116,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setLoading(false)
     }
-  }, [fetchMemberData])
+  }, [supabaseClient, fetchMemberData])
 
   // Improved session persistence
   const maintainSession = useCallback(async () => {
+    if (!supabaseClient) return
+    
     try {
-      const { data: { session } } = await auth.getSession()
+      const { data: { session } } = await supabaseClient.auth.getSession()
       if (session?.user && !user) {
         console.log('Restoring session...')
         setUser(session.user)
@@ -116,7 +134,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.error('Session maintenance error:', error)
     }
-  }, [user, fetchMemberData])
+  }, [supabaseClient, user, fetchMemberData])
 
   // Check session on navigation/refresh
   useEffect(() => {
@@ -144,11 +162,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [loading, user, maintainSession])
 
   useEffect(() => {
+    if (!supabaseClient) {
+      setLoading(false)
+      return
+    }
+    
     // Initial session check
     refreshSession()
 
     // Listen for auth state changes
-    const { data: { subscription } } = auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(async (event: string, session: any) => {
       console.log('Auth state changed:', event, session?.user?.email)
       
       if (session?.user) {
@@ -170,13 +193,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       subscription.unsubscribe()
     }
-  }, [refreshSession, fetchMemberData])
+  }, [supabaseClient, refreshSession, fetchMemberData])
 
   const signUp = async (email: string, password: string, memberData: any) => {
+    if (!supabaseClient) throw new Error('Supabase client not available')
+    
     try {
       console.log('Starting signup process for:', email)
       
-      const { data, error } = await auth.signUp(email, password)
+      const { data, error } = await supabaseClient.auth.signUp({ email, password })
       
       if (error) {
         console.error('Signup error:', error)
@@ -187,17 +212,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log('User created, creating member record...')
         
         // Create member record
-        const memberRecord = {
+        const memberRecord: any = {
           user_id: data.user.id,
           ...memberData,
           status: 'pending'
         }
         
-        const memberResult = await db.createMember(memberRecord)
+        const { data: newMemberData, error: memberError } = await supabaseClient
+          .from('members')
+          .insert(memberRecord)
+          .select()
+          .single()
         
-        if (memberResult.error) {
-          console.error('Member creation error:', memberResult.error)
-          throw memberResult.error
+        if (memberError) {
+          console.error('Member creation error:', memberError)
+          throw memberError
         }
         
         console.log('Member record created successfully')
@@ -211,11 +240,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   const signIn = async (email: string, password: string) => {
+    if (!supabaseClient) throw new Error('Supabase client not available')
+    
     try {
       console.log('Starting login process for:', email)
       setLoading(true)
       
-      const { data, error } = await auth.signIn(email, password)
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password })
       
       if (error) {
         console.error('Login error:', error)
@@ -249,8 +280,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   const signOut = async () => {
+    if (!supabaseClient) throw new Error('Supabase client not available')
+    
     try {
-      const { error } = await auth.signOut()
+      const { error } = await supabaseClient.auth.signOut()
       if (error) {
         console.error('Logout error:', error)
         throw error
@@ -267,6 +300,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const isSecretary = member?.role === 'secretary'
   const isActiveMember = member?.status === 'active'
+
+  // Don't render children until config is loaded
+  if (configLoading || !config) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#E10600]"></div>
+      </div>
+    )
+  }
 
   return (
     <AuthContext.Provider value={{

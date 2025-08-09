@@ -1,42 +1,60 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, XCircle, Eye, User, Clock } from 'lucide-react';
+import { useConfig } from '@/contexts/ConfigContext';
+import { createSupabaseClient } from '@/lib/supabase';
 
 const SecretaryMemberManagement = () => {
+  const { config } = useConfig();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [selectedTab, setSelectedTab] = useState<'pending' | 'active' | 'all'>('pending');
+
+  // Create Supabase client
+  const supabaseClient = config ? createSupabaseClient(config.supabaseUrl, config.supabaseAnonKey) : null;
 
   // Fetch members based on selected tab using Supabase
   const { data: members, isLoading } = useQuery({
     queryKey: ['members', selectedTab],
     queryFn: async () => {
-      const { db } = await import('@/lib/supabase');
+      if (!supabaseClient) throw new Error('Supabase client not available');
+      
+      let query = supabaseClient.from('members').select('*');
+      
       switch (selectedTab) {
         case 'pending':
-          const pendingResult = await db.getPendingMembers();
-          return pendingResult.data || [];
+          query = query.eq('status', 'pending');
+          break;
         case 'active':
-          const activeResult = await db.getActiveMembers();
-          return activeResult.data || [];
+          query = query.eq('status', 'active');
+          break;
         default:
-          const allResult = await db.getMembers();
-          return allResult.data || [];
+          break;
       }
+      
+      const { data, error } = await query.order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
     },
+    enabled: !!supabaseClient
   });
 
   // Approve member mutation using Supabase
   const approveMutation = useMutation({
     mutationFn: async (memberId: string) => {
-      const { db } = await import('@/lib/supabase');
-      return await db.updateMember(memberId, { status: 'active' });
+      if (!supabaseClient) throw new Error('Supabase client not available');
+      const { data, error } = await supabaseClient
+        .from('members')
+        .update({ status: 'active' })
+        .eq('id', memberId)
+        .select();
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['members'] });
@@ -46,6 +64,7 @@ const SecretaryMemberManagement = () => {
       });
     },
     onError: (error) => {
+      console.error('Approval error:', error);
       toast({
         title: 'Approval Failed',
         description: 'Failed to approve member. Please try again.',
@@ -57,8 +76,14 @@ const SecretaryMemberManagement = () => {
   // Reject member mutation using Supabase
   const rejectMutation = useMutation({
     mutationFn: async (memberId: string) => {
-      const { db } = await import('@/lib/supabase');
-      return await db.updateMember(memberId, { status: 'inactive' });
+      if (!supabaseClient) throw new Error('Supabase client not available');
+      const { data, error } = await supabaseClient
+        .from('members')
+        .update({ status: 'inactive' })
+        .eq('id', memberId)
+        .select();
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['members'] });
@@ -68,6 +93,7 @@ const SecretaryMemberManagement = () => {
       });
     },
     onError: (error) => {
+      console.error('Rejection error:', error);
       toast({
         title: 'Rejection Failed',
         description: 'Failed to reject member. Please try again.',

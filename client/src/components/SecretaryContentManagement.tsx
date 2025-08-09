@@ -19,7 +19,8 @@ import {
   Briefcase,
   MapPin 
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { useConfig } from '@/contexts/ConfigContext';
+import { createSupabaseClient } from '@/lib/supabase';
 
 interface NewsArticle {
   id: string;
@@ -57,56 +58,64 @@ interface Event {
 }
 
 const SecretaryContentManagement = () => {
+  const { config } = useConfig();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [activeSection, setActiveSection] = useState<'news' | 'jobs' | 'events'>('news');
   const [editingItem, setEditingItem] = useState<any>(null);
   const [isCreating, setIsCreating] = useState(false);
 
+  // Create Supabase client
+  const supabaseClient = config ? createSupabaseClient(config.supabaseUrl, config.supabaseAnonKey) : null;
+
   // News queries and mutations
   const { data: news, isLoading: newsLoading } = useQuery({
     queryKey: ['secretary-news'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      if (!supabaseClient) throw new Error('Supabase client not available');
+      const { data, error } = await supabaseClient
         .from('news')
         .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data as NewsArticle[];
     },
-    enabled: activeSection === 'news'
+    enabled: activeSection === 'news' && !!supabaseClient
   });
 
   const { data: jobs, isLoading: jobsLoading } = useQuery({
     queryKey: ['secretary-jobs'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('job_postings')
+      if (!supabaseClient) throw new Error('Supabase client not available');
+      const { data, error } = await supabaseClient
+        .from('job_posts')
         .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data as JobPost[];
     },
-    enabled: activeSection === 'jobs'
+    enabled: activeSection === 'jobs' && !!supabaseClient
   });
 
   const { data: events, isLoading: eventsLoading } = useQuery({
     queryKey: ['secretary-events'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      if (!supabaseClient) throw new Error('Supabase client not available');
+      const { data, error } = await supabaseClient
         .from('events')
         .select('*')
-        .order('date', { ascending: true });
+        .order('event_date', { ascending: true });
       if (error) throw error;
       return data as Event[];
     },
-    enabled: activeSection === 'events'
+    enabled: activeSection === 'events' && !!supabaseClient
   });
 
   // Create mutations
   const createNewsMutation = useMutation({
     mutationFn: async (newsData: Partial<NewsArticle>) => {
-      const { data, error } = await supabase
+      if (!supabaseClient) throw new Error('Supabase client not available');
+      const { data, error } = await supabaseClient
         .from('news')
         .insert([newsData])
         .select();
@@ -122,8 +131,9 @@ const SecretaryContentManagement = () => {
 
   const createJobMutation = useMutation({
     mutationFn: async (jobData: Partial<JobPost>) => {
-      const { data, error } = await supabase
-        .from('job_postings')
+      if (!supabaseClient) throw new Error('Supabase client not available');
+      const { data, error } = await supabaseClient
+        .from('job_posts')
         .insert([jobData])
         .select();
       if (error) throw error;
@@ -138,7 +148,8 @@ const SecretaryContentManagement = () => {
 
   const createEventMutation = useMutation({
     mutationFn: async (eventData: Partial<Event>) => {
-      const { data, error } = await supabase
+      if (!supabaseClient) throw new Error('Supabase client not available');
+      const { data, error } = await supabaseClient
         .from('events')
         .insert([eventData])
         .select();
