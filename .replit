@@ -8,7 +8,7 @@ channel = "stable-25_05"
 [deployment]
 deploymentTarget = "autoscale"
 build = ["npm", "run", "build"]
-run = ["npm", "run", "start"]
+run = ["node", "./dist/index.cjs"]
 
 [[ports]]
 localPort = 5000
@@ -34,3 +34,12 @@ author = "agent"
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
+
+[userenv]
+
+[userenv.shared]
+VITE_SUPABASE_URL = "https://dogrbayjareeenwxzgwg.supabase.co"
+VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvZ3JiYXlqYXJlZWVud3h6Z3dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4ODA3NDIsImV4cCI6MjA2ODQ1Njc0Mn0.yyRk-HkVkYzXQq6rhMIa-X8oXnNMceLAq-dtxq45XGo"
+VITE_UPLOADTHING_APP_ID = "jxoshgflt"
+SUPABASE_URL = "https://dogrbayjareeenwxzgwg.supabase.co"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvZ3JiYXlqYXJlZWVud3h6Z3dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4ODA3NDIsImV4cCI6MjA2ODQ1Njc0Mn0.yyRk-HkVkYzXQq6rhMIa-X8oXnNMceLAq-dtxq45XGo"
