@@ -45,6 +45,7 @@
 --      (e.g., https://your-app.vercel.app)
 --   3. Under "Redirect URLs", add:
 --      - https://your-app.vercel.app/*
+--      - https://your-app.vercel.app/upload-documents
 --      - https://your-app.vercel.app/login
 --      - https://your-app.vercel.app/dashboard
 --   4. Go to "Authentication" > "Providers" > "Email"

@@ -11,6 +11,7 @@ import { HelmetProvider } from 'react-helmet-async'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ConfigProvider } from '@/contexts/ConfigContext'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import AuthGuard from '@/components/AuthGuard'
 import PWAInstallBanner from '@/components/PWAInstallBanner'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorBoundary from '@/components/ErrorBoundary'
@@ -88,9 +89,9 @@ export default function App() {
                   <Route
                     path="/upload-documents"
                     element={
-                      <ProtectedRoute>
+                      <AuthGuard requireAuth={true}>
                         <UploadDocuments />
-                      </ProtectedRoute>
+                      </AuthGuard>
                     }
                   />
 

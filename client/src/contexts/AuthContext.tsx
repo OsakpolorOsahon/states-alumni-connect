@@ -201,7 +201,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log('Starting signup process for:', email)
       
-      const { data, error } = await supabaseClient.auth.signUp({ email, password })
+      const { data, error } = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/upload-documents`
+        }
+      })
       
       if (error) {
         console.error('Signup error:', error)

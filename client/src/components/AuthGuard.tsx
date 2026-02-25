@@ -38,10 +38,11 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
 
     if (requireActive && (!member || member.status !== 'active')) {
       console.log('Not active member, checking status');
-      if (member?.status === 'pending') {
+      if (member?.status === 'pending' && !member?.photo_url) {
+        navigate('/upload-documents', { replace: true });
+      } else if (member?.status === 'pending') {
         navigate('/pending-approval', { replace: true });
       } else if (user && !member) {
-        // User exists but no member record - redirect to upload documents
         navigate('/upload-documents', { replace: true });
       } else {
         navigate('/', { replace: true });
