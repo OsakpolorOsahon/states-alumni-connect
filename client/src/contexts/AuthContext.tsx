@@ -211,18 +211,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (data.user) {
         console.log('User created, creating member record...')
         
-        // Create member record
-        const memberRecord: any = {
-          user_id: data.user.id,
-          ...memberData,
-          status: 'pending'
-        }
-        
         const { data: newMemberData, error: memberError } = await supabaseClient
-          .from('members')
-          .insert(memberRecord)
-          .select()
-          .single()
+          .rpc('create_member_on_signup', {
+            p_user_id: data.user.id,
+            p_full_name: memberData.full_name,
+            p_nickname: memberData.nickname || null,
+            p_stateship_year: memberData.stateship_year || '',
+            p_last_mowcub_position: memberData.last_mowcub_position || '',
+            p_current_council_office: memberData.current_council_office || null,
+            p_latitude: memberData.latitude || null,
+            p_longitude: memberData.longitude || null,
+          })
         
         if (memberError) {
           console.error('Member creation error:', memberError)

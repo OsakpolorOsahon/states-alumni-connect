@@ -625,6 +625,59 @@ ALTER PUBLICATION supabase_realtime ADD TABLE events;
 
 
 -- ============================================================================
+-- SECTION 8: SIGNUP HELPER FUNCTION (bypasses RLS for registration)
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION create_member_on_signup(
+  p_user_id uuid,
+  p_full_name text,
+  p_nickname text DEFAULT NULL,
+  p_stateship_year text DEFAULT '',
+  p_last_mowcub_position text DEFAULT '',
+  p_current_council_office text DEFAULT NULL,
+  p_latitude real DEFAULT NULL,
+  p_longitude real DEFAULT NULL
+)
+RETURNS json
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  new_member members%ROWTYPE;
+BEGIN
+  INSERT INTO members (
+    user_id,
+    full_name,
+    nickname,
+    stateship_year,
+    last_mowcub_position,
+    current_council_office,
+    latitude,
+    longitude,
+    status
+  ) VALUES (
+    p_user_id,
+    p_full_name,
+    p_nickname,
+    p_stateship_year,
+    p_last_mowcub_position,
+    p_current_council_office,
+    p_latitude,
+    p_longitude,
+    'pending'
+  )
+  RETURNING * INTO new_member;
+
+  RETURN row_to_json(new_member);
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION create_member_on_signup TO anon;
+GRANT EXECUTE ON FUNCTION create_member_on_signup TO authenticated;
+
+
+-- ============================================================================
 -- SETUP COMPLETE!
 -- ============================================================================
 -- Your database is now ready. All 11 tables have been created with:
