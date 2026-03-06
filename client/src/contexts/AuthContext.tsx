@@ -54,31 +54,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Create Supabase client when config is available
   const supabaseClient = config ? createSupabaseClient(config.supabaseUrl, config.supabaseAnonKey) : null
 
-  const fetchMemberData = useCallback(async (userId: string) => {
+  const fetchMemberData = useCallback(async (userId: string, retries = 2) => {
     if (!supabaseClient) return null
     
-    try {
-      const fetchPromise = supabaseClient
-        .from('members')
-        .select('*')
-        .eq('user_id', userId)
-        .single()
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        if (attempt > 0) {
+          console.log(`Retrying member fetch (attempt ${attempt + 1})...`)
+          await new Promise(r => setTimeout(r, 1000))
+        }
 
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Member data fetch timed out')), 8000)
-      )
-
-      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any
-        
-      if (error) {
-        console.error('Error fetching member data:', error)
-        return null
+        const { data, error } = await supabaseClient
+          .from('members')
+          .select('*')
+          .eq('user_id', userId)
+          .single()
+          
+        if (error) {
+          console.error(`Error fetching member data (attempt ${attempt + 1}):`, error)
+          if (attempt === retries) return null
+          continue
+        }
+        return data
+      } catch (error) {
+        console.error(`Error fetching member data (attempt ${attempt + 1}):`, error)
+        if (attempt === retries) return null
       }
-      return data
-    } catch (error) {
-      console.error('Error fetching member data:', error)
-      return null
     }
+    return null
   }, [supabaseClient])
 
   const refreshSession = useCallback(async () => {
@@ -173,8 +176,43 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return
     }
     
-    // Initial session check
-    refreshSession()
+    const handleAuthCallback = async () => {
+      const url = new URL(window.location.href)
+      const code = url.searchParams.get('code')
+      const hasHashToken = window.location.hash.includes('access_token')
+      
+      if (code) {
+        console.log('Detected auth callback code, exchanging for session...')
+        try {
+          const { data, error } = await supabaseClient.auth.exchangeCodeForSession(code)
+          if (error) {
+            console.error('Code exchange error:', error)
+          } else if (data.session?.user) {
+            console.log('Code exchange successful, setting session...')
+            setUser(data.session.user)
+            setSession(data.session)
+            const memberData = await fetchMemberData(data.session.user.id)
+            setMember(memberData)
+          }
+          window.history.replaceState({}, '', url.pathname)
+          setLoading(false)
+          return true
+        } catch (e) {
+          console.error('Code exchange failed:', e)
+        }
+      }
+      
+      if (hasHashToken) {
+        console.log('Detected hash token, waiting for Supabase to process...')
+        await new Promise(r => setTimeout(r, 500))
+      }
+      
+      return false
+    }
+
+    handleAuthCallback().then((handled) => {
+      if (!handled) refreshSession()
+    })
 
     // Listen for auth state changes
     const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(async (event: string, session: any) => {

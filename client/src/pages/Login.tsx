@@ -41,9 +41,14 @@ const Login = () => {
         setTimeout(() => {
           const m = result.member;
           if (!m) {
-            navigate('/upload-documents', { replace: true });
-          } else if (m.status === 'active') {
+            console.log('No member data found after login, going to dashboard (AuthGuard will redirect if needed)');
             navigate('/dashboard', { replace: true });
+          } else if (m.status === 'active') {
+            if (m.role === 'secretary') {
+              navigate('/secretary', { replace: true });
+            } else {
+              navigate('/dashboard', { replace: true });
+            }
           } else if (m.status === 'pending' && (!m.photo_url || !m.dues_proof_url)) {
             navigate('/upload-documents', { replace: true });
           } else {

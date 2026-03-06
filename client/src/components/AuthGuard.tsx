@@ -22,7 +22,13 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
   useEffect(() => {
     if (loading) return;
 
-    console.log('AuthGuard check:', { user: !!user, member: member?.role, requireAuth, requireSecretary, requireActive });
+    const hasAuthCallback = window.location.search.includes('code=') || window.location.hash.includes('access_token');
+    if (hasAuthCallback) {
+      console.log('AuthGuard: auth callback detected, waiting for session exchange...');
+      return;
+    }
+
+    console.log('AuthGuard check:', { user: !!user, member: member?.role, memberStatus: member?.status, requireAuth, requireSecretary, requireActive });
 
     if (requireAuth && !user) {
       console.log('No user, redirecting to login');

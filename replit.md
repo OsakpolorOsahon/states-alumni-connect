@@ -23,7 +23,7 @@ Preferred communication style: Simple, everyday language.
 - **Authentication**: Supabase Auth with JWT tokens
 - **API Design**: Express REST API with proper route handlers
 - **Session Management**: JWT-based authentication via Supabase
-- **File Storage**: UploadThing for file uploads (photos, documents)
+- **File Storage**: Supabase Storage for file uploads (photos, documents)
 - **Email Service**: Resend for transactional emails
 
 ### Key Components

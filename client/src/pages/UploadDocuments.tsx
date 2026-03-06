@@ -8,7 +8,7 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import UploadThingFileUpload from '@/components/UploadThingFileUpload';
+import SupabaseFileUpload from '@/components/SupabaseFileUpload';
 
 export default function UploadDocuments() {
   const navigate = useNavigate();
@@ -122,14 +122,14 @@ export default function UploadDocuments() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                <UploadThingFileUpload
+                <SupabaseFileUpload
                   label="Profile Photo"
                   endpoint="memberPhotos"
                   onUpload={setPhotoUrl}
                   currentUrl={photoUrl}
                   maxSize="4MB"
                 />
-                <UploadThingFileUpload
+                <SupabaseFileUpload
                   label="Dues Payment Proof"
                   endpoint="duesProofs"
                   onUpload={setDuesUrl}

@@ -692,6 +692,44 @@ GRANT EXECUTE ON FUNCTION create_member_on_signup TO authenticated;
 
 
 -- ============================================================================
+-- SECTION 9: STORAGE BUCKET (for file uploads)
+-- ============================================================================
+
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('documents', 'documents', true)
+ON CONFLICT (id) DO NOTHING;
+
+CREATE POLICY "authenticated_upload_own_documents" ON storage.objects
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    bucket_id = 'documents'
+    AND (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+CREATE POLICY "anyone_can_read_documents" ON storage.objects
+  FOR SELECT TO anon, authenticated
+  USING (bucket_id = 'documents');
+
+CREATE POLICY "users_can_update_own_documents" ON storage.objects
+  FOR UPDATE TO authenticated
+  USING (
+    bucket_id = 'documents'
+    AND (storage.foldername(name))[1] = auth.uid()::text
+  )
+  WITH CHECK (
+    bucket_id = 'documents'
+    AND (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+CREATE POLICY "users_can_delete_own_documents" ON storage.objects
+  FOR DELETE TO authenticated
+  USING (
+    bucket_id = 'documents'
+    AND (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+
+-- ============================================================================
 -- SETUP COMPLETE!
 -- ============================================================================
 -- Your database is now ready. All 11 tables have been created with:
