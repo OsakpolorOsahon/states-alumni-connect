@@ -19,8 +19,7 @@ import {
   Briefcase,
   MapPin 
 } from 'lucide-react';
-import { useConfig } from '@/contexts/ConfigContext';
-import { createSupabaseClient } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NewsArticle {
   id: string;
@@ -58,15 +57,12 @@ interface Event {
 }
 
 const SecretaryContentManagement = () => {
-  const { config } = useConfig();
+  const { supabaseClient } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [activeSection, setActiveSection] = useState<'news' | 'jobs' | 'events'>('news');
   const [editingItem, setEditingItem] = useState<any>(null);
   const [isCreating, setIsCreating] = useState(false);
-
-  // Create Supabase client
-  const supabaseClient = config ? createSupabaseClient(config.supabaseUrl, config.supabaseAnonKey) : null;
 
   // News queries and mutations
   const { data: news, isLoading: newsLoading } = useQuery({

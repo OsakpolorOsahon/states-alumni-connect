@@ -6,17 +6,13 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, XCircle, Eye, User, Clock } from 'lucide-react';
-import { useConfig } from '@/contexts/ConfigContext';
-import { createSupabaseClient } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 
 const SecretaryMemberManagement = () => {
-  const { config } = useConfig();
+  const { supabaseClient } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [selectedTab, setSelectedTab] = useState<'pending' | 'active' | 'all'>('pending');
-
-  // Create Supabase client
-  const supabaseClient = config ? createSupabaseClient(config.supabaseUrl, config.supabaseAnonKey) : null;
 
   // Fetch members based on selected tab using Supabase
   const { data: members, isLoading } = useQuery({

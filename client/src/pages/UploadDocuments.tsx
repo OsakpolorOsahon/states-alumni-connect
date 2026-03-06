@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { useConfig } from '@/contexts/ConfigContext';
-import { createSupabaseClient } from '@/lib/supabase';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -12,14 +10,11 @@ import SupabaseFileUpload from '@/components/SupabaseFileUpload';
 
 export default function UploadDocuments() {
   const navigate = useNavigate();
-  const { user, member, signOut } = useAuth();
+  const { user, member, signOut, supabaseClient } = useAuth();
   const { toast } = useToast();
-  const { config } = useConfig();
   const [photoUrl, setPhotoUrl] = useState('');
   const [duesUrl, setDuesUrl] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const supabaseClient = config ? createSupabaseClient(config.supabaseUrl, config.supabaseAnonKey) : null;
 
   useEffect(() => {
     if (!user) {

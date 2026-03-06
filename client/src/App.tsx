@@ -24,6 +24,7 @@ const Directory = lazy(() => import('./pages/Directory'))
 const MemberProfile = lazy(() => import('./pages/MemberProfile'))
 const SignUp = lazy(() => import('./pages/SignUp'))
 const EmailVerification = lazy(() => import('./pages/EmailVerification'))
+const EmailVerified = lazy(() => import('./pages/EmailVerified'))
 const UploadDocuments = lazy(() => import('./pages/UploadDocuments'))
 const Login = lazy(() => import('./pages/Login'))
 const PendingApproval = lazy(() => import('./pages/PendingApproval'))
@@ -82,6 +83,7 @@ export default function App() {
                   {/* auth flows */}
                   <Route path="/signup" element={<SignUp />} />
                   <Route path="/email-verification" element={<EmailVerification />} />
+                  <Route path="/email-verified" element={<EmailVerified />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/pending-approval" element={<PendingApproval />} />
 

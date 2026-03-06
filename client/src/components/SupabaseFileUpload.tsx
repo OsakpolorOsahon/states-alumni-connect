@@ -1,7 +1,5 @@
 import { useState, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useConfig } from '@/contexts/ConfigContext';
-import { createSupabaseClient } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -24,12 +22,9 @@ export default function SupabaseFileUpload({
   maxSize = '4MB'
 }: SupabaseFileUploadProps) {
   const { toast } = useToast();
-  const { config } = useConfig();
-  const { user } = useAuth();
+  const { user, supabaseClient } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const supabaseClient = config ? createSupabaseClient(config.supabaseUrl, config.supabaseAnonKey) : null;
 
   const maxSizeBytes = parseInt(maxSize) * 1024 * 1024;
 

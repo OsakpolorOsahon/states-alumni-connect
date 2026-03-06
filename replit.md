@@ -62,8 +62,8 @@ Preferred communication style: Simple, everyday language.
 
 ### Registration Flow
 1. User creates account with basic information
-2. Email verification required
-3. Document upload (photo, dues proof)
+2. Email verification required → lands on /email-verified page
+3. User logs in, then uploads documents (photo, dues proof) via Supabase Storage
 4. Secretary approval process
 5. Account activation
 

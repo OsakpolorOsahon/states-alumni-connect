@@ -9,8 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Award, Plus, X, User, Trophy, Star, Crown, Trash2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useConfig } from '@/contexts/ConfigContext';
-import { createSupabaseClient } from '@/lib/supabase';
 
 interface Member {
   id: string;
@@ -31,17 +29,13 @@ interface BadgeRecord {
 }
 
 const BadgeManagement = () => {
-  const { config } = useConfig();
-  const { member } = useAuth();
+  const { member, supabaseClient } = useAuth();
   const { toast } = useToast();
   const [showAwardForm, setShowAwardForm] = useState(false);
   const [members, setMembers] = useState<Member[]>([]);
   const [badges, setBadges] = useState<BadgeRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
-  // Create Supabase client
-  const supabaseClient = config ? createSupabaseClient(config.supabaseUrl, config.supabaseAnonKey) : null;
 
   const [newBadge, setNewBadge] = useState({
     member_id: '',

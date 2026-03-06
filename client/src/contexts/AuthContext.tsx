@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { User, Session } from '@supabase/supabase-js'
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
+import { User, Session, SupabaseClient } from '@supabase/supabase-js'
 import { createSupabaseClient } from '@/lib/supabase'
 import { useConfig } from '@/contexts/ConfigContext'
 
@@ -26,6 +26,7 @@ interface AuthContextType {
   member: Member | null
   session: Session | null
   loading: boolean
+  supabaseClient: SupabaseClient | null
   signUp: (email: string, password: string, memberData: any) => Promise<any>
   signIn: (email: string, password: string) => Promise<any>
   signOut: () => Promise<void>
@@ -51,37 +52,49 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   
-  // Create Supabase client when config is available
-  const supabaseClient = config ? createSupabaseClient(config.supabaseUrl, config.supabaseAnonKey) : null
+  const supabaseClient = useMemo(() => {
+    if (!config) return null
+    return createSupabaseClient(config.supabaseUrl, config.supabaseAnonKey)
+  }, [config?.supabaseUrl, config?.supabaseAnonKey])
 
-  const fetchMemberData = useCallback(async (userId: string, retries = 2) => {
-    if (!supabaseClient) return null
+  const fetchMemberData = useCallback(async (userId: string, client?: SupabaseClient | null) => {
+    const sc = client || supabaseClient
+    if (!sc) return null
     
-    for (let attempt = 0; attempt <= retries; attempt++) {
-      try {
-        if (attempt > 0) {
-          console.log(`Retrying member fetch (attempt ${attempt + 1})...`)
-          await new Promise(r => setTimeout(r, 1000))
+    let timedOut = false
+    const timeoutId = setTimeout(() => { timedOut = true }, 15000)
+    
+    try {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        if (timedOut) {
+          console.warn('fetchMemberData: 15s timeout reached')
+          return null
         }
+        try {
+          if (attempt > 0) {
+            console.log(`Retrying member fetch (attempt ${attempt + 1})...`)
+            await new Promise(r => setTimeout(r, 1000))
+          }
 
-        const { data, error } = await supabaseClient
-          .from('members')
-          .select('*')
-          .eq('user_id', userId)
-          .single()
-          
-        if (error) {
+          const { data, error } = await sc
+            .from('members')
+            .select('*')
+            .eq('user_id', userId)
+            .single()
+            
+          if (error) {
+            console.error(`Error fetching member data (attempt ${attempt + 1}):`, error)
+            continue
+          }
+          return data
+        } catch (error) {
           console.error(`Error fetching member data (attempt ${attempt + 1}):`, error)
-          if (attempt === retries) return null
-          continue
         }
-        return data
-      } catch (error) {
-        console.error(`Error fetching member data (attempt ${attempt + 1}):`, error)
-        if (attempt === retries) return null
       }
+      return null
+    } finally {
+      clearTimeout(timeoutId)
     }
-    return null
   }, [supabaseClient])
 
   const refreshSession = useCallback(async () => {
@@ -107,8 +120,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log('Session found, setting user...')
         setUser(session.user)
         setSession(session)
-        
-        // Fetch member data
         const memberData = await fetchMemberData(session.user.id)
         setMember(memberData)
       } else {
@@ -127,7 +138,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [supabaseClient, fetchMemberData])
 
-  // Improved session persistence
   const maintainSession = useCallback(async () => {
     if (!supabaseClient) return
     
@@ -145,7 +155,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [supabaseClient, user, fetchMemberData])
 
-  // Check session on navigation/refresh
   useEffect(() => {
     const checkSession = () => {
       if (!loading && !user) {
@@ -153,7 +162,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     }
     
-    // Check session on focus/visibility change
     const handleFocus = () => checkSession()
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
@@ -191,7 +199,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             console.log('Code exchange successful, setting session...')
             setUser(data.session.user)
             setSession(data.session)
-            const memberData = await fetchMemberData(data.session.user.id)
+            const memberData = await fetchMemberData(data.session.user.id, supabaseClient)
             setMember(memberData)
           }
           window.history.replaceState({}, '', url.pathname)
@@ -214,16 +222,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!handled) refreshSession()
     })
 
-    // Listen for auth state changes
     const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(async (event: string, session: any) => {
       console.log('Auth state changed:', event, session?.user?.email)
       
       if (session?.user) {
         setUser(session.user)
         setSession(session)
-        
-        // Fetch member data
-        const memberData = await fetchMemberData(session.user.id)
+        const memberData = await fetchMemberData(session.user.id, supabaseClient)
         setMember(memberData)
       } else {
         setUser(null)
@@ -249,7 +254,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/upload-documents`
+          emailRedirectTo: `${window.location.origin}/email-verified`
         }
       })
       
@@ -308,14 +313,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(data.user)
         setSession(data.session)
         
-        // Fetch member data immediately
-        const memberData = await fetchMemberData(data.user.id)
+        const memberData = await fetchMemberData(data.user.id, supabaseClient)
         setMember(memberData)
         
         console.log('Login complete, member data:', memberData)
         setLoading(false)
         
-        // Return success format expected by Login component  
         return { user: data.user, session: data.session, member: memberData, success: true }
       }
       
@@ -350,7 +353,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const isSecretary = member?.role === 'secretary'
   const isActiveMember = member?.status === 'active'
 
-  // Don't render children until config is loaded
   if (configLoading || !config) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -365,6 +367,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       member,
       session,
       loading,
+      supabaseClient,
       signUp,
       signIn,
       signOut,

@@ -45,7 +45,7 @@ const Login = () => {
             navigate('/dashboard', { replace: true });
           } else if (m.status === 'active') {
             if (m.role === 'secretary') {
-              navigate('/secretary', { replace: true });
+              navigate('/secretary-dashboard', { replace: true });
             } else {
               navigate('/dashboard', { replace: true });
             }
