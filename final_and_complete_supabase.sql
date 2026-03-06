@@ -368,6 +368,10 @@ CREATE POLICY "users_read_own_member_record" ON members
   FOR SELECT TO authenticated
   USING (auth.uid() = user_id);
 
+CREATE POLICY "secretary_read_all_members" ON members
+  FOR SELECT TO authenticated
+  USING (EXISTS (SELECT 1 FROM members m WHERE m.user_id = auth.uid() AND m.role = 'secretary'));
+
 CREATE POLICY "users_insert_own_member_record" ON members
   FOR INSERT TO authenticated
   WITH CHECK (auth.uid() = user_id);
@@ -376,6 +380,11 @@ CREATE POLICY "users_update_own_member_record" ON members
   FOR UPDATE TO authenticated
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "secretary_update_all_members" ON members
+  FOR UPDATE TO authenticated
+  USING (EXISTS (SELECT 1 FROM members m WHERE m.user_id = auth.uid() AND m.role = 'secretary'))
+  WITH CHECK (EXISTS (SELECT 1 FROM members m WHERE m.user_id = auth.uid() AND m.role = 'secretary'));
 
 
 -- ========== BADGES POLICIES ==========
@@ -388,13 +397,13 @@ CREATE POLICY "anyone_can_read_badges" ON badges
   FOR SELECT TO anon, authenticated
   USING (true);
 
-CREATE POLICY "authenticated_insert_badges" ON badges
+CREATE POLICY "secretary_insert_badges" ON badges
   FOR INSERT TO authenticated
-  WITH CHECK (true);
+  WITH CHECK (EXISTS (SELECT 1 FROM members WHERE user_id = auth.uid() AND role = 'secretary'));
 
-CREATE POLICY "authenticated_delete_badges" ON badges
+CREATE POLICY "secretary_delete_badges" ON badges
   FOR DELETE TO authenticated
-  USING (true);
+  USING (EXISTS (SELECT 1 FROM members WHERE user_id = auth.uid() AND role = 'secretary'));
 
 
 -- ========== HALL OF FAME POLICIES ==========
@@ -407,17 +416,18 @@ CREATE POLICY "anyone_can_read_hall_of_fame" ON hall_of_fame
   FOR SELECT TO anon, authenticated
   USING (true);
 
-CREATE POLICY "authenticated_insert_hall_of_fame" ON hall_of_fame
+CREATE POLICY "secretary_insert_hall_of_fame" ON hall_of_fame
   FOR INSERT TO authenticated
-  WITH CHECK (true);
+  WITH CHECK (EXISTS (SELECT 1 FROM members WHERE user_id = auth.uid() AND role = 'secretary'));
 
-CREATE POLICY "authenticated_update_hall_of_fame" ON hall_of_fame
+CREATE POLICY "secretary_update_hall_of_fame" ON hall_of_fame
   FOR UPDATE TO authenticated
-  USING (true) WITH CHECK (true);
+  USING (EXISTS (SELECT 1 FROM members WHERE user_id = auth.uid() AND role = 'secretary'))
+  WITH CHECK (EXISTS (SELECT 1 FROM members WHERE user_id = auth.uid() AND role = 'secretary'));
 
-CREATE POLICY "authenticated_delete_hall_of_fame" ON hall_of_fame
+CREATE POLICY "secretary_delete_hall_of_fame" ON hall_of_fame
   FOR DELETE TO authenticated
-  USING (true);
+  USING (EXISTS (SELECT 1 FROM members WHERE user_id = auth.uid() AND role = 'secretary'));
 
 
 -- ========== NEWS POLICIES ==========
@@ -434,17 +444,18 @@ CREATE POLICY "authenticated_read_all_news" ON news
   FOR SELECT TO authenticated
   USING (true);
 
-CREATE POLICY "authenticated_insert_news" ON news
+CREATE POLICY "secretary_insert_news" ON news
   FOR INSERT TO authenticated
-  WITH CHECK (true);
+  WITH CHECK (EXISTS (SELECT 1 FROM members WHERE user_id = auth.uid() AND role = 'secretary'));
 
-CREATE POLICY "authenticated_update_news" ON news
+CREATE POLICY "secretary_update_news" ON news
   FOR UPDATE TO authenticated
-  USING (true) WITH CHECK (true);
+  USING (EXISTS (SELECT 1 FROM members WHERE user_id = auth.uid() AND role = 'secretary'))
+  WITH CHECK (EXISTS (SELECT 1 FROM members WHERE user_id = auth.uid() AND role = 'secretary'));
 
-CREATE POLICY "authenticated_delete_news" ON news
+CREATE POLICY "secretary_delete_news" ON news
   FOR DELETE TO authenticated
-  USING (true);
+  USING (EXISTS (SELECT 1 FROM members WHERE user_id = auth.uid() AND role = 'secretary'));
 
 
 -- ========== FORUM THREADS POLICIES ==========
@@ -499,17 +510,18 @@ CREATE POLICY "anyone_can_read_job_posts" ON job_posts
   FOR SELECT TO anon, authenticated
   USING (true);
 
-CREATE POLICY "authenticated_insert_job_posts" ON job_posts
+CREATE POLICY "secretary_insert_job_posts" ON job_posts
   FOR INSERT TO authenticated
-  WITH CHECK (true);
+  WITH CHECK (EXISTS (SELECT 1 FROM members WHERE user_id = auth.uid() AND role = 'secretary'));
 
-CREATE POLICY "authenticated_update_job_posts" ON job_posts
+CREATE POLICY "secretary_update_job_posts" ON job_posts
   FOR UPDATE TO authenticated
-  USING (true) WITH CHECK (true);
+  USING (EXISTS (SELECT 1 FROM members WHERE user_id = auth.uid() AND role = 'secretary'))
+  WITH CHECK (EXISTS (SELECT 1 FROM members WHERE user_id = auth.uid() AND role = 'secretary'));
 
-CREATE POLICY "authenticated_delete_job_posts" ON job_posts
+CREATE POLICY "secretary_delete_job_posts" ON job_posts
   FOR DELETE TO authenticated
-  USING (true);
+  USING (EXISTS (SELECT 1 FROM members WHERE user_id = auth.uid() AND role = 'secretary'));
 
 
 -- ========== JOB APPLICATIONS POLICIES ==========
@@ -584,17 +596,18 @@ CREATE POLICY "anyone_can_read_public_events" ON events
   FOR SELECT TO anon, authenticated
   USING (true);
 
-CREATE POLICY "authenticated_insert_events" ON events
+CREATE POLICY "secretary_insert_events" ON events
   FOR INSERT TO authenticated
-  WITH CHECK (true);
+  WITH CHECK (EXISTS (SELECT 1 FROM members WHERE user_id = auth.uid() AND role = 'secretary'));
 
-CREATE POLICY "authenticated_update_events" ON events
+CREATE POLICY "secretary_update_events" ON events
   FOR UPDATE TO authenticated
-  USING (true) WITH CHECK (true);
+  USING (EXISTS (SELECT 1 FROM members WHERE user_id = auth.uid() AND role = 'secretary'))
+  WITH CHECK (EXISTS (SELECT 1 FROM members WHERE user_id = auth.uid() AND role = 'secretary'));
 
-CREATE POLICY "authenticated_delete_events" ON events
+CREATE POLICY "secretary_delete_events" ON events
   FOR DELETE TO authenticated
-  USING (true);
+  USING (EXISTS (SELECT 1 FROM members WHERE user_id = auth.uid() AND role = 'secretary'));
 
 
 -- ============================================================================

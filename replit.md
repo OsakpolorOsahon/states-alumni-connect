@@ -132,6 +132,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### March 2026 - Critical Flow & Secretary Dashboard Fixes ✅
+- **UploadDocuments Page**: ✅ Complete rewrite — restored hooks, replaced Firestore with Supabase, proper document upload flow
+- **Login Flow**: ✅ Fixed login hanging on "Signing In..." with timeout on member data fetch
+- **Login Navigation**: ✅ Login now routes based on member status (active→dashboard, pending→upload-documents or pending-approval)
+- **AuthGuard**: ✅ Fixed redirect logic to check both photo_url and dues_proof_url before sending to pending-approval
+- **Email Verification**: ✅ Added emailRedirectTo for Supabase to redirect users to /upload-documents after verification
+- **Secretary Dashboard**: ✅ Fixed SecretaryContentManagement undefined supabase variable crash
+- **SQL RLS Policies**: ✅ Added secretary-specific policies for reading/updating all members
+- **SQL Security**: ✅ Tightened content table mutations (news, badges, hall_of_fame, job_posts, events) to secretary-only
+- **Signup RPC**: ✅ Added SECURITY DEFINER function to bypass RLS during registration
+
 ### January 2025 - Replit Environment Migration & Bug Fixes COMPLETE ✅
 - **Backend Migration**: ✅ Migrated from Supabase to Express/Node.js server with PostgreSQL
 - **Database Migration**: ✅ Migrated from Supabase PostgreSQL to Neon PostgreSQL via Drizzle ORM

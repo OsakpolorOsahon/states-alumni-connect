@@ -58,11 +58,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!supabaseClient) return null
     
     try {
-      const { data, error } = await supabaseClient
+      const fetchPromise = supabaseClient
         .from('members')
         .select('*')
         .eq('user_id', userId)
         .single()
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Member data fetch timed out')), 8000)
+      )
+
+      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any
         
       if (error) {
         console.error('Error fetching member data:', error)

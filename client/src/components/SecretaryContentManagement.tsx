@@ -166,7 +166,8 @@ const SecretaryContentManagement = () => {
   // Update mutations
   const updateNewsMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string, updates: Partial<NewsArticle> }) => {
-      const { data, error } = await supabase
+      if (!supabaseClient) throw new Error('Supabase client not available');
+      const { data, error } = await supabaseClient
         .from('news')
         .update(updates)
         .eq('id', id)
@@ -184,7 +185,8 @@ const SecretaryContentManagement = () => {
   // Delete mutations
   const deleteNewsMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      if (!supabaseClient) throw new Error('Supabase client not available');
+      const { error } = await supabaseClient
         .from('news')
         .delete()
         .eq('id', id);

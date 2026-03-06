@@ -38,7 +38,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
 
     if (requireActive && (!member || member.status !== 'active')) {
       console.log('Not active member, checking status');
-      if (member?.status === 'pending' && !member?.photo_url) {
+      if (member?.status === 'pending' && (!member?.photo_url || !member?.dues_proof_url)) {
         navigate('/upload-documents', { replace: true });
       } else if (member?.status === 'pending') {
         navigate('/pending-approval', { replace: true });

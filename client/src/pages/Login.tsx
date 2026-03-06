@@ -32,16 +32,23 @@ const Login = () => {
       console.log('Login result:', result);
       
       if (result && result.success && result.user) {
-        console.log('Login successful, showing toast and navigating...');
+        console.log('Login successful, member data:', result.member);
         toast({
           title: "Login Successful", 
           description: "Welcome back!",
         });
         
-        // Small delay to ensure auth state is set
         setTimeout(() => {
-          console.log('Navigating to dashboard...');
-          navigate('/dashboard', { replace: true });
+          const m = result.member;
+          if (!m) {
+            navigate('/upload-documents', { replace: true });
+          } else if (m.status === 'active') {
+            navigate('/dashboard', { replace: true });
+          } else if (m.status === 'pending' && (!m.photo_url || !m.dues_proof_url)) {
+            navigate('/upload-documents', { replace: true });
+          } else {
+            navigate('/pending-approval', { replace: true });
+          }
         }, 100);
       } else {
         console.error('Login failed - invalid response:', result);
